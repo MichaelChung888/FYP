@@ -2,7 +2,7 @@ import { Record, Union } from "./fable_modules/fable-library.4.1.4/Types.js";
 import { AccountInfo_$reflection } from "../../Shared/Shared.fs.js";
 import { record_type, union_type } from "./fable_modules/fable-library.4.1.4/Reflection.js";
 import { view as view_3, update as update_1, init as init_1, Msg_$reflection as Msg_$reflection_1, Model_$reflection as Model_$reflection_1 } from "./pages/Login/Login.fs.js";
-import { view as view_1, init as init_2, update as update_2, Msg_$reflection as Msg_$reflection_2, Model_$reflection as Model_$reflection_2 } from "./pages/MainStudent/MainStudent.fs.js";
+import { view as view_1, init as init_2, update as update_2, Msg_$reflection as Msg_$reflection_2, Model_$reflection as Model_$reflection_2 } from "./pages/HomeStudent/HomeStudent.fs.js";
 import { view as view_2, init as init_3, update as update_3, Msg_$reflection as Msg_$reflection_3, Model_$reflection as Model_$reflection_3 } from "./pages/Projects/Projects.fs.js";
 import { ofArray, singleton, tail, head, isEmpty } from "./fable_modules/fable-library.4.1.4/List.js";
 import { RouterModule_router, RouterModule_nav, RouterModule_urlSegments } from "./fable_modules/Feliz.Router.4.0.0/./Router.fs.js";
@@ -38,7 +38,7 @@ export class Url extends Union {
         this.fields = fields;
     }
     cases() {
-        return ["LoginUrl", "MainStudentUrl", "ProjectsUrl", "NotFound", "EmptyUrl"];
+        return ["LoginUrl", "HomeStudentUrl", "ProjectsUrl", "NotFoundUrl", "EmptyUrl"];
     }
 }
 
@@ -46,19 +46,19 @@ export function Url_$reflection() {
     return union_type("App.Url", [], Url, () => [[], [], [], [], []]);
 }
 
-export class SubModel extends Union {
+export class Page extends Union {
     constructor(tag, fields) {
         super();
         this.tag = tag;
         this.fields = fields;
     }
     cases() {
-        return ["LoginModel", "MainStudentModel", "ProjectsModel", "NotFound"];
+        return ["LoginPage", "HomeStudentPage", "ProjectsPage", "NotFoundPage"];
     }
 }
 
-export function SubModel_$reflection() {
-    return union_type("App.SubModel", [], SubModel, () => [[["Item", Model_$reflection_1()]], [["Item", Model_$reflection_2()]], [["Item", Model_$reflection_3()]], []]);
+export function Page_$reflection() {
+    return union_type("App.Page", [], Page, () => [[["Item", Model_$reflection_1()]], [["Item", Model_$reflection_2()]], [["Item", Model_$reflection_3()]], []]);
 }
 
 export class Msg extends Union {
@@ -68,7 +68,7 @@ export class Msg extends Union {
         this.fields = fields;
     }
     cases() {
-        return ["LoginMsg", "MainStudentMsg", "ProjectsMsg", "UrlChanged"];
+        return ["LoginMsg", "HomeStudentMsg", "ProjectsMsg", "UrlChanged"];
     }
 }
 
@@ -77,23 +77,16 @@ export function Msg_$reflection() {
 }
 
 export class Model extends Record {
-    constructor(User, CurrentUrl, CurrentModel) {
+    constructor(User, CurrentUrl, CurrentPage) {
         super();
         this.User = User;
         this.CurrentUrl = CurrentUrl;
-        this.CurrentModel = CurrentModel;
+        this.CurrentPage = CurrentPage;
     }
 }
 
 export function Model_$reflection() {
-    return record_type("App.Model", [], Model, () => [["User", ApplicationUser_$reflection()], ["CurrentUrl", Url_$reflection()], ["CurrentModel", SubModel_$reflection()]]);
-}
-
-export function test(model, _arg1_, _arg1__1) {
-    const _arg = [_arg1_, _arg1__1];
-    const subModel = _arg[0];
-    const msg = _arg[1];
-    return [new Model(model.User, model.CurrentUrl, subModel), msg];
+    return record_type("App.Model", [], Model, () => [["User", ApplicationUser_$reflection()], ["CurrentUrl", Url_$reflection()], ["CurrentPage", Page_$reflection()]]);
 }
 
 export function parseUrl(_arg) {
@@ -152,7 +145,7 @@ export function parseUrl(_arg) {
 export function init() {
     let fullPath;
     const initialUrl = parseUrl((fullPath = (window.location.pathname + window.location.search), RouterModule_urlSegments(fullPath, 2)));
-    const defaultModel = new Model(new ApplicationUser(0, []), initialUrl, new SubModel(3, []));
+    const defaultModel = new Model(new ApplicationUser(0, []), initialUrl, new Page(3, []));
     switch (initialUrl.tag) {
         case 1:
             return [defaultModel, Cmd_ofEffect((_arg_1) => {
@@ -163,29 +156,30 @@ export function init() {
                 RouterModule_nav(singleton("login"), 2, 2);
             })];
         case 3:
-            return [new Model(defaultModel.User, defaultModel.CurrentUrl, new SubModel(3, [])), Cmd_none()];
+            return [new Model(defaultModel.User, defaultModel.CurrentUrl, new Page(3, [])), Cmd_none()];
         case 4:
             return [defaultModel, Cmd_ofEffect((_arg_3) => {
                 RouterModule_nav(singleton("login"), 2, 2);
             })];
         default: {
             const patternInput = init_1();
-            const loginMsg = patternInput[1];
-            const loginModel = patternInput[0];
-            return [new Model(defaultModel.User, defaultModel.CurrentUrl, new SubModel(0, [loginModel])), Cmd_map((arg) => (new Msg(0, [arg])), loginMsg)];
+            const page = patternInput[0];
+            const msg = patternInput[1];
+            return [new Model(defaultModel.User, defaultModel.CurrentUrl, new Page(0, [page])), Cmd_map((arg) => (new Msg(0, [arg])), msg)];
         }
     }
 }
 
 export function update(msg, model) {
-    const matchValue = model.CurrentModel;
-    let matchResult, loginModel, loginMsg, mainStudentModel, mainStudentMsg, projectsModel, projectsMsg, nextUrl;
+    const showPage = (page) => (new Model(model.User, model.CurrentUrl, page));
+    const matchValue = model.CurrentPage;
+    let matchResult, msg_1, page_1, msg_3, page_2, msg_4, page_3, nextUrl;
     switch (msg.tag) {
         case 1: {
             if (matchValue.tag === 1) {
                 matchResult = 1;
-                mainStudentModel = matchValue.fields[0];
-                mainStudentMsg = msg.fields[0];
+                msg_3 = msg.fields[0];
+                page_2 = matchValue.fields[0];
             }
             else {
                 matchResult = 4;
@@ -195,8 +189,8 @@ export function update(msg, model) {
         case 2: {
             if (matchValue.tag === 2) {
                 matchResult = 2;
-                projectsModel = matchValue.fields[0];
-                projectsMsg = msg.fields[0];
+                msg_4 = msg.fields[0];
+                page_3 = matchValue.fields[0];
             }
             else {
                 matchResult = 4;
@@ -211,8 +205,8 @@ export function update(msg, model) {
         default:
             if (matchValue.tag === 0) {
                 matchResult = 0;
-                loginModel = matchValue.fields[0];
-                loginMsg = msg.fields[0];
+                msg_1 = msg.fields[0];
+                page_1 = matchValue.fields[0];
             }
             else {
                 matchResult = 4;
@@ -220,40 +214,40 @@ export function update(msg, model) {
     }
     switch (matchResult) {
         case 0:
-            if (loginMsg.tag === 3) {
-                const accountInfo = loginMsg.fields[0];
+            if (msg_1.tag === 2) {
+                const accountInfo = msg_1.fields[0];
                 toConsole(printf("%A"))(accountInfo);
-                return [new Model(new ApplicationUser(1, [accountInfo]), model.CurrentUrl, model.CurrentModel), Cmd_ofEffect((_arg) => {
+                return [new Model(new ApplicationUser(1, [accountInfo]), model.CurrentUrl, model.CurrentPage), Cmd_ofEffect((_arg) => {
                     RouterModule_nav(singleton("main-student"), 1, 2);
                 })];
             }
             else {
-                const loginMsg_1 = loginMsg;
-                const patternInput = update_1(loginMsg_1, loginModel);
-                const newLoginMsg = patternInput[1];
-                const newLoginModel = patternInput[0];
-                return [new Model(model.User, model.CurrentUrl, new SubModel(0, [newLoginModel])), Cmd_map((arg_1) => (new Msg(0, [arg_1])), newLoginMsg)];
+                const msg_2 = msg_1;
+                const patternInput = update_1(msg_2, page_1);
+                const newPage = patternInput[0];
+                const newMsg = patternInput[1];
+                return [showPage(new Page(0, [newPage])), Cmd_map((arg_1) => (new Msg(0, [arg_1])), newMsg)];
             }
         case 1: {
-            const patternInput_1 = update_2(mainStudentMsg, mainStudentModel);
-            const newMainStudentMsg = patternInput_1[1];
-            const newMainStudentModel = patternInput_1[0];
-            return [new Model(model.User, model.CurrentUrl, new SubModel(1, [newMainStudentModel])), Cmd_map((arg_2) => (new Msg(1, [arg_2])), newMainStudentMsg)];
+            const patternInput_1 = update_2(msg_3, page_2);
+            const newPage_1 = patternInput_1[0];
+            const newMsg_1 = patternInput_1[1];
+            return [showPage(new Page(1, [newPage_1])), Cmd_map((arg_2) => (new Msg(1, [arg_2])), newMsg_1)];
         }
         case 2: {
-            const patternInput_2 = update_3(projectsMsg, projectsModel);
-            const newProjectsMsg = patternInput_2[1];
-            const newProjectsModel = patternInput_2[0];
-            return [new Model(model.User, model.CurrentUrl, new SubModel(2, [newProjectsModel])), Cmd_map((arg_3) => (new Msg(2, [arg_3])), newProjectsMsg)];
+            const patternInput_2 = update_3(msg_4, page_3);
+            const newPage_2 = patternInput_2[0];
+            const newMsg_2 = patternInput_2[1];
+            return [showPage(new Page(2, [newPage_2])), Cmd_map((arg_3) => (new Msg(2, [arg_3])), newMsg_2)];
         }
         case 3:
             switch (nextUrl.tag) {
                 case 1:
                     if (model.User.tag === 1) {
                         const patternInput_4 = init_2();
-                        const mainStudentMsg_1 = patternInput_4[1];
-                        const mainStudentModel_1 = patternInput_4[0];
-                        return [new Model(model.User, model.CurrentUrl, new SubModel(1, [mainStudentModel_1])), Cmd_map((arg_5) => (new Msg(1, [arg_5])), mainStudentMsg_1)];
+                        const newPage_4 = patternInput_4[0];
+                        const newMsg_4 = patternInput_4[1];
+                        return [showPage(new Page(1, [newPage_4])), Cmd_map((arg_5) => (new Msg(1, [arg_5])), newMsg_4)];
                     }
                     else {
                         return [model, Cmd_ofEffect((_arg_1) => {
@@ -263,9 +257,9 @@ export function update(msg, model) {
                 case 2:
                     if (model.User.tag === 1) {
                         const patternInput_5 = init_3();
-                        const projectsMsg_1 = patternInput_5[1];
-                        const projectsModel_1 = patternInput_5[0];
-                        return [new Model(model.User, model.CurrentUrl, new SubModel(2, [projectsModel_1])), Cmd_map((arg_6) => (new Msg(2, [arg_6])), projectsMsg_1)];
+                        const newPage_5 = patternInput_5[0];
+                        const newMsg_5 = patternInput_5[1];
+                        return [showPage(new Page(2, [newPage_5])), Cmd_map((arg_6) => (new Msg(2, [arg_6])), newMsg_5)];
                     }
                     else {
                         return [model, Cmd_ofEffect((_arg_2) => {
@@ -273,16 +267,16 @@ export function update(msg, model) {
                         })];
                     }
                 case 3:
-                    return [new Model(model.User, model.CurrentUrl, new SubModel(3, [])), Cmd_none()];
+                    return [showPage(new Page(3, [])), Cmd_none()];
                 case 4:
                     return [model, Cmd_ofEffect((_arg_3) => {
                         RouterModule_nav(singleton("login"), 2, 2);
                     })];
                 default: {
                     const patternInput_3 = init_1();
-                    const loginMsg_2 = patternInput_3[1];
-                    const loginModel_1 = patternInput_3[0];
-                    return [new Model(model.User, model.CurrentUrl, new SubModel(0, [loginModel_1])), Cmd_map((arg_4) => (new Msg(0, [arg_4])), loginMsg_2)];
+                    const newPage_3 = patternInput_3[0];
+                    const newMsg_3 = patternInput_3[1];
+                    return [showPage(new Page(0, [newPage_3])), Cmd_map((arg_4) => (new Msg(0, [arg_4])), newMsg_3)];
                 }
             }
         default:
@@ -295,17 +289,17 @@ export function view(model, dispatch) {
     return RouterModule_router(createObj(ofArray([["hashMode", 2], ["onUrlChanged", (arg_2) => {
         dispatch(new Msg(3, [parseUrl(arg_2)]));
     }], (elements = toList(delay(() => {
-        const matchValue = model.CurrentModel;
+        const matchValue = model.CurrentPage;
         switch (matchValue.tag) {
             case 1: {
-                const mainStudentModel = matchValue.fields[0];
-                return singleton_1(view_1(mainStudentModel, (arg_6) => {
+                const page_1 = matchValue.fields[0];
+                return singleton_1(view_1(page_1, (arg_6) => {
                     dispatch(new Msg(1, [arg_6]));
                 }));
             }
             case 2: {
-                const projectsModel = matchValue.fields[0];
-                return singleton_1(view_2(projectsModel, (arg_8) => {
+                const page_2 = matchValue.fields[0];
+                return singleton_1(view_2(page_2, (arg_8) => {
                     dispatch(new Msg(2, [arg_8]));
                 }));
             }
@@ -314,8 +308,8 @@ export function view(model, dispatch) {
                     children: ["Not Found"],
                 }));
             default: {
-                const loginModel = matchValue.fields[0];
-                return singleton_1(view_3(loginModel, (arg_4) => {
+                const page = matchValue.fields[0];
+                return singleton_1(view_3(page, (arg_4) => {
                     dispatch(new Msg(0, [arg_4]));
                 }));
             }

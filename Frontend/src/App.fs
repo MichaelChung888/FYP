@@ -7,7 +7,7 @@ open Feliz.Router
 
 open Shared
 open Login
-open MainStudent
+open HomeStudent
 open Projects
 
 //--------------------------------------------------------------------------------------//
@@ -20,70 +20,63 @@ type ApplicationUser =
 
 type Url =
     | LoginUrl
-    | MainStudentUrl
+    | HomeStudentUrl
     | ProjectsUrl
-    | NotFound
+    | NotFoundUrl
     | EmptyUrl
 
-type SubModel = // Pages
-    | LoginModel of Login.Model
-    | MainStudentModel of MainStudent.Model
-    | ProjectsModel of Projects.Model
-    | NotFound
+type Page = // Pages
+    | LoginPage of Login.Model
+    | HomeStudentPage of HomeStudent.Model
+    | ProjectsPage of Projects.Model
+    | NotFoundPage
 
 type Msg =
     | LoginMsg of Login.Msg
-    | MainStudentMsg of MainStudent.Msg
+    | HomeStudentMsg of HomeStudent.Msg
     | ProjectsMsg of Projects.Msg
     | UrlChanged of Url
 
 type Model = {
     User : ApplicationUser
     CurrentUrl: Url
-    CurrentModel: SubModel
+    CurrentPage: Page
 }
-
-//--------------------------------------------------------------------------------------//
-//                                   Helper Functions                                   //
-//--------------------------------------------------------------------------------------//
-
-let test model ((subModel, msg) : SubModel * Cmd<Msg>) : Model * Cmd<Msg> =
-    { model with CurrentModel = subModel }, msg
 
 //--------------------------------------------------------------------------------------//
 //                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
 let parseUrl = function
-    | [] -> Url.EmptyUrl
-    | ["login"] -> Url.LoginUrl
-    | ["main-student"] -> Url.MainStudentUrl
-    | ["main-student"; "projects"] -> Url.ProjectsUrl
-    | _ -> Url.NotFound
+    | [] -> EmptyUrl
+    | ["login"] -> LoginUrl
+    | ["main-student"] -> HomeStudentUrl
+    | ["main-student"; "projects"] -> ProjectsUrl
+    | _ -> NotFoundUrl
 
 let init () : Model * Cmd<Msg> = 
     let initialUrl = Router.currentPath() |> parseUrl
     let defaultModel = {
         User = Anonymous
         CurrentUrl = initialUrl
-        CurrentModel = SubModel.NotFound
+        CurrentPage = NotFoundPage
     }
     
     match initialUrl with
-    | Url.LoginUrl ->
-        let loginModel, loginMsg = Login.init ()
-        { defaultModel with CurrentModel = (SubModel.LoginModel loginModel) }, loginMsg |> Cmd.map Msg.LoginMsg
+    | LoginUrl ->
+        let page, msg = Login.init ()
+        { defaultModel with CurrentPage = (LoginPage page) }, Cmd.map LoginMsg msg
 
-    | Url.MainStudentUrl ->
+    | HomeStudentUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
 
-    | Url.ProjectsUrl ->
+    | ProjectsUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState) 
 
-    | Url.NotFound ->
-        { defaultModel with CurrentModel = SubModel.NotFound }, Cmd.none
+    | NotFoundUrl ->
+        { defaultModel with CurrentPage = NotFoundPage }, Cmd.none
 
-    | Url.EmptyUrl ->
+    | EmptyUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState) 
 
 //--------------------------------------------------------------------------------------//
@@ -91,48 +84,52 @@ let init () : Model * Cmd<Msg> =
 //--------------------------------------------------------------------------------------//
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
-    match msg, model.CurrentModel with 
-    | Msg.LoginMsg loginMsg, SubModel.LoginModel loginModel ->
-        match loginMsg with
-        | Login.Msg.Success accountInfo ->
+
+    let showPage (page : Page) : Model =
+        { model with CurrentPage = page }
+
+    match msg, model.CurrentPage with 
+    | LoginMsg msg, LoginPage page ->
+        match msg with
+        | Success accountInfo ->
             printfn "%A" accountInfo
             { model with User = (LoggedIn accountInfo) }, Cmd.navigatePath("main-student")
-        | loginMsg ->
-            let newLoginModel, newLoginMsg = Login.update loginMsg loginModel
-            { model with CurrentModel = SubModel.LoginModel newLoginModel }, newLoginMsg |> Cmd.map Msg.LoginMsg
+        | msg ->
+            let newPage, newMsg = Login.update msg page
+            showPage (LoginPage newPage), Cmd.map LoginMsg newMsg
 
-    | Msg.MainStudentMsg mainStudentMsg, SubModel.MainStudentModel mainStudentModel ->
-        let newMainStudentModel, newMainStudentMsg = MainStudent.update mainStudentMsg mainStudentModel
-        { model with CurrentModel = SubModel.MainStudentModel newMainStudentModel}, newMainStudentMsg |> Cmd.map Msg.MainStudentMsg
+    | HomeStudentMsg msg, HomeStudentPage page ->
+        let newPage, newMsg = HomeStudent.update msg page
+        showPage (HomeStudentPage newPage), Cmd.map HomeStudentMsg newMsg
 
-    | Msg.ProjectsMsg projectsMsg, SubModel.ProjectsModel projectsModel ->
-        let newProjectsModel, newProjectsMsg = Projects.update projectsMsg projectsModel
-        { model with CurrentModel = SubModel.ProjectsModel newProjectsModel }, newProjectsMsg |> Cmd.map Msg.ProjectsMsg
+    | ProjectsMsg msg, ProjectsPage page ->
+        let newPage, newMsg = Projects.update msg page
+        showPage (ProjectsPage newPage), Cmd.map ProjectsMsg newMsg
 
     | UrlChanged nextUrl, _ ->
         match nextUrl with
-        | Url.LoginUrl -> 
-            let loginModel, loginMsg = Login.init ()
-            { model with CurrentModel = (SubModel.LoginModel loginModel) }, loginMsg |> Cmd.map Msg.LoginMsg
+        | LoginUrl -> 
+            let newPage, newMsg = Login.init ()
+            showPage (LoginPage newPage), Cmd.map LoginMsg newMsg
 
-        | Url.MainStudentUrl ->
+        | HomeStudentUrl ->
             match model.User with
             | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
             | LoggedIn _ ->
-                let mainStudentModel, mainStudentMsg = MainStudent.init ()
-                { model with CurrentModel = (SubModel.MainStudentModel mainStudentModel) }, mainStudentMsg |> Cmd.map Msg.MainStudentMsg
+                let newPage, newMsg = HomeStudent.init ()
+                showPage (HomeStudentPage newPage), Cmd.map HomeStudentMsg newMsg
 
-        | Url.ProjectsUrl ->
+        | ProjectsUrl ->
             match model.User with
             | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
             | LoggedIn _ ->
-                let projectsModel, projectsMsg = Projects.init ()
-                { model with CurrentModel = (SubModel.ProjectsModel projectsModel) }, projectsMsg |> Cmd.map Msg.ProjectsMsg
+                let newPage, newMsg = Projects.init ()
+                showPage (ProjectsPage newPage), Cmd.map ProjectsMsg newMsg
 
-        | Url.NotFound ->
-            { model with CurrentModel = SubModel.NotFound }, Cmd.none
+        | NotFoundUrl ->
+            showPage NotFoundPage, Cmd.none
 
-        | Url.EmptyUrl ->
+        | EmptyUrl ->
             model, Cmd.navigatePath("login", HistoryMode.ReplaceState) 
 
     | _, _ ->
@@ -147,14 +144,14 @@ let view (model: Model) (dispatch: Msg -> unit) =
         router.pathMode
         router.onUrlChanged (parseUrl >> UrlChanged >> dispatch)
         router.children [
-            match model.CurrentModel with
-            | SubModel.LoginModel loginModel ->
-                Login.view loginModel (Msg.LoginMsg >> dispatch)
-            | SubModel.MainStudentModel mainStudentModel ->
-                MainStudent.view mainStudentModel (Msg.MainStudentMsg >> dispatch)
-            | SubModel.ProjectsModel projectsModel ->
-                Projects.view projectsModel (Msg.ProjectsMsg >> dispatch)
-            | SubModel.NotFound ->
+            match model.CurrentPage with
+            | LoginPage page ->
+                Login.view page (Msg.LoginMsg >> dispatch)
+            | HomeStudentPage page ->
+                HomeStudent.view page (Msg.HomeStudentMsg >> dispatch)
+            | ProjectsPage page ->
+                Projects.view page (Msg.ProjectsMsg >> dispatch)
+            | NotFoundPage ->
                 Html.p "Not Found"
         ]
     ]

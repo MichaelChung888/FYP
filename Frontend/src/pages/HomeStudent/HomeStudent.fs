@@ -1,8 +1,10 @@
-module MainStudent
+module HomeStudent
 
 open Shared
 
+open Thoth.Json
 open Thoth.Fetch
+open Fetch
 
 open Elmish
 
@@ -20,26 +22,38 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 //--------------------------------------------------------------------------------------//
 
 type Model = {
-    test: int
+    projects: List<ProjectInfo>
 }
 
 type Msg =
-    | Nothing of int
+    | SuccessfulLoad of List<ProjectInfo>
+    | ErrorLoad of exn
 
 //--------------------------------------------------------------------------------------//
-//                        Model Initalise [init : unit -> Model]                        //
+//                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
 let init () : Model * Cmd<Msg> = 
-    { test = 5 }, Cmd.none
+    let defaultModel = { projects = [] }
+    let initialLoad() = 
+        promise {
+            let url = "http://localhost:1234/projects"
+            return! Fetch.get(url=url, 
+                              decoder=(Decode.list ProjectInfo.Decoder)) //properties=[Credentials RequestCredentials.Include]
+        }
+    defaultModel, Cmd.OfPromise.either initialLoad () SuccessfulLoad ErrorLoad
 
 //--------------------------------------------------------------------------------------//
-//                    Model Update [update : Msg -> Model -> Model]                     //
+//               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
 //--------------------------------------------------------------------------------------//
 
-let update (msg: Msg) (model: Model) =
+let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
-    | test ->
+    | SuccessfulLoad projectList ->
+        printfn "%A" projectList
+        { model with projects = projectList }, Cmd.none
+    | ErrorLoad res ->
+        printfn "%A" res
         model, Cmd.none
 
 //--------------------------------------------------------------------------------------//
@@ -59,6 +73,8 @@ let ImageBackground =
         prop.style [style.position.absolute; style.height (length.perc 100); style.width (length.perc 100); style.zIndex -2; style.overflow.hidden] // style.objectFit.cover;
         prop.src "/images/imperial.jpg"
     ]
+
+// ---- Navigation Bar -------------------------------------------------------------------
 
 let NavBar =
     Bulma.navbar [
@@ -87,6 +103,7 @@ let NavBar =
     ]  
 
 // ---- Table ----------------------------------------------------------------------------
+
 let Table (body: ReactElement list) = 
     Html.div [
         prop.style [style.overflowY.auto; style.height (length.perc 80)]
@@ -98,15 +115,17 @@ let Table (body: ReactElement list) =
         ]
     ]
 
-let Row (title: string) (professor: string) (description: string) = 
+let Row (projectInfo: ProjectInfo) = 
     Html.tr [
-        Html.td [prop.text title]
-        Html.td [prop.text professor]
+        Html.td [prop.text projectInfo.Title]
+        Html.td [prop.text projectInfo.Professor]
         Html.td []
-        Html.td [prop.text description]
+        Html.td [prop.text projectInfo.Description]
     ]
 
-let NewTable =
+// ---- New Projects Table ---------------------------------------------------------------
+
+let NewTable (model: Model) =
     Table [
         Html.thead [
             Html.tr [
@@ -116,44 +135,10 @@ let NewTable =
                 Html.th [ prop.title "Description"; prop.text "Description"]
             ]
         ]
-        Html.tbody [
-            Html.tr [
-                Html.td [prop.text "A framework for the simulation and evaluation of dynamic bus routing"]
-                Html.td [prop.text "Cattafi,M."]
-                Html.td []
-                Html.td [prop.text "«Mobility-on-demand ridesharing services have transformed the transportation landscape by offering commuters the
-                                    convenience of point-to-point transportation, while at the same time being more efficient than private vehicles. However, the
-                                    benefits these services have to offer are fundamentally limited by their capacities, and are often seen as taxi equivalents.» [1]
-                                    In this project we consider «the concept of “dynamic bus routing” (DBR). Like ridesharing services, such buses would not follow
-                                    predefined routes nor schedules, but rather constantly generate their routes in real time to most efficiently serve commuters'
-                                    travel patterns.» [1]
-                                    Attempts along similar lines were also made in London, for example the Citymapper Smartbus [2] which was discontinued for a
-                                    variety of reasons [3].
-                                    The main deliverable will be a simulation (including visualisation) and evaluation framework. Routing algorithms will also be
-                                    implemented and tested.
-                                    [1]: Koh et al., Dynamic Bus Routing: A study on the viability of on-demand high-capacity ridesharing as an alternative to fixedroute buses in Singapore
-                                    2018 21st International Conference on Intelligent Transportation Systems
-                                    https://ieeexplore.ieee.org/document/8569834
-                                    [2]: Introducing the Citymapper Smartbus, 2017
-                                    https://medium.com/citymapper/smartbus-7b6848241526
-                                    [3]: Ending Ride to focus on Pass, 2019
-                                    https://medium.com/@Citymapper/ending-ride-to-focus-on-pass-d9ada3021831"]
-            ]
-            Html.tr [
-                Html.td [prop.text "Learning to control a pendulum with data-driven Model Predictive Control "]
-                Html.td [prop.text "Angeli,D."]
-                Html.td []
-                Html.td [prop.text "Pendulums are examples of very non-linear and unstable processes and serve as a toy model of more complicated devices in
-                                    real-world applications. The goal of the project is to device a Predictive Control algorithm that gradually adapts and learns the
-                                    dynamics of the pendulum (nonlinear and hence 'new' each time a different region in state-space is explored) in order to
-                                    balance it in the upwards position, viz. around an unstable equilibrium, or dampen it around the downwards position. This can
-                                    be challenging even in the presence of a model due to potential uncertainties and disturbances and we would like to compare
-                                    the traditional approach with one where the model is not assumed to be known, while the pendulum is treated as a black-box,
-                                    with as little prior information as possible.
-                                    Desirable Background: Control Engineering, Model predictive Control, Optimisation, MATLAB"]
-            ]
-        ]
+        Html.tbody (List.map Row model.projects)
     ]
+
+// ---- Preference Table -----------------------------------------------------------------
 
 let PreferenceTable =
     Table [
@@ -274,12 +259,12 @@ let BulmaTile (classes: string list) (styles: IStyleAttribute list) (props: Reac
 let TileCss = 
     [TurquoiseBackgroundRGBA 0.7; style.borderStyle.solid; style.borderColor mediumTurqouise; style.overflow.hidden]
 
-let Tiles = 
+let Tiles (model: Model) = 
     BulmaTile [Bulma.IsAncestor] [style.padding (length.px 50); style.height (length.vh 95)] [
         BulmaTile [Bulma.Is8; Bulma.IsVertical; Bulma.IsParent] [] [
             BulmaTile [Bulma.Tile; Bulma.IsChild; Bulma.Box; "test"] TileCss [
                 Bulma.title [ prop.text "New Projects" ]
-                NewTable
+                NewTable model
             ]
             BulmaTile [Bulma.IsChild; Bulma.Box; "test"] TileCss [
                 Bulma.title [ prop.text "Preferences" ]
@@ -310,6 +295,6 @@ let view (model: Model) (dispatch: Msg -> unit) =
             TurquoiseBackground 0.5
             ImageBackground
             NavBar
-            Tiles
+            Tiles model
         ]
     ]

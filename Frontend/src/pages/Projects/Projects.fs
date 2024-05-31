@@ -1,7 +1,8 @@
 module Projects
 
-open Thoth.Fetch
 open Thoth.Json
+open Thoth.Fetch
+open Fetch
 
 open Elmish
 
@@ -26,14 +27,14 @@ type Msg =
     | Nothing of int
 
 //--------------------------------------------------------------------------------------//
-//                        Model Initalise [init : unit -> Model]                        //
+//                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
 let init () : Model * Cmd<Msg> = 
     { test = 5 }, Cmd.none
 
 //--------------------------------------------------------------------------------------//
-//                    Model Update [update : Msg -> Model -> Model]                     //
+//               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
 //--------------------------------------------------------------------------------------//
 
 let update (msg: Msg) (model: Model) =

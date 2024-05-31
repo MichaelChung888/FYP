@@ -5,7 +5,7 @@
   <ItemGroup>
     <Compile Include="../../Shared/Shared.fs" />
     <Compile Include="pages/Login/Login.fs" />
-    <Compile Include="pages/MainStudent/MainStudent.fs" />
+    <Compile Include="pages/HomeStudent/HomeStudent.fs" />
     <Compile Include="pages/Projects/Projects.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>

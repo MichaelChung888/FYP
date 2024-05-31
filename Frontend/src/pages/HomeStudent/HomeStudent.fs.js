@@ -1,61 +1,117 @@
 import { Union, Record } from "../../fable_modules/fable-library.4.1.4/Types.js";
-import { union_type, int32_type, record_type, string_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
-import { Cmd_none } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
+import { ProjectInfo_get_Decoder, ProjectInfo_$reflection } from "../../../../Shared/Shared.fs.js";
+import { obj_type, union_type, class_type, record_type, list_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
+import { map as map_1, singleton, cons, ofArray, empty } from "../../fable_modules/fable-library.4.1.4/List.js";
+import { PromiseBuilder__Delay_62FBFDE1, PromiseBuilder__Run_212F1D4B } from "../../fable_modules/Fable.Promise.3.2.0/Promise.fs.js";
+import { promise } from "../../fable_modules/Fable.Promise.3.2.0/PromiseImpl.fs.js";
+import { list } from "../../fable_modules/Thoth.Json.10.1.0/Decode.fs.js";
+import { createObj, uncurry2 } from "../../fable_modules/fable-library.4.1.4/Util.js";
+import { PromiseBuilder__Delay_62FBFDE1 as PromiseBuilder__Delay_62FBFDE1_1, PromiseBuilder__Run_212F1D4B as PromiseBuilder__Run_212F1D4B_1 } from "../../fable_modules/Thoth.Fetch.3.0.1/../Fable.Promise.3.2.0/Promise.fs.js";
+import { promise as promise_1 } from "../../fable_modules/Thoth.Fetch.3.0.1/../Fable.Promise.3.2.0/PromiseImpl.fs.js";
+import { FetchError } from "../../fable_modules/Thoth.Fetch.3.0.1/Fetch.fs.js";
+import { FSharpResult$2 } from "../../fable_modules/fable-library.4.1.4/Choice.js";
+import { Helper_message, Helper_fetch, Helper_withContentTypeJson, Helper_withProperties } from "../../fable_modules/Thoth.Fetch.3.0.1/./Fetch.fs.js";
+import { Types_RequestProperties } from "../../fable_modules/Fable.Fetch.2.6.0/Fetch.fs.js";
+import { keyValueList } from "../../fable_modules/fable-library.4.1.4/MapUtil.js";
+import { unwrap, map, defaultArg } from "../../fable_modules/fable-library.4.1.4/Option.js";
+import { Auto_generateBoxedEncoderCached_437914C6 } from "../../fable_modules/Thoth.Json.10.1.0/./Encode.fs.js";
+import { toString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.10.1.0/Encode.fs.js";
+import { Auto_generateBoxedDecoderCached_Z6670B51 } from "../../fable_modules/Thoth.Json.10.1.0/./Decode.fs.js";
+import { fromString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.10.1.0/Decode.fs.js";
+import { Cmd_none, Cmd_OfPromise_either } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
+import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { createElement } from "react";
 import { rgba } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
-import { createObj } from "../../fable_modules/fable-library.4.1.4/Util.js";
 import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
 import { RouterModule_nav } from "../../fable_modules/Feliz.Router.4.0.0/./Router.fs.js";
-import { empty, ofArray, singleton } from "../../fable_modules/fable-library.4.1.4/List.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
-import { join } from "../../fable_modules/fable-library.4.1.4/String.js";
-
-export class ProjectInfo extends Record {
-    constructor(Title, Professor, Description) {
-        super();
-        this.Title = Title;
-        this.Professor = Professor;
-        this.Description = Description;
-    }
-}
-
-export function ProjectInfo_$reflection() {
-    return record_type("MainStudent.ProjectInfo", [], ProjectInfo, () => [["Title", string_type], ["Professor", string_type], ["Description", string_type]]);
-}
 
 export class Model extends Record {
-    constructor(test) {
+    constructor(projects) {
         super();
-        this.test = (test | 0);
+        this.projects = projects;
     }
 }
 
 export function Model_$reflection() {
-    return record_type("MainStudent.Model", [], Model, () => [["test", int32_type]]);
+    return record_type("HomeStudent.Model", [], Model, () => [["projects", list_type(ProjectInfo_$reflection())]]);
 }
 
 export class Msg extends Union {
-    constructor(Item) {
+    constructor(tag, fields) {
         super();
-        this.tag = 0;
-        this.fields = [Item];
+        this.tag = tag;
+        this.fields = fields;
     }
     cases() {
-        return ["Nothing"];
+        return ["SuccessfulLoad", "ErrorLoad"];
     }
 }
 
 export function Msg_$reflection() {
-    return union_type("MainStudent.Msg", [], Msg, () => [[["Item", int32_type]]]);
+    return union_type("HomeStudent.Msg", [], Msg, () => [[["Item", list_type(ProjectInfo_$reflection())]], [["Item", class_type("System.Exception")]]]);
 }
 
 export function init() {
-    return [new Model(5), Cmd_none()];
+    const defaultModel = new Model(empty());
+    const initialLoad = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
+        let decoder_1, decoder;
+        const url = "http://localhost:1234/projects";
+        return ((decoder_1 = ((decoder = ProjectInfo_get_Decoder(), (path) => ((value) => list(uncurry2(decoder), path, value)))), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
+            let data_2, caseStrategy_2, extra_2;
+            return ((data_2 = void 0, (caseStrategy_2 = void 0, (extra_2 = void 0, (() => {
+                let properties_4;
+                try {
+                    const properties_3 = Helper_withProperties(void 0, (properties_4 = ofArray([new Types_RequestProperties(0, ["GET"]), new Types_RequestProperties(1, [keyValueList(Helper_withContentTypeJson(data_2, empty()), 0)])]), defaultArg(map((data_1_1) => {
+                        let encoder;
+                        return cons(new Types_RequestProperties(2, [(encoder = Auto_generateBoxedEncoderCached_437914C6(obj_type, caseStrategy_2, extra_2), toString(0, encoder(data_1_1)))]), properties_4);
+                    }, data_2), properties_4)));
+                    const pr = PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (Helper_fetch(url, properties_3).then((_arg) => {
+                        let response_1, decoder_1_1, decode;
+                        const response = _arg;
+                        return ((response_1 = response, (decoder_1_1 = defaultArg(decoder_1, Auto_generateBoxedDecoderCached_Z6670B51(list_type(ProjectInfo_$reflection()), unwrap(caseStrategy_2), unwrap(extra_2))), (decode = ((body_1) => fromString(uncurry2(decoder_1_1), body_1)), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (((response_1.ok) ? PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (response_1.text().then((_arg_1) => {
+                            let matchValue, msg, value_1_1;
+                            const body_1_1 = _arg_1;
+                            return Promise.resolve((matchValue = decode(body_1_1), (matchValue.tag === 1) ? ((msg = matchValue.fields[0], new FSharpResult$2(1, [new FetchError(1, [msg])]))) : ((value_1_1 = matchValue.fields[0], new FSharpResult$2(0, [value_1_1])))));
+                        })))) : (Promise.resolve(new FSharpResult$2(1, [new FetchError(2, [response_1])])))).then((_arg_1_1) => {
+                            const result = _arg_1_1;
+                            return Promise.resolve(result);
+                        }))))))));
+                    }))));
+                    return pr.catch((arg_3) => (new FSharpResult$2(1, [new FetchError(3, [arg_3])])));
+                }
+                catch (exn) {
+                    return PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (Promise.resolve(new FSharpResult$2(1, [new FetchError(0, [exn])])))));
+                }
+            })())))).then((_arg_2) => {
+                const result_1 = _arg_2;
+                let response_1_1;
+                if (result_1.tag === 1) {
+                    const error = result_1.fields[0];
+                    throw new Error(Helper_message(error));
+                }
+                else {
+                    const response_2 = result_1.fields[0];
+                    response_1_1 = response_2;
+                }
+                return Promise.resolve(response_1_1);
+            });
+        }))));
+    }));
+    return [defaultModel, Cmd_OfPromise_either(initialLoad, void 0, (arg_4) => (new Msg(0, [arg_4])), (arg_5) => (new Msg(1, [arg_5])))];
 }
 
 export function update(msg, model) {
-    const test = msg;
-    return [model, Cmd_none()];
+    if (msg.tag === 1) {
+        const res = msg.fields[0];
+        toConsole(printf("%A"))(res);
+        return [model, Cmd_none()];
+    }
+    else {
+        const projectList = msg.fields[0];
+        toConsole(printf("%A"))(projectList);
+        return [new Model(projectList), Cmd_none()];
+    }
 }
 
 export function TurquoiseBackground(opacity) {
@@ -138,22 +194,22 @@ export function Table(body) {
     }], ["children", Interop_reactApi.Children.toArray(Array.from(body))]]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])));
 }
 
-export function Row(title, professor, description) {
+export function Row(projectInfo) {
     const children = ofArray([createElement("td", {
-        children: title,
+        children: projectInfo.Title,
     }), createElement("td", {
-        children: professor,
+        children: projectInfo.Professor,
     }), createElement("td", {}), createElement("td", {
-        children: description,
+        children: projectInfo.Description,
     })]);
     return createElement("tr", {
         children: Interop_reactApi.Children.toArray(Array.from(children)),
     });
 }
 
-export const NewTable = Table(ofArray([(() => {
-    let children;
-    const children_2 = singleton((children = ofArray([createElement("th", {
+export function NewTable(model) {
+    let children_2, children, children_4;
+    return Table(ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
         title: "Title",
         children: "Title",
     }), createElement("th", {
@@ -167,29 +223,12 @@ export const NewTable = Table(ofArray([(() => {
         children: "Description",
     })]), createElement("tr", {
         children: Interop_reactApi.Children.toArray(Array.from(children)),
-    })));
-    return createElement("thead", {
+    }))), createElement("thead", {
         children: Interop_reactApi.Children.toArray(Array.from(children_2)),
-    });
-})(), (() => {
-    let children_4, value_20, children_6, value_26;
-    const children_8 = ofArray([(children_4 = ofArray([createElement("td", {
-        children: "A framework for the simulation and evaluation of dynamic bus routing",
-    }), createElement("td", {
-        children: "Cattafi,M.",
-    }), createElement("td", {}), createElement("td", createObj(singleton((value_20 = "«Mobility-on-demand ridesharing services have transformed the transportation landscape by offering commuters the\r\n                                    convenience of point-to-point transportation, while at the same time being more efficient than private vehicles. However, the\r\n                                    benefits these services have to offer are fundamentally limited by their capacities, and are often seen as taxi equivalents.» [1]\r\n                                    In this project we consider «the concept of “dynamic bus routing” (DBR). Like ridesharing services, such buses would not follow\r\n                                    predefined routes nor schedules, but rather constantly generate their routes in real time to most efficiently serve commuters\'\r\n                                    travel patterns.» [1]\r\n                                    Attempts along similar lines were also made in London, for example the Citymapper Smartbus [2] which was discontinued for a\r\n                                    variety of reasons [3].\r\n                                    The main deliverable will be a simulation (including visualisation) and evaluation framework. Routing algorithms will also be\r\n                                    implemented and tested.\r\n                                    [1]: Koh et al., Dynamic Bus Routing: A study on the viability of on-demand high-capacity ridesharing as an alternative to fixedroute buses in Singapore\r\n                                    2018 21st International Conference on Intelligent Transportation Systems\r\n                                    https://ieeexplore.ieee.org/document/8569834\r\n                                    [2]: Introducing the Citymapper Smartbus, 2017\r\n                                    https://medium.com/citymapper/smartbus-7b6848241526\r\n                                    [3]: Ending Ride to focus on Pass, 2019\r\n                                    https://medium.com/@Citymapper/ending-ride-to-focus-on-pass-d9ada3021831", ["children", value_20]))))]), createElement("tr", {
+    })), (children_4 = map_1(Row, model.projects), createElement("tbody", {
         children: Interop_reactApi.Children.toArray(Array.from(children_4)),
-    })), (children_6 = ofArray([createElement("td", {
-        children: "Learning to control a pendulum with data-driven Model Predictive Control ",
-    }), createElement("td", {
-        children: "Angeli,D.",
-    }), createElement("td", {}), createElement("td", createObj(singleton((value_26 = "Pendulums are examples of very non-linear and unstable processes and serve as a toy model of more complicated devices in\r\n                                    real-world applications. The goal of the project is to device a Predictive Control algorithm that gradually adapts and learns the\r\n                                    dynamics of the pendulum (nonlinear and hence \'new\' each time a different region in state-space is explored) in order to\r\n                                    balance it in the upwards position, viz. around an unstable equilibrium, or dampen it around the downwards position. This can\r\n                                    be challenging even in the presence of a model due to potential uncertainties and disturbances and we would like to compare\r\n                                    the traditional approach with one where the model is not assumed to be known, while the pendulum is treated as a black-box,\r\n                                    with as little prior information as possible.\r\n                                    Desirable Background: Control Engineering, Model predictive Control, Optimisation, MATLAB", ["children", value_26]))))]), createElement("tr", {
-        children: Interop_reactApi.Children.toArray(Array.from(children_6)),
-    }))]);
-    return createElement("tbody", {
-        children: Interop_reactApi.Children.toArray(Array.from(children_8)),
-    });
-})()]));
+    }))]));
+}
 
 export const PreferenceTable = Table(ofArray([(() => {
     let children;
@@ -319,14 +358,16 @@ export function BulmaTile(classes, styles, props) {
 
 export const TileCss = ofArray([TurquoiseBackgroundRGBA(0.7), ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["overflow", "hidden"]]);
 
-export const Tiles = BulmaTile(singleton("is-ancestor"), ofArray([["padding", 50 + "px"], ["height", 95 + "vh"]]), ofArray([BulmaTile(ofArray(["is-8", "is-vertical", "is-parent"]), empty(), ofArray([BulmaTile(ofArray(["tile", "is-child", "box", "test"]), TileCss, ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "New Projects"])))), NewTable])), BulmaTile(ofArray(["is-child", "box", "test"]), TileCss, ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "Preferences"])))), PreferenceTable]))])), BulmaTile(singleton("is-parent"), empty(), singleton(BulmaTile(ofArray(["is-child", "box"]), TileCss, ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "Notifications"])))), Media, Media, Media, Media, Media]))))]));
+export function Tiles(model) {
+    return BulmaTile(singleton("is-ancestor"), ofArray([["padding", 50 + "px"], ["height", 95 + "vh"]]), ofArray([BulmaTile(ofArray(["is-8", "is-vertical", "is-parent"]), empty(), ofArray([BulmaTile(ofArray(["tile", "is-child", "box", "test"]), TileCss, ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "New Projects"])))), NewTable(model)])), BulmaTile(ofArray(["is-child", "box", "test"]), TileCss, ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "Preferences"])))), PreferenceTable]))])), BulmaTile(singleton("is-parent"), empty(), singleton(BulmaTile(ofArray(["is-child", "box"]), TileCss, ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "Notifications"])))), Media, Media, Media, Media, Media]))))]));
+}
 
 export function view(model, dispatch) {
     let elems;
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         position: "relative",
-    }], (elems = [TurquoiseBackground(0.5), ImageBackground, NavBar, Tiles], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
+    }], (elems = [TurquoiseBackground(0.5), ImageBackground, NavBar, Tiles(model)], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
 }
 
-//# sourceMappingURL=MainStudent.fs.js.map
+//# sourceMappingURL=HomeStudent.fs.js.map

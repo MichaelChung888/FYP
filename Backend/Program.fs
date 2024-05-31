@@ -15,7 +15,7 @@ let webApp =
     choose [
         route "/" >=> GET >=> text "Server Online"
         route "/login" >=> POST >=> warbler (fun _ -> loginHttpHandler)
-        route "/project" >=> GET >=> warbler (fun _ -> projectHttpHandler)
+        route "/projects" >=> GET >=> warbler (fun _ -> projectHttpHandler)
     ]
     // Note: warbler is used when the route is returning a dynamic (not static) response, hence wrap the function in a "warbler()"
     // This is because functions in f# are eagerly evaluated, hence a normal route will only be evaluated the first time.
@@ -36,25 +36,20 @@ let configureApp (app : IApplicationBuilder) =
     | true  ->
         app.UseDeveloperExceptionPage()
     | false ->
-        app .UseGiraffeErrorHandler(errorHandler)
-            // .UseAuthentication() // If you were doing authentication
-            .UseHttpsRedirection())
-
-        .UseCors(fun builder -> builder.WithOrigins("http://localhost:5173").AllowAnyMethod().AllowAnyHeader() |> ignore)
-        //.UseStaticFiles() // If sending whole files
-        .UseGiraffe(webApp)
-    (*
-    app.UseGiraffeErrorHandler(errorHandler)
-       .UseGiraffe webApp
-    app.UseCors(fun builder -> builder.WithOrigins("http://localhost:1234").AllowAnyMethod().AllowAnyHeader() |> ignore)
-       |> ignore
-    *)
-
+        app.UseGiraffeErrorHandler(errorHandler)
+           //.UseAuthentication() // If you were doing authentication
+           .UseHttpsRedirection())
+           .UseCors(fun builder -> builder.WithOrigins("http://localhost:5173").AllowAnyMethod()
+                                                                               .AllowAnyHeader()
+                                                                               .AllowCredentials() 
+                                                                               |> ignore)
+           //.UseStaticFiles() // If sending whole files
+           .UseGiraffe(webApp)
 
 let configureServices (services : IServiceCollection) =
     services.AddCors()    |> ignore
     services.AddGiraffe() |> ignore
-
+    
 [<EntryPoint>]
 let main _ =
     Host.CreateDefaultBuilder()

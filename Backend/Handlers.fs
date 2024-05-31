@@ -11,6 +11,11 @@ open Giraffe
 open System.Data
 open Newtonsoft.Json
 
+let options = new CookieOptions();
+options.SameSite = SameSiteMode.None |> ignore
+options.Secure = true |> ignore
+options.HttpOnly = true |> ignore
+
 //--------------------------------------------------------------------------------------//
 //                            Opening Connection to Database                            //
 //--------------------------------------------------------------------------------------//
@@ -37,6 +42,7 @@ let ExecuteQuery (command: SqlCommand) : string =
 //                                      Main code                                       //
 //--------------------------------------------------------------------------------------//
 
+(*
 let loginHttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
@@ -50,8 +56,33 @@ let loginHttpHandler =
             let res = query |> List.tryFind (fun record -> record.Username = data.Username && record.Password = data.Password)
 
             match res with 
-            | Some result -> ctx.SetStatusCode 200; return! json result next ctx // ("Logged In")
-            | None -> ctx.SetStatusCode 400; return! json ("Incorrect Username or Password") next ctx // Task.FromResult None        
+            | Some result ->                 
+                ctx.SetStatusCode 200 
+                ctx.Response.Cookies.Append("PersonId", (string) result.PersonId, options)
+                ctx.Response.Cookies.Append("Username", (string) result.Username, options)
+                return! json result next ctx
+            | None -> ctx.SetStatusCode 400; return! json ("Incorrect Username or Password") next ctx      
+        }
+*)
+
+let loginHttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            let! data = ctx.BindJsonAsync<LoginInfo>()
+
+            let loginAuthenticateCmd = new SqlCommand ("SELECT eeid, CID, Categ, RegWant, Forenames FROM dbo.eedbo_eepx WHERE eeid = @eeid;", conn)
+            loginAuthenticateCmd.Parameters.AddWithValue("@eeid", data.eeid) |> ignore
+            let jsonQuery = ExecuteQuery(loginAuthenticateCmd)
+            
+            let query = JsonConvert.DeserializeObject<List<AccountInfo>>(jsonQuery);
+            let res = query |> List.tryFind (fun _ -> true) // Returns 'Some result' if query found a result, else 'None'
+
+            match res with 
+            | Some res ->  
+                ctx.SetStatusCode 200 
+                ctx.Response.Cookies.Append("eeid", res.eeid.ToString(), options)
+                return! json res next ctx
+            | None -> ctx.SetStatusCode 400; return! json ("Incorrect eeid") next ctx      
         }
 
 let projectHttpHandler = 

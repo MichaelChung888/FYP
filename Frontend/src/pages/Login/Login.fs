@@ -2,7 +2,9 @@ module Login
 
 open Shared
 
+open Thoth.Json
 open Thoth.Fetch
+open Fetch
 
 open Elmish
 
@@ -24,40 +26,38 @@ type Model = {
 }
 
 type Msg =
-    | UsernameChanged of string
-    | PasswordChanged of string
+    | InputChanged of string
     | Submit of Browser.Types.Event
     | Success of AccountInfo
     | Error of exn
 
 //--------------------------------------------------------------------------------------//
-//                        Model Initalise [init : unit -> Model]                        //
+//                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
 let init () : Model * Cmd<Msg> = 
-    { login = { Username = ""; Password = "" } }, Cmd.none
+    { login = { eeid = "" } }, Cmd.none
 
 //--------------------------------------------------------------------------------------//
-//                    Model Update [update : Msg -> Model -> Model]                     //
+//               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
 //--------------------------------------------------------------------------------------//
 
 let update (msg: Msg) (model: Model) =
     match msg with
-    | UsernameChanged newUsername ->
-        { model with login = { model.login with Username = newUsername } }, Cmd.none
-    | PasswordChanged newPassword ->
-        { model with login = { model.login with Password = newPassword} }, Cmd.none
+    | InputChanged newInput ->
+        { model with login = { model.login with eeid = newInput } }, Cmd.none
     | Submit ev ->
         ev.preventDefault()
         let handleSubmit() = 
             promise {
                 let url = "http://localhost:1234/login"
-                let data = LoginInfo.Encoder(model.login)
-                return! Fetch.post(url, model.login, decoder=AccountInfo.Decoder) //decoder=Decode.string
+                return! Fetch.post(url=url, 
+                                   data=model.login, 
+                                   decoder=AccountInfo.Decoder, 
+                                   properties=[Credentials RequestCredentials.Include])
             }
         model, Cmd.OfPromise.either handleSubmit () Success Error
     | Success res ->
-    //  Router.navigatePath("main-student")
         printfn "%A" res
         model, Cmd.none
     | Error res ->
@@ -73,7 +73,7 @@ let TurquoiseBackground opacity =
         prop.style [style.position.absolute; style.height (length.perc 100); style.width (length.perc 100); style.opacity opacity; style.zIndex -1; style.backgroundColor turqouise]
     ]
 
-let TurquoiseBackgroundRGB opacity =
+let TurquoiseBackgroundStyle opacity =
     style.backgroundColor (rgba (175, 238, 238, opacity))
 
 let ImageBackground = 
@@ -86,14 +86,14 @@ let ImageBackground =
 let UsernameInput dispatch =
     Bulma.field.div [
         prop.children [
-            Bulma.label [ prop.text "Username" ] 
+            Bulma.label [ prop.text "EE ID" ] 
             Html.div [
                 prop.classes [Bulma.Control; Bulma.HasIconsLeft]
                 prop.children [
                     Bulma.input.text [
                         prop.required true
-                        prop.placeholder "Enter your Shortcode Username"
-                        prop.onTextChange (UsernameChanged >> dispatch)
+                        prop.placeholder "Enter your EEID"
+                        prop.onTextChange (InputChanged >> dispatch)
                     ]
                     Bulma.icon [
                         Bulma.icon.isSmall
@@ -101,33 +101,6 @@ let UsernameInput dispatch =
                         prop.children [
                             Html.i [
                                 prop.classes ["fas fa-user"]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    ]
-
-let PasswordInput dispatch = 
-    Bulma.field.div [
-        prop.children [
-            Bulma.label [ prop.text "Password" ] 
-            Html.div [
-                prop.classes [Bulma.Control; Bulma.HasIconsLeft]
-                prop.children [
-                    Bulma.input.text [
-                        prop.type'.password
-                        prop.required true
-                        prop.placeholder "Enter your Password"
-                        prop.onTextChange (PasswordChanged >> dispatch)
-                    ]
-                    Bulma.icon [
-                        Bulma.icon.isSmall
-                        Bulma.icon.isLeft
-                        prop.children [
-                            Html.i [
-                                prop.className "fas fa-lock"
                             ]
                         ]
                     ]
@@ -149,7 +122,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
             ImageBackground
 
             Html.div [
-                prop.style [TurquoiseBackgroundRGB 0.7; style.position.relative; style.borderStyle.solid; style.borderColor mediumTurqouise; style.width (length.px 400); style.height (length.px 550); style.padding (length.px 10); style.display.flex; style.flexDirection.column; style.alignItems.center; style.justifyContent.center; style.borderRadius (length.perc 3)] //style.backgroundColor (rgb (0,0,0))
+                prop.style [TurquoiseBackgroundStyle 0.7; style.position.relative; style.borderStyle.solid; style.borderColor mediumTurqouise; style.width (length.px 400); style.height (length.px 550); style.padding (length.px 10); style.display.flex; style.flexDirection.column; style.alignItems.center; style.justifyContent.center; style.borderRadius (length.perc 3)] //style.backgroundColor (rgb (0,0,0))
                 prop.children [
                     Html.section [
                         prop.classes ["title"; "is-2"; Bulma.Field]
@@ -168,7 +141,6 @@ let view (model: Model) (dispatch: Msg -> unit) =
                         prop.children [
 
                             UsernameInput (dispatch)
-                            PasswordInput (dispatch)
                             
                             Html.div [
                                 prop.style [style.marginTop (length.px 35)]
