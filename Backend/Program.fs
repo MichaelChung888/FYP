@@ -5,6 +5,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.AspNetCore.Cors
+//open Microsoft.AspNetCore.Authentication.JwtBearer
 
 open Handlers
 open Giraffe
@@ -37,18 +38,55 @@ let configureApp (app : IApplicationBuilder) =
         app.UseDeveloperExceptionPage()
     | false ->
         app.UseGiraffeErrorHandler(errorHandler)
-           //.UseAuthentication() // If you were doing authentication
            .UseHttpsRedirection())
            .UseCors(fun builder -> builder.WithOrigins("http://localhost:5173").AllowAnyMethod()
                                                                                .AllowAnyHeader()
                                                                                .AllowCredentials() 
                                                                                |> ignore)
-           //.UseStaticFiles() // If sending whole files
-           .UseGiraffe(webApp)
+            //.UseStaticFiles()
+            //.UseAuthentication() // <-- Add here, before UseGiraffe
+            .UseGiraffe(webApp)
 
 let configureServices (services : IServiceCollection) =
     services.AddCors()    |> ignore
     services.AddGiraffe() |> ignore
+(*
+    services.AddAuthentication(fun opt -> 
+        // See Note 1
+        opt.DefaultAuthenticateScheme <- JwtBearerDefaults.AuthenticationScheme
+
+        // Not needed, see Note 2 below
+        // opt.DefaultChallengeScheme <- JwtBearerDefaults.AuthenticationScheme
+
+    // Second, we configure our middleware
+    ).AddJwtBearer(fun (opt : JwtBearerOptions)-> 
+
+        // You can set general options of JWT authentication here.  
+        // Find more details at:
+        //   https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions?view=aspnetcore-5.0
+        // Note, however, most of it is not relevant for our simple case
+        
+        opt.TokenValidationParameters <- TokenValidationParameters(
+            // You can configure the actual authentication parameters and options.  
+            // See more at:
+            //   https://docs.microsoft.com/en-us/dotnet/api/microsoft.identitymodel.tokens.tokenvalidationparameters?view=azure-dotnet
+
+            // SecurityKey that is to be used for signature validation.
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+
+            // boolean to control if the issuer will be validated during token validation.
+            ValidateIssuer = true,
+
+            // String that represents a valid issuer that will be used to check against the token's issuer. The default is null.
+            ValidIssuer = issuer,
+
+            // boolean to control if the audience will be validated during token validation.
+            ValidateAudience = true,
+
+            // string that represents a valid audience that will be used to check against the token's audience. The default is null.
+            ValidAudience = audience
+        )) |> ignore
+*)
     
 [<EntryPoint>]
 let main _ =

@@ -1,7 +1,7 @@
 import { Record } from "../Frontend/src/fable_modules/fable-library.4.1.4/Types.js";
 import { record_type, string_type } from "../Frontend/src/fable_modules/fable-library.4.1.4/Reflection.js";
-import { object } from "../Frontend/src/fable_modules/Thoth.Json.10.1.0/Encode.fs.js";
-import { string, object as object_1 } from "../Frontend/src/fable_modules/Thoth.Json.10.1.0/Decode.fs.js";
+import { object } from "../Frontend/src/fable_modules/Thoth.Json.10.2.0/Encode.fs.js";
+import { string, object as object_1 } from "../Frontend/src/fable_modules/Thoth.Json.10.2.0/Decode.fs.js";
 
 export class LoginInfo extends Record {
     constructor(eeid) {
