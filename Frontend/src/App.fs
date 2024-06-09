@@ -10,13 +10,16 @@ open Login
 open HomeStudent
 open Projects
 
+open Fable.Core.JsInterop
+importSideEffects "./styles.css"
+
 //--------------------------------------------------------------------------------------//
 //                                        Types                                         //
 //--------------------------------------------------------------------------------------//
 
 type ApplicationUser =
     | Anonymous
-    | LoggedIn of AccountInfo
+    | LoggedIn of Person
 
 type Url =
     | LoginUrl
@@ -38,9 +41,10 @@ type Msg =
     | UrlChanged of Url
 
 type Model = {
-    User : ApplicationUser
-    CurrentUrl: Url
-    CurrentPage: Page
+    user : ApplicationUser
+    currentUrl: Url
+    currentPage: Page
+    token: string
 }
 
 //--------------------------------------------------------------------------------------//
@@ -50,22 +54,23 @@ type Model = {
 let parseUrl = function
     | [] -> EmptyUrl
     | ["login"] -> LoginUrl
-    | ["main-student"] -> HomeStudentUrl
-    | ["main-student"; "projects"] -> ProjectsUrl
+    | ["home-student"] -> HomeStudentUrl
+    | ["home-student"; "projects"] -> ProjectsUrl
     | _ -> NotFoundUrl
 
 let init () : Model * Cmd<Msg> = 
     let initialUrl = Router.currentPath() |> parseUrl
     let defaultModel = {
-        User = Anonymous
-        CurrentUrl = initialUrl
-        CurrentPage = NotFoundPage
+        user = Anonymous
+        currentUrl = initialUrl
+        currentPage = NotFoundPage
+        token = ""
     }
     
     match initialUrl with
     | LoginUrl ->
         let page, msg = Login.init ()
-        { defaultModel with CurrentPage = (LoginPage page) }, Cmd.map LoginMsg msg
+        { defaultModel with currentPage = (LoginPage page) }, Cmd.map LoginMsg msg
 
     | HomeStudentUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
@@ -74,7 +79,7 @@ let init () : Model * Cmd<Msg> =
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState) 
 
     | NotFoundUrl ->
-        { defaultModel with CurrentPage = NotFoundPage }, Cmd.none
+        { defaultModel with currentPage = NotFoundPage }, Cmd.none
 
     | EmptyUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState) 
@@ -85,49 +90,51 @@ let init () : Model * Cmd<Msg> =
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
 
-    let showPage (page : Page) : Model =
-        { model with CurrentPage = page }
+    let updatePage (page : Page) : Model =
+        { model with currentPage = page }
 
-    match msg, model.CurrentPage with 
+    let showPage (page : Page) (url : Url): Model =
+        { model with currentPage = page; currentUrl = url}
+
+    match msg, model.currentPage with 
     | LoginMsg msg, LoginPage page ->
         match msg with
-        | Success accountInfo ->
-            printfn "%A" accountInfo
-            { model with User = (LoggedIn accountInfo) }, Cmd.navigatePath("main-student")
+        | Success res ->
+            { model with user = (LoggedIn res.person); token = res.token }, Cmd.navigatePath("home-student")
         | msg ->
             let newPage, newMsg = Login.update msg page
-            showPage (LoginPage newPage), Cmd.map LoginMsg newMsg
+            updatePage (LoginPage newPage), Cmd.map LoginMsg newMsg
 
     | HomeStudentMsg msg, HomeStudentPage page ->
         let newPage, newMsg = HomeStudent.update msg page
-        showPage (HomeStudentPage newPage), Cmd.map HomeStudentMsg newMsg
+        updatePage (HomeStudentPage newPage), Cmd.map HomeStudentMsg newMsg
 
     | ProjectsMsg msg, ProjectsPage page ->
         let newPage, newMsg = Projects.update msg page
-        showPage (ProjectsPage newPage), Cmd.map ProjectsMsg newMsg
+        updatePage (ProjectsPage newPage), Cmd.map ProjectsMsg newMsg
 
     | UrlChanged nextUrl, _ ->
         match nextUrl with
         | LoginUrl -> 
             let newPage, newMsg = Login.init ()
-            showPage (LoginPage newPage), Cmd.map LoginMsg newMsg
+            showPage (LoginPage newPage) LoginUrl, Cmd.map LoginMsg newMsg
 
         | HomeStudentUrl ->
-            match model.User with
+            match model.user with
             | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
             | LoggedIn _ ->
-                let newPage, newMsg = HomeStudent.init ()
-                showPage (HomeStudentPage newPage), Cmd.map HomeStudentMsg newMsg
+                let newPage, newMsg = HomeStudent.init model.token
+                showPage (HomeStudentPage newPage) HomeStudentUrl, Cmd.map HomeStudentMsg newMsg
 
         | ProjectsUrl ->
-            match model.User with
+            match model.user with
             | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
             | LoggedIn _ ->
-                let newPage, newMsg = Projects.init ()
-                showPage (ProjectsPage newPage), Cmd.map ProjectsMsg newMsg
+                let newPage, newMsg = Projects.init model.token
+                showPage (ProjectsPage newPage) ProjectsUrl, Cmd.map ProjectsMsg newMsg
 
         | NotFoundUrl ->
-            showPage NotFoundPage, Cmd.none
+            showPage NotFoundPage NotFoundUrl, Cmd.none
 
         | EmptyUrl ->
             model, Cmd.navigatePath("login", HistoryMode.ReplaceState) 
@@ -144,7 +151,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
         router.pathMode
         router.onUrlChanged (parseUrl >> UrlChanged >> dispatch)
         router.children [
-            match model.CurrentPage with
+            match model.currentPage with
             | LoginPage page ->
                 Login.view page (Msg.LoginMsg >> dispatch)
             | HomeStudentPage page ->

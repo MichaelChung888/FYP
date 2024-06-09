@@ -1,5 +1,9 @@
 module Projects
 
+open Shared
+
+open System
+
 open Thoth.Json
 open Thoth.Fetch
 open Fetch
@@ -16,31 +20,143 @@ open Zanaptak.TypedCssClasses
 type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css", Naming.PascalCase>
 
 //--------------------------------------------------------------------------------------//
+//                                Categories and Streams                                //
+//--------------------------------------------------------------------------------------//
+
+let categories = ["embedded_systems"; "control_engineering"; "electronics"; "renewable_energy"; 
+"biomedical_engineering"; "system_optimisation_and_modelling"; "high_performance_computing"; 
+"computer_vision"; "digital_signal_processing"; "instrumentation_and_measurement"; "cybersecurity"; 
+"robotics"; "signal_processing"; "power_systems"; "machine_learning"; "photonics"; "other"; "discrete_maths"; 
+"mathematics_signals_and_systems"; "software_systems"; "communications"; "control_systems"; "information_processing"; 
+"instruction_architectures_and_compilers"; "circuit_and_systems"; "power_electronics_and_power_systems"; "electromagnetism"]
+
+let streams = ["E"; "I"; "T"; "D"; "J"]
+
+//--------------------------------------------------------------------------------------//
 //                                        Types                                         //
 //--------------------------------------------------------------------------------------//
 
+type FilterType = 
+    | Category
+    | Stream
+
 type Model = {
-    test: int
+    projects: List<Project>
+    preference: PreferenceResponse
+    token: string
+    modalState: bool
+    addProjectState: bool
+    searchTitle: string
+    selectedCategories: List<string>
+    selectedStreams: List<string>
+    selectedProject: Project
+    selectedProjectRank: int
+}
+
+type InitalLoad = {
+    projects: List<Project>
+    preference: PreferenceResponse
 }
 
 type Msg =
-    | Nothing of int
+    | SuccessfulLoad of InitalLoad // Initial fetch requests to the server were successful
+    | ErrorLoad of exn // Fetch request to the server failed
+    | OpenModal of Project // Selected a project to preview
+    | CloseModal // Close the selected project preview
+    | OpenAddProject // Opens the menu to add the selected project to preferences
+    | CloseAddProject // Closes the menu to add the selected project to preferences
+    | RankAddProject of int // Selecting a rank to preference the selected project
+    | SearchTitleChanged of string // Changing Search Title filter
+    | ClickedCategoryTag of string // Clicked Search Category tag filter
+    | ClickedStreamTag of string // Clicked Stream Category tag filter
+    | SearchRequest // Sends a server request containing project filters
+    | FetchedProjectsLoad of List<Project> // Recieving the filtered projects
 
 //--------------------------------------------------------------------------------------//
 //                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
-let init () : Model * Cmd<Msg> = 
-    { test = 5 }, Cmd.none
+let init token : Model * Cmd<Msg> = 
+    let defaultModel = { projects = []; 
+                        preference = PreferenceResponse.Default;
+                        token = token; 
+                        modalState = false; 
+                        addProjectState = false;
+                        searchTitle = "";
+                        selectedCategories = [];
+                        selectedStreams = [];
+                        selectedProject = Project.Default;
+                        selectedProjectRank = 0}
+    let initialLoad() = 
+        promise {
+            let newProjectsUrl = "http://localhost:1234/new-projects"
+            let preferenceUrl = "http://localhost:1234/preferences"
+            
+            let! projects =  Fetch.get(url=newProjectsUrl, 
+                                       decoder=(Decode.list Project.Decoder),
+                                       headers=[Authorization $"Bearer {token}"]) //properties=[Credentials RequestCredentials.Include]
+            let! preference =  Fetch.get(url=preferenceUrl, 
+                                         decoder=(PreferenceResponse.Decoder),
+                                         headers=[Authorization $"Bearer {token}"]) 
+            return { projects = projects; preference = preference }
+            
+        }
+    defaultModel, Cmd.OfPromise.either initialLoad () SuccessfulLoad ErrorLoad
 
 //--------------------------------------------------------------------------------------//
 //               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
 //--------------------------------------------------------------------------------------//
 
-let update (msg: Msg) (model: Model) =
+let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
-    | test ->
+    | SuccessfulLoad initialLoad ->
+        { model with projects = initialLoad.projects; preference = initialLoad.preference }, Cmd.none
+    | ErrorLoad res ->
+        printfn "%A" res
         model, Cmd.none
+    | OpenModal project ->
+        { model with modalState = true; selectedProject = project }, Cmd.none
+    | CloseModal ->
+        { model with modalState = false; addProjectState = false; selectedProjectRank = 0 }, Cmd.none
+    | OpenAddProject ->
+        { model with addProjectState = true }, Cmd.none
+    | CloseAddProject ->
+        { model with addProjectState = false; selectedProjectRank = 0 }, Cmd.none
+    | RankAddProject rank ->
+        { model with selectedProjectRank = rank }, Cmd.none
+    | SearchTitleChanged title ->
+        { model with searchTitle = title }, Cmd.ofMsg SearchRequest
+    | ClickedCategoryTag tag ->
+        let sc = model.selectedCategories
+        match (List.exists (fun c -> c = tag) sc) with
+        | true -> // Already in list, hence removing tag from search
+            { model with selectedCategories = List.filter (fun c -> c <> tag) sc}, Cmd.ofMsg SearchRequest
+        | false -> // Not in list, hence adding tag to search
+            { model with selectedCategories = sc @ [tag]}, Cmd.ofMsg SearchRequest
+    | ClickedStreamTag tag ->
+        let ss = model.selectedStreams
+        match (List.exists (fun c -> c = tag) ss) with
+        | true -> // Already in list, hence removing tag to search
+            { model with selectedStreams = List.filter (fun c -> c <> tag) ss}, Cmd.ofMsg SearchRequest
+        | false -> // Not in list, hence adding tag to search
+            { model with selectedStreams = ss @ [tag]}, Cmd.ofMsg SearchRequest
+    | SearchRequest ->
+        let data = {
+            title = model.searchTitle;
+            categories = model.selectedCategories;
+            streams = model.selectedStreams
+        }
+        let searchRequest() = 
+            promise {
+                let url = "http://localhost:1234/search-projects"
+                return! Fetch.post(url=url, 
+                                  data=data,
+                                  decoder=(Decode.list Project.Decoder),
+                                  headers=[Authorization $"Bearer {model.token}"]) //properties=[Credentials RequestCredentials.Include]
+            }
+        model, Cmd.OfPromise.either searchRequest () FetchedProjectsLoad ErrorLoad
+    | FetchedProjectsLoad projects ->
+        { model with projects = projects }, Cmd.none
 
 //--------------------------------------------------------------------------------------//
 //                                 Render Subcomponents                                 //
@@ -64,33 +180,31 @@ let ImageBackground =
 
 let NavBar =
     Bulma.navbar [
-        prop.style [style.backgroundColor mediumTurqouise]
+        prop.style [style.backgroundColor mediumTurqouise; style.fontWeight 700]
         prop.children [
             Bulma.navbarBrand.div [
-                prop.onClick (fun e -> Router.navigatePath("main-student"))
+                prop.onClick (fun e -> Router.navigatePath("home-student"))
                 prop.children [ Bulma.navbarItem.a [ Html.img [ prop.src "https://bulma.io/images/bulma-logo-white.png"; prop.height 28; prop.width 112] ] ]
             ]
             Bulma.navbarMenu [
                 Bulma.navbarStart.div [
-                    Bulma.navbarItem.a [ prop.text "Projects"; prop.onClick (fun e -> Router.navigatePath("main-student", "projects")) ]
+                    Bulma.navbarItem.a [ prop.text "Projects"; prop.onClick (fun e -> Router.navigatePath("home-student", "projects")) ]
                     Bulma.navbarItem.a [ prop.text "Preferences" ]
-                    Bulma.navbarItem.a [ prop.text "Jobs" ]
+                    Bulma.navbarItem.a [ prop.text "Propose a Project" ]
                 ]
                 Bulma.navbarEnd.div [
                     Bulma.navbarItem.div [
                         Bulma.buttons [
-                            Bulma.button.a [ Html.strong "Sign up"]
-                            Bulma.button.a [ prop.text "Log In" ]
+                            Bulma.button.a [ prop.text "Log Out" ]
                         ]
                     ]
                 ]
             ]
         ]
     ]  
-
 // ---- Search ---------------------------------------------------------------------------
 
-let ProjectInput = 
+let ProjectInput (dispatch: Msg -> unit) = 
     Bulma.field.div [
         prop.children [
             Bulma.label [
@@ -102,13 +216,14 @@ let ProjectInput =
                     Bulma.input.text [
                         prop.required true
                         prop.placeholder "Enter your Query"
+                        prop.onTextChange (SearchTitleChanged >> dispatch)
                     ]
                     Bulma.icon [
                         Bulma.icon.isSmall
                         Bulma.icon.isLeft
                         prop.children [
                             Html.i [
-                                prop.className "fas fa-lock"
+                                prop.className "fas fa-search"
                             ]
                         ]
                     ]
@@ -133,7 +248,7 @@ let ProfessorInput =
                         Bulma.icon.isLeft
                         prop.children [
                             Html.i [
-                                prop.className "fas fa-lock"
+                                prop.className "fas fa-search"
                             ]
                         ]
                     ]
@@ -145,62 +260,74 @@ let ProfessorInput =
 // ---- Search ---------------------------------------------------------------------------
 
 let TileCss = 
-    [TurquoiseBackgroundRGBA 0.7; style.borderStyle.solid; style.borderColor mediumTurqouise]
+    [TurquoiseBackgroundRGBA 0.7; style.borderStyle.solid; style.borderColor mediumTurqouise; style.padding (length.perc 1.5)]
 
-let SearchButton = 
-    Bulma.button.button [
-        Bulma.color.isInfo
-        prop.text "Search"
-    ]
-
-let BulmaTag (styles: IStyleAttribute list) (text: string) = 
+let TagFilter (dispatch: Msg -> unit) (model: Model) (filterType: FilterType) (filter: string)  = 
     Bulma.tag [ 
-        prop.text text
-        prop.style ( List.append [style.marginBottom 10; style.marginRight 10] styles )
+        prop.classes [ "filter-tag" ]
+        prop.text (getFormattedCategory filter)
+        prop.style [style.marginBottom 10; style.marginRight 10; style.cursor.pointer]
+        match filterType with
+        | Category ->
+            prop.onClick (fun _ -> dispatch (ClickedCategoryTag filter))
+            if (List.exists (fun c -> c = filter) model.selectedCategories) then Bulma.color.isInfo
+        | Stream ->
+            prop.onClick (fun _ -> dispatch (ClickedStreamTag filter))
+            if (List.exists (fun c -> c = filter) model.selectedStreams) then Bulma.color.isInfo        
     ] 
 
-let BulmaTile (classes: string list) (styles: IStyleAttribute list) (props: ReactElement list) = 
-    Bulma.tile [
-        prop.classes classes
-        prop.style styles
-        prop.children props
+let SearchFilters (dispatch: Msg -> unit) (model: Model) = [
+    ProjectInput dispatch
+    ProfessorInput
+
+    Bulma.label [ prop.text "Relevant Modules and Skills" ] 
+    for c in categories do
+        TagFilter dispatch model FilterType.Category c
+
+    Bulma.label [ prop.text "Stream" ] 
+    for s in streams do
+        TagFilter dispatch model FilterType.Stream s
+]
+    
+// ---- Table ----------------------------------------------------------------------------
+
+let Tag (model: Model) (filter: string) =
+    Bulma.tag [
+        prop.text (getFormattedCategory filter)
+        prop.style [style.marginBottom 10; style.marginRight 10]
+        if (List.exists (fun c -> c = filter) model.selectedCategories) then Bulma.color.isInfo
     ]
 
-let Search = 
-    BulmaTile [Bulma.IsAncestor] [] [
-        BulmaTile [Bulma.IsParent; Bulma.IsVertical] [] [
-            BulmaTile [Bulma.IsChild; Bulma.Box] TileCss [
-                ProjectInput
-                ProfessorInput
-            ]
-            BulmaTile [Bulma.IsChild; Bulma.Box] TileCss [
-                Bulma.label [ prop.text "Relevant Modules and Skills" ] 
-                BulmaTag [] "Communications"
-                BulmaTag [] "Information Processing" 
-                BulmaTag [] "Control Systems"
-                BulmaTag [] "IAC"
-                BulmaTag [] "Software Systems" 
-                BulmaTag [] "Discrete Maths" 
-                BulmaTag [] "Maths"
-                BulmaTag [] "Software" 
-                BulmaTag [] "Hardware"
-            ]
-            BulmaTile [Bulma.IsChild; Bulma.Box] TileCss [
-                Bulma.label [ prop.text "Degree" ] 
-                BulmaTag [] "MEng"
-                BulmaTag [] "BEng"
-            ]
-            BulmaTile [Bulma.IsChild] [] [
-                SearchButton
-            ]
+let TableCategories (model: Model) (categories: string) =
+    (categories.Split ',') |> Array.toList |> List.map (Tag model)
+
+let TableRow (dispatch: Msg -> unit) (model: Model) (projectInfo: Project)  = 
+    Html.tr [
+        prop.classes [ "table-row" ]
+        prop.onClick (fun _ -> dispatch (OpenModal projectInfo))
+        prop.style [style.cursor.pointer]
+        prop.children [
+            Html.td [prop.text projectInfo.title]
+            Html.td []
+            Html.td [prop.text projectInfo.p1]
+            Html.td [prop.text projectInfo.p2]
+            Html.td [prop.text projectInfo.p3]
+            Html.td [prop.text projectInfo.p4]
+            Html.td [prop.text projectInfo.p5]
+            Html.td [prop.text projectInfo.p6]
+            Html.td [prop.text projectInfo.p7]
+            Html.td [prop.text projectInfo.p8]
+            Html.td [prop.text projectInfo.p9]
+            Html.td [prop.text projectInfo.p10]
+            Html.td (TableCategories model projectInfo.categories)
+            Html.td [prop.text (projectInfo.updated.ToString "yyyy/MM/dd")]
         ]
     ]
 
-
-// ---- Table ----------------------------------------------------------------------------
 let Table (body: ReactElement list) = 
     Html.div [
         prop.style [style.overflowY.auto; style.height (length.perc 95)]
+        prop.classes [ "scrollbar" ]
         prop.children [
             Bulma.table [
                 prop.style [style.width (length.perc 100)]
@@ -209,77 +336,187 @@ let Table (body: ReactElement list) =
         ]
     ]
 
-let ProjectTable =
+// ---- New Projects Table ---------------------------------------------------------------
+
+let ProjectTable (model: Model) (dispatch: Msg -> unit) =
     Table [
         Html.thead [
             Html.tr [
                 Html.th [ prop.title "Title"; prop.text "Title"]
-                Html.th [ prop.title "Professor"; prop.text "Professor"]
-                Html.th [ prop.title "Tags"; prop.text "Tags"]
-                Html.th [ prop.title "Description"; prop.text "Description"]
+                Html.th [ prop.title "Supervisor"; prop.text "Supervisor"]
+                Html.th [ prop.title "P1"; prop.text "P1"]
+                Html.th [ prop.title "P2"; prop.text "P2"]
+                Html.th [ prop.title "P3"; prop.text "P3"]
+                Html.th [ prop.title "P4"; prop.text "P4"]
+                Html.th [ prop.title "P5"; prop.text "P5"]
+                Html.th [ prop.title "P6"; prop.text "P6"]
+                Html.th [ prop.title "P7"; prop.text "P7"]
+                Html.th [ prop.title "P8"; prop.text "P8"]
+                Html.th [ prop.title "P9"; prop.text "P9"]
+                Html.th [ prop.title "P10"; prop.text "P10"]
+                Html.th [ prop.title "Related Categories"; prop.text "Related Categories"]
+                Html.th [ prop.title "Last Updated"; prop.text "Last Updated"]
             ]
         ]
-        Html.tbody [
-            Html.tr [
-                Html.td [prop.text "A framework for the simulation and evaluation of dynamic bus routing"]
-                Html.td [prop.text "Cattafi,M."]
-                Html.td []
-                Html.td [prop.text "«Mobility-on-demand ridesharing services have transformed the transportation landscape by offering commuters the
-                                    convenience of point-to-point transportation, while at the same time being more efficient than private vehicles. However, the
-                                    benefits these services have to offer are fundamentally limited by their capacities, and are often seen as taxi equivalents.» [1]
-                                    In this project we consider «the concept of “dynamic bus routing” (DBR). Like ridesharing services, such buses would not follow
-                                    predefined routes nor schedules, but rather constantly generate their routes in real time to most efficiently serve commuters'
-                                    travel patterns.» [1]
-                                    Attempts along similar lines were also made in London, for example the Citymapper Smartbus [2] which was discontinued for a
-                                    variety of reasons [3].
-                                    The main deliverable will be a simulation (including visualisation) and evaluation framework. Routing algorithms will also be
-                                    implemented and tested.
-                                    [1]: Koh et al., Dynamic Bus Routing: A study on the viability of on-demand high-capacity ridesharing as an alternative to fixedroute buses in Singapore
-                                    2018 21st International Conference on Intelligent Transportation Systems
-                                    https://ieeexplore.ieee.org/document/8569834
-                                    [2]: Introducing the Citymapper Smartbus, 2017
-                                    https://medium.com/citymapper/smartbus-7b6848241526
-                                    [3]: Ending Ride to focus on Pass, 2019
-                                    https://medium.com/@Citymapper/ending-ride-to-focus-on-pass-d9ada3021831"]
+        Html.tbody (List.map (TableRow dispatch model) model.projects)
+    ]
+
+// ---- Modal Project Info Content --------------------------------------------------------------------
+
+let modalProjectInfo (model: Model) (dispatch: Msg -> unit) = 
+    let sp = model.selectedProject
+
+    Bulma.modalCard [
+        Bulma.modalCardHead [
+            Bulma.modalCardTitle ("#" + sp.pid + " " + sp.title)
+            Bulma.modalClose [ 
+                prop.classes [ Bulma.IsLarge ]
+                prop.onClick (fun _ -> dispatch CloseModal)
             ]
-            Html.tr [
-                Html.td [prop.text "Learning to control a pendulum with data-driven Model Predictive Control "]
-                Html.td [prop.text "Angeli,D."]
-                Html.td []
-                Html.td [prop.text "Pendulums are examples of very non-linear and unstable processes and serve as a toy model of more complicated devices in
-                                    real-world applications. The goal of the project is to device a Predictive Control algorithm that gradually adapts and learns the
-                                    dynamics of the pendulum (nonlinear and hence 'new' each time a different region in state-space is explored) in order to
-                                    balance it in the upwards position, viz. around an unstable equilibrium, or dampen it around the downwards position. This can
-                                    be challenging even in the presence of a model due to potential uncertainties and disturbances and we would like to compare
-                                    the traditional approach with one where the model is not assumed to be known, while the pendulum is treated as a black-box,
-                                    with as little prior information as possible.
-                                    Desirable Background: Control Engineering, Model predictive Control, Optimisation, MATLAB"]
+        ]
+        Bulma.modalCardBody [
+            Bulma.content [
+                Bulma.columns [
+                    Bulma.column [
+                        prop.classes [ Bulma.Is5 ]
+                        prop.children [
+                            Html.h2 "Project Rankings"
+                            Html.ol [
+                                prop.style [style.fontWeight 700]
+                                prop.children [
+                                    Html.li (Html.p (sp.p1.ToString()))
+                                    Html.li (Html.p (sp.p2.ToString()))
+                                    Html.li (Html.p (sp.p3.ToString()))
+                                    Html.li (Html.p (sp.p4.ToString()))
+                                    Html.li (Html.p (sp.p5.ToString()))
+                                    Html.li (Html.p (sp.p6.ToString()))
+                                    Html.li (Html.p (sp.p7.ToString()))
+                                    Html.li (Html.p (sp.p8.ToString()))
+                                    Html.li (Html.p (sp.p9.ToString()))
+                                    Html.li (Html.p (sp.p10.ToString()))
+                                ]
+                            ]
+                        ]
+                    ]
+                    Bulma.column [
+                        Html.h2 "Project Categories"
+                        for c in (TableCategories model sp.categories) do 
+                            c
+
+                        Html.h2 "Student Requirements"
+                        Html.p sp.requirements
+                    ]
+                ]
+
+                Html.h2 "Desired Skills"
+                Html.p sp.skills
+
+                Html.h2 "Project Description"
+                Html.p sp.descr
+
+                Html.h2 "Meeting Dates"
+                Html.p sp.meetings 
             ]
-            Html.tr [
-                Html.td [prop.text "Learning to control a pendulum with data-driven Model Predictive Control "]
-                Html.td [prop.text "Angeli,D."]
-                Html.td []
-                Html.td [prop.text "Pendulums are examples of very non-linear and unstable processes and serve as a toy model of more complicated devices in
-                                    real-world applications. The goal of the project is to device a Predictive Control algorithm that gradually adapts and learns the
-                                    dynamics of the pendulum (nonlinear and hence 'new' each time a different region in state-space is explored) in order to
-                                    balance it in the upwards position, viz. around an unstable equilibrium, or dampen it around the downwards position. This can
-                                    be challenging even in the presence of a model due to potential uncertainties and disturbances and we would like to compare
-                                    the traditional approach with one where the model is not assumed to be known, while the pendulum is treated as a black-box,
-                                    with as little prior information as possible.
-                                    Desirable Background: Control Engineering, Model predictive Control, Optimisation, MATLAB"]
+        ]
+
+        Bulma.modalCardFoot [
+            Bulma.buttons [
+                Bulma.button.button [
+                    Bulma.color.isSuccess
+                    prop.text "Add Project"
+                    prop.onClick (fun _ -> dispatch OpenAddProject)
+                ]
+                Bulma.button.button [
+                    prop.text "Close Project"
+                    prop.onClick (fun _ -> dispatch CloseModal)
+                ]
             ]
-            Html.tr [
-                Html.td [prop.text "Learning to control a pendulum with data-driven Model Predictive Control "]
-                Html.td [prop.text "Angeli,D."]
+        ]
+    ]
+
+// ---- Modal Add Project Content --------------------------------------------------------------------
+
+let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank): Project * int) = 
+    Html.tr [
+        prop.classes [ "table-row" ]
+        prop.onClick (fun _ -> dispatch (RankAddProject rank))
+        prop.style [style.cursor.pointer]
+        match (model.selectedProjectRank = rank) , projectInfo.pid with
+        | true, _ ->
+            prop.children [
+                Html.td [prop.style [style.color.red]; prop.text rank]
+                Html.td [prop.style [style.color.red]; prop.text model.selectedProject.title]
+                Html.td [prop.style [style.color.red]; ]
+            ]
+        | _, "-" ->
+            prop.children [
+                Html.td [prop.text rank]
                 Html.td []
-                Html.td [prop.text "Pendulums are examples of very non-linear and unstable processes and serve as a toy model of more complicated devices in
-                                    real-world applications. The goal of the project is to device a Predictive Control algorithm that gradually adapts and learns the
-                                    dynamics of the pendulum (nonlinear and hence 'new' each time a different region in state-space is explored) in order to
-                                    balance it in the upwards position, viz. around an unstable equilibrium, or dampen it around the downwards position. This can
-                                    be challenging even in the presence of a model due to potential uncertainties and disturbances and we would like to compare
-                                    the traditional approach with one where the model is not assumed to be known, while the pendulum is treated as a black-box,
-                                    with as little prior information as possible.
-                                    Desirable Background: Control Engineering, Model predictive Control, Optimisation, MATLAB"]
+                Html.td []
+            ]
+        | _, _ ->
+            prop.children [
+                Html.td [prop.text rank]
+                Html.td [prop.text projectInfo.title]
+                Html.td []
+            ]
+    ]
+
+
+let PreferenceTable (model: Model) (dispatch: Msg -> unit) =
+    let pref = model.preference
+    let prefList = [(pref.p1, pref.n1); (pref.p2, pref.n2); (pref.p3, pref.n3); (pref.p4, pref.n4); (pref.p5, pref.n5);
+                    (pref.p6, pref.n6); (pref.p7, pref.n7); (pref.p8, pref.n8); (pref.p9, pref.n9); (pref.p10, pref.n10);]
+    Table [
+        Html.thead [
+            Html.tr [
+                Html.th [ prop.title "Rank"; prop.text "Rank"]
+                Html.th [ prop.title "Title"; prop.text "Title"]
+                Html.th [ prop.title "Professor"; prop.text "Professor"]
+            ]
+        ]
+        Html.tbody (List.map (PreferenceRow model dispatch) prefList)
+    ]
+
+let modalAddProject (model: Model) (dispatch: Msg -> unit) = 
+    let sp = model.selectedProject
+
+    Bulma.modalCard [
+        Bulma.modalCardHead [
+            Bulma.modalCardTitle ("#" + sp.pid + " " + sp.title)
+            Bulma.modalClose [ 
+                prop.classes [ Bulma.IsLarge ]
+                prop.onClick (fun _ -> dispatch CloseModal)
+            ]
+        ]
+        Bulma.modalCardBody [
+            Bulma.content [
+                Html.h2 "Add Project"
+                Html.p "You are about to add the following project to your preferences:"
+                Html.blockquote ("'" + sp.title + "'")
+                Html.p "Below in your preferences, please select a preference rank 
+                        of where you would like to replace or place the project."
+                
+                Html.h2 "Your Preferences"
+                PreferenceTable model dispatch
+            ]
+        ]
+
+        Bulma.modalCardFoot [
+            Bulma.buttons [
+                Bulma.button.button [
+                    prop.text "Save Changes"
+                    match (model.selectedProjectRank = 0) with
+                    | true -> // If true then selectedProject hasen't been preferenced yet, hence can't save changes
+                        prop.disabled true
+                    | false -> // If false then selectedProject has been preferenced, hence can now save changes
+                        prop.onClick (fun _ -> dispatch OpenAddProject)
+                        Bulma.color.isSuccess
+                ]
+                Bulma.button.button [
+                    prop.text "Go Back"
+                    prop.onClick (fun _ -> dispatch CloseAddProject)
+                ]
             ]
         ]
     ]
@@ -297,21 +534,36 @@ let view (model: Model) (dispatch: Msg -> unit) =
             NavBar
 
             Bulma.columns [
-                prop.style [ style.height (length.vh 100); style.padding (length.perc 1)]
+                prop.style [ style.height (length.vh 85); style.margin (length.perc 1)]
                 prop.children [
 
                     Bulma.column [
-                        prop.classes [Bulma.Is3]
-                        prop.children [ Search ]
+                        prop.style ([style.overflowY.scroll] @ TileCss)
+                        prop.classes [ Bulma.Is3; "scrollbar" ]
+                        prop.children (SearchFilters dispatch model)
                     ]
+
+                    Bulma.column [ prop.classes [Bulma.Is0] ] // Column Gap
+
                     Bulma.column [
-                        BulmaTile [Bulma.IsAncestor] [style.height (length.perc (100))] [
-                            BulmaTile [Bulma.IsParent] [] [
-                                BulmaTile [Bulma.IsChild; Bulma.Box] TileCss [  
-                                        Bulma.label [ prop.text "Projects" ] 
-                                        ProjectTable 
-                                ]
-                            ]
+                        prop.style TileCss
+                        prop.children [
+                            Bulma.label [ prop.text "Projects" ] 
+                            ProjectTable model dispatch
+                        ]
+                    ]
+
+                    Bulma.modal [
+                        if model.modalState then Bulma.modal.isActive
+                        prop.onKeyUp (key.escape, fun ev -> dispatch CloseModal)
+                        prop.classes [ "scrollbar"; Bulma.IsLarge ]
+                        prop.children [
+                            Bulma.modalBackground []
+                            match model.addProjectState with
+                            | false ->
+                                modalProjectInfo model dispatch
+                            | true ->
+                                modalAddProject model dispatch
                         ]
                     ]
 

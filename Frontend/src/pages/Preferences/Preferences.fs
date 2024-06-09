@@ -22,13 +22,11 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 //--------------------------------------------------------------------------------------//
 
 type Model = {
-    login: LoginRequest
+    preference: Preference
 }
 
 type Msg =
-    | InputChanged of string
-    | Submit of Browser.Types.Event
-    | Success of Account
+    | SuccessLoad of Preference
     | Error of exn
 
 //--------------------------------------------------------------------------------------//

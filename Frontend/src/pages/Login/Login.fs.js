@@ -1,5 +1,5 @@
 import { Union, Record } from "../../fable_modules/fable-library.4.1.4/Types.js";
-import { AccountInfo_get_Decoder, LoginInfo, AccountInfo_$reflection, LoginInfo_$reflection } from "../../../../Shared/Shared.fs.js";
+import { Account_get_Decoder, LoginRequest, Account_$reflection, LoginRequest_$reflection } from "../../../../Shared/Shared.fs.js";
 import { union_type, class_type, string_type, record_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
 import { Cmd_OfPromise_either, Cmd_none } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
 import { PromiseBuilder__Delay_62FBFDE1, PromiseBuilder__Run_212F1D4B } from "../../fable_modules/Fable.Promise.3.2.0/Promise.fs.js";
@@ -22,6 +22,8 @@ import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4
 import { createElement } from "react";
 import { rgba } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
 import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
+import { PropHelpers_createOnKey } from "../../fable_modules/Feliz.2.7.0/./Properties.fs.js";
+import { key_enter } from "../../fable_modules/Feliz.2.7.0/Key.fs.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 
 export class Model extends Record {
@@ -32,7 +34,7 @@ export class Model extends Record {
 }
 
 export function Model_$reflection() {
-    return record_type("Login.Model", [], Model, () => [["login", LoginInfo_$reflection()]]);
+    return record_type("Login.Model", [], Model, () => [["login", LoginRequest_$reflection()]]);
 }
 
 export class Msg extends Union {
@@ -47,11 +49,11 @@ export class Msg extends Union {
 }
 
 export function Msg_$reflection() {
-    return union_type("Login.Msg", [], Msg, () => [[["Item", string_type]], [["Item", class_type("Browser.Types.Event", void 0)]], [["Item", AccountInfo_$reflection()]], [["Item", class_type("System.Exception")]]]);
+    return union_type("Login.Msg", [], Msg, () => [[["Item", string_type]], [["Item", class_type("Browser.Types.Event", void 0)]], [["Item", Account_$reflection()]], [["Item", class_type("System.Exception")]]]);
 }
 
 export function init() {
-    return [new Model(new LoginInfo("")), Cmd_none()];
+    return [new Model(new LoginRequest("")), Cmd_none()];
 }
 
 export function update(msg, model) {
@@ -62,19 +64,19 @@ export function update(msg, model) {
             const handleSubmit = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
                 let decoder;
                 const url = "http://localhost:1234/login";
-                return ((decoder = AccountInfo_get_Decoder(), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
+                return ((decoder = Account_get_Decoder(), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
                     let data_2, caseStrategy_2, extra_2;
                     return ((data_2 = model.login, (caseStrategy_2 = void 0, (extra_2 = void 0, (() => {
                         let properties_4;
                         try {
                             const properties_3 = Helper_withProperties(singleton(new Types_RequestProperties(4, ["include"])), (properties_4 = ofArray([new Types_RequestProperties(0, ["POST"]), new Types_RequestProperties(1, [keyValueList(Helper_withContentTypeJson(data_2, empty()), 0)])]), defaultArg(map((data_1_1) => {
                                 let encoder;
-                                return cons(new Types_RequestProperties(2, [(encoder = Auto_generateBoxedEncoderCached_437914C6(LoginInfo_$reflection(), caseStrategy_2, extra_2), toString(0, encoder(data_1_1)))]), properties_4);
+                                return cons(new Types_RequestProperties(2, [(encoder = Auto_generateBoxedEncoderCached_437914C6(LoginRequest_$reflection(), caseStrategy_2, extra_2), toString(0, encoder(data_1_1)))]), properties_4);
                             }, data_2), properties_4)));
                             const pr = PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (Helper_fetch(url, properties_3).then((_arg) => {
                                 let response_1, decoder_1_1, decode;
                                 const response = _arg;
-                                return ((response_1 = response, (decoder_1_1 = defaultArg(decoder, Auto_generateBoxedDecoderCached_Z6670B51(AccountInfo_$reflection(), unwrap(caseStrategy_2), unwrap(extra_2))), (decode = ((body_1) => fromString(uncurry2(decoder_1_1), body_1)), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (((response_1.ok) ? PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (response_1.text().then((_arg_1) => {
+                                return ((response_1 = response, (decoder_1_1 = defaultArg(decoder, Auto_generateBoxedDecoderCached_Z6670B51(Account_$reflection(), unwrap(caseStrategy_2), unwrap(extra_2))), (decode = ((body_1) => fromString(uncurry2(decoder_1_1), body_1)), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (((response_1.ok) ? PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => (response_1.text().then((_arg_1) => {
                                     let matchValue, msg_1, value_1_1;
                                     const body_1_1 = _arg_1;
                                     return Promise.resolve((matchValue = decode(body_1_1), (matchValue.tag === 1) ? ((msg_1 = matchValue.fields[0], new FSharpResult$2(1, [new FetchError(1, [msg_1])]))) : ((value_1_1 = matchValue.fields[0], new FSharpResult$2(0, [value_1_1])))));
@@ -117,7 +119,7 @@ export function update(msg, model) {
         }
         default: {
             const newInput = msg.fields[0];
-            return [new Model(new LoginInfo(newInput)), Cmd_none()];
+            return [new Model(new LoginRequest(newInput)), Cmd_none()];
         }
     }
 }
@@ -150,10 +152,14 @@ export const ImageBackground = createElement("img", {
     src: "/images/imperial.jpg",
 });
 
-export function UsernameInput(dispatch) {
+export function Input(dispatch) {
     let elems_2, elems_1, elems;
     return createElement("div", createObj(Helpers_combineClasses("field", singleton((elems_2 = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "EE ID"])))), createElement("div", createObj(ofArray([["className", join(" ", ["control", "has-icons-left"])], (elems_1 = [createElement("input", createObj(cons(["type", "text"], Helpers_combineClasses("input", ofArray([["required", true], ["placeholder", "Enter your EEID"], ["onChange", (ev) => {
         dispatch(new Msg(0, [ev.target.value]));
+    }], ["onKeyUp", (ev_2) => {
+        PropHelpers_createOnKey(key_enter, (ev_1) => {
+            dispatch(new Msg(1, [ev_1]));
+        }, ev_2);
     }]]))))), createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-small"], ["className", "is-left"], (elems = [createElement("i", {
         className: join(" ", ["fas fa-user"]),
     })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])))));
@@ -180,7 +186,7 @@ export function view(model, dispatch) {
         dispatch(new Msg(1, [arg_1]));
     }], ["style", {
         width: 80 + "%",
-    }], (elems_2 = [UsernameInput(dispatch), createElement("div", createObj(ofArray([["style", {
+    }], (elems_2 = [Input(dispatch), createElement("div", createObj(ofArray([["style", {
         marginTop: 35 + "px",
     }], ["className", join(" ", ["field", "is-grouped", "is-grouped-centered"])], (elems_1 = [(elms = singleton(createElement("button", createObj(Helpers_combineClasses("button", ofArray([["className", "is-info"], ["children", "Login"]]))))), createElement("div", {
         className: "control",

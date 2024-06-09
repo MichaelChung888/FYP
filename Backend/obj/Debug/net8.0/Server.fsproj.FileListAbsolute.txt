@@ -87,8 +87,6 @@ C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Deb
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\FSharp.Data.WorldBank.Core.dll
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\FSharp.Data.Xml.Core.dll
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\FSharp.Json.New.dll
-C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.JsonPatch.dll
-C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
-C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Newtonsoft.Json.Bson.dll
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Fable.Core.dll
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Thoth.Json.dll
+C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

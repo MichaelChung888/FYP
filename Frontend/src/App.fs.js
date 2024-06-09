@@ -1,6 +1,6 @@
 import { Record, Union } from "./fable_modules/fable-library.4.1.4/Types.js";
-import { AccountInfo_$reflection } from "../../Shared/Shared.fs.js";
-import { record_type, union_type } from "./fable_modules/fable-library.4.1.4/Reflection.js";
+import { Person_$reflection } from "../../Shared/Shared.fs.js";
+import { record_type, string_type, union_type } from "./fable_modules/fable-library.4.1.4/Reflection.js";
 import { view as view_3, update as update_1, init as init_1, Msg_$reflection as Msg_$reflection_1, Model_$reflection as Model_$reflection_1 } from "./pages/Login/Login.fs.js";
 import { view as view_1, init as init_2, update as update_2, Msg_$reflection as Msg_$reflection_2, Model_$reflection as Model_$reflection_2 } from "./pages/HomeStudent/HomeStudent.fs.js";
 import { view as view_2, init as init_3, update as update_3, Msg_$reflection as Msg_$reflection_3, Model_$reflection as Model_$reflection_3 } from "./pages/Projects/Projects.fs.js";
@@ -8,13 +8,14 @@ import { ofArray, singleton, tail, head, isEmpty } from "./fable_modules/fable-l
 import { RouterModule_router, RouterModule_nav, RouterModule_urlSegments } from "./fable_modules/Feliz.Router.4.0.0/./Router.fs.js";
 import { Cmd_ofEffect } from "./fable_modules/Feliz.Router.4.0.0/../Fable.Elmish.4.1.0/cmd.fs.js";
 import { Cmd_map, Cmd_none } from "./fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
-import { printf, toConsole } from "./fable_modules/fable-library.4.1.4/String.js";
 import { createObj } from "./fable_modules/fable-library.4.1.4/Util.js";
 import { singleton as singleton_1, delay, toList } from "./fable_modules/fable-library.4.1.4/Seq.js";
 import { createElement } from "react";
 import * as react from "react";
 import { ProgramModule_mkProgram, ProgramModule_run } from "./fable_modules/Fable.Elmish.4.1.0/program.fs.js";
 import { Program_withReactSynchronous } from "./fable_modules/Fable.Elmish.React.4.0.0/react.fs.js";
+import "./styles.css";
+
 
 export class ApplicationUser extends Union {
     constructor(tag, fields) {
@@ -28,7 +29,7 @@ export class ApplicationUser extends Union {
 }
 
 export function ApplicationUser_$reflection() {
-    return union_type("App.ApplicationUser", [], ApplicationUser, () => [[], [["Item", AccountInfo_$reflection()]]]);
+    return union_type("App.ApplicationUser", [], ApplicationUser, () => [[], [["Item", Person_$reflection()]]]);
 }
 
 export class Url extends Union {
@@ -77,16 +78,17 @@ export function Msg_$reflection() {
 }
 
 export class Model extends Record {
-    constructor(User, CurrentUrl, CurrentPage) {
+    constructor(user, currentUrl, currentPage, token) {
         super();
-        this.User = User;
-        this.CurrentUrl = CurrentUrl;
-        this.CurrentPage = CurrentPage;
+        this.user = user;
+        this.currentUrl = currentUrl;
+        this.currentPage = currentPage;
+        this.token = token;
     }
 }
 
 export function Model_$reflection() {
-    return record_type("App.Model", [], Model, () => [["User", ApplicationUser_$reflection()], ["CurrentUrl", Url_$reflection()], ["CurrentPage", Page_$reflection()]]);
+    return record_type("App.Model", [], Model, () => [["user", ApplicationUser_$reflection()], ["currentUrl", Url_$reflection()], ["currentPage", Page_$reflection()], ["token", string_type]]);
 }
 
 export function parseUrl(_arg) {
@@ -102,7 +104,7 @@ export function parseUrl(_arg) {
                 }
                 break;
             }
-            case "main-student": {
+            case "home-student": {
                 if (!isEmpty(tail(_arg))) {
                     if (head(tail(_arg)) === "projects") {
                         if (isEmpty(tail(tail(_arg)))) {
@@ -145,7 +147,7 @@ export function parseUrl(_arg) {
 export function init() {
     let fullPath;
     const initialUrl = parseUrl((fullPath = (window.location.pathname + window.location.search), RouterModule_urlSegments(fullPath, 2)));
-    const defaultModel = new Model(new ApplicationUser(0, []), initialUrl, new Page(3, []));
+    const defaultModel = new Model(new ApplicationUser(0, []), initialUrl, new Page(3, []), "");
     switch (initialUrl.tag) {
         case 1:
             return [defaultModel, Cmd_ofEffect((_arg_1) => {
@@ -156,7 +158,7 @@ export function init() {
                 RouterModule_nav(singleton("login"), 2, 2);
             })];
         case 3:
-            return [new Model(defaultModel.User, defaultModel.CurrentUrl, new Page(3, [])), Cmd_none()];
+            return [new Model(defaultModel.user, defaultModel.currentUrl, new Page(3, []), defaultModel.token), Cmd_none()];
         case 4:
             return [defaultModel, Cmd_ofEffect((_arg_3) => {
                 RouterModule_nav(singleton("login"), 2, 2);
@@ -165,21 +167,22 @@ export function init() {
             const patternInput = init_1();
             const page = patternInput[0];
             const msg = patternInput[1];
-            return [new Model(defaultModel.User, defaultModel.CurrentUrl, new Page(0, [page])), Cmd_map((arg) => (new Msg(0, [arg])), msg)];
+            return [new Model(defaultModel.user, defaultModel.currentUrl, new Page(0, [page]), defaultModel.token), Cmd_map((arg) => (new Msg(0, [arg])), msg)];
         }
     }
 }
 
 export function update(msg, model) {
-    const showPage = (page) => (new Model(model.User, model.CurrentUrl, page));
-    const matchValue = model.CurrentPage;
-    let matchResult, msg_1, page_1, msg_3, page_2, msg_4, page_3, nextUrl;
+    const updatePage = (page) => (new Model(model.user, model.currentUrl, page, model.token));
+    const showPage = (page_1, url) => (new Model(model.user, url, page_1, model.token));
+    const matchValue = model.currentPage;
+    let matchResult, msg_1, page_2, msg_3, page_3, msg_4, page_4, nextUrl;
     switch (msg.tag) {
         case 1: {
             if (matchValue.tag === 1) {
                 matchResult = 1;
                 msg_3 = msg.fields[0];
-                page_2 = matchValue.fields[0];
+                page_3 = matchValue.fields[0];
             }
             else {
                 matchResult = 4;
@@ -190,7 +193,7 @@ export function update(msg, model) {
             if (matchValue.tag === 2) {
                 matchResult = 2;
                 msg_4 = msg.fields[0];
-                page_3 = matchValue.fields[0];
+                page_4 = matchValue.fields[0];
             }
             else {
                 matchResult = 4;
@@ -206,7 +209,7 @@ export function update(msg, model) {
             if (matchValue.tag === 0) {
                 matchResult = 0;
                 msg_1 = msg.fields[0];
-                page_1 = matchValue.fields[0];
+                page_2 = matchValue.fields[0];
             }
             else {
                 matchResult = 4;
@@ -215,39 +218,38 @@ export function update(msg, model) {
     switch (matchResult) {
         case 0:
             if (msg_1.tag === 2) {
-                const accountInfo = msg_1.fields[0];
-                toConsole(printf("%A"))(accountInfo);
-                return [new Model(new ApplicationUser(1, [accountInfo]), model.CurrentUrl, model.CurrentPage), Cmd_ofEffect((_arg) => {
-                    RouterModule_nav(singleton("main-student"), 1, 2);
+                const res = msg_1.fields[0];
+                return [new Model(new ApplicationUser(1, [res.person]), model.currentUrl, model.currentPage, res.token), Cmd_ofEffect((_arg) => {
+                    RouterModule_nav(singleton("home-student"), 1, 2);
                 })];
             }
             else {
                 const msg_2 = msg_1;
-                const patternInput = update_1(msg_2, page_1);
+                const patternInput = update_1(msg_2, page_2);
                 const newPage = patternInput[0];
                 const newMsg = patternInput[1];
-                return [showPage(new Page(0, [newPage])), Cmd_map((arg_1) => (new Msg(0, [arg_1])), newMsg)];
+                return [updatePage(new Page(0, [newPage])), Cmd_map((arg) => (new Msg(0, [arg])), newMsg)];
             }
         case 1: {
-            const patternInput_1 = update_2(msg_3, page_2);
+            const patternInput_1 = update_2(msg_3, page_3);
             const newPage_1 = patternInput_1[0];
             const newMsg_1 = patternInput_1[1];
-            return [showPage(new Page(1, [newPage_1])), Cmd_map((arg_2) => (new Msg(1, [arg_2])), newMsg_1)];
+            return [updatePage(new Page(1, [newPage_1])), Cmd_map((arg_1) => (new Msg(1, [arg_1])), newMsg_1)];
         }
         case 2: {
-            const patternInput_2 = update_3(msg_4, page_3);
+            const patternInput_2 = update_3(msg_4, page_4);
             const newPage_2 = patternInput_2[0];
             const newMsg_2 = patternInput_2[1];
-            return [showPage(new Page(2, [newPage_2])), Cmd_map((arg_3) => (new Msg(2, [arg_3])), newMsg_2)];
+            return [updatePage(new Page(2, [newPage_2])), Cmd_map((arg_2) => (new Msg(2, [arg_2])), newMsg_2)];
         }
         case 3:
             switch (nextUrl.tag) {
                 case 1:
-                    if (model.User.tag === 1) {
-                        const patternInput_4 = init_2();
+                    if (model.user.tag === 1) {
+                        const patternInput_4 = init_2(model.token);
                         const newPage_4 = patternInput_4[0];
                         const newMsg_4 = patternInput_4[1];
-                        return [showPage(new Page(1, [newPage_4])), Cmd_map((arg_5) => (new Msg(1, [arg_5])), newMsg_4)];
+                        return [showPage(new Page(1, [newPage_4]), new Url(1, [])), Cmd_map((arg_4) => (new Msg(1, [arg_4])), newMsg_4)];
                     }
                     else {
                         return [model, Cmd_ofEffect((_arg_1) => {
@@ -255,11 +257,11 @@ export function update(msg, model) {
                         })];
                     }
                 case 2:
-                    if (model.User.tag === 1) {
-                        const patternInput_5 = init_3();
+                    if (model.user.tag === 1) {
+                        const patternInput_5 = init_3(model.token);
                         const newPage_5 = patternInput_5[0];
                         const newMsg_5 = patternInput_5[1];
-                        return [showPage(new Page(2, [newPage_5])), Cmd_map((arg_6) => (new Msg(2, [arg_6])), newMsg_5)];
+                        return [showPage(new Page(2, [newPage_5]), new Url(2, [])), Cmd_map((arg_5) => (new Msg(2, [arg_5])), newMsg_5)];
                     }
                     else {
                         return [model, Cmd_ofEffect((_arg_2) => {
@@ -267,7 +269,7 @@ export function update(msg, model) {
                         })];
                     }
                 case 3:
-                    return [showPage(new Page(3, [])), Cmd_none()];
+                    return [showPage(new Page(3, []), new Url(3, [])), Cmd_none()];
                 case 4:
                     return [model, Cmd_ofEffect((_arg_3) => {
                         RouterModule_nav(singleton("login"), 2, 2);
@@ -276,7 +278,7 @@ export function update(msg, model) {
                     const patternInput_3 = init_1();
                     const newPage_3 = patternInput_3[0];
                     const newMsg_3 = patternInput_3[1];
-                    return [showPage(new Page(0, [newPage_3])), Cmd_map((arg_4) => (new Msg(0, [arg_4])), newMsg_3)];
+                    return [showPage(new Page(0, [newPage_3]), new Url(0, [])), Cmd_map((arg_3) => (new Msg(0, [arg_3])), newMsg_3)];
                 }
             }
         default:
@@ -289,7 +291,7 @@ export function view(model, dispatch) {
     return RouterModule_router(createObj(ofArray([["hashMode", 2], ["onUrlChanged", (arg_2) => {
         dispatch(new Msg(3, [parseUrl(arg_2)]));
     }], (elements = toList(delay(() => {
-        const matchValue = model.CurrentPage;
+        const matchValue = model.currentPage;
         switch (matchValue.tag) {
             case 1: {
                 const page_1 = matchValue.fields[0];

@@ -5,18 +5,33 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.AspNetCore.Cors
-//open Microsoft.AspNetCore.Authentication.JwtBearer
+
+// Authentication
+open Microsoft.AspNetCore.Authentication.JwtBearer
+open Microsoft.IdentityModel.Tokens
+open System.Text
 
 open Handlers
 open Giraffe
+open JWT
 
 (* Web App Configuration *)
+
+let authorize =
+    requiresAuthentication (challenge JwtBearerDefaults.AuthenticationScheme >=> text "Please Authenticate")
 
 let webApp = 
     choose [
         route "/" >=> GET >=> text "Server Online"
-        route "/login" >=> POST >=> warbler (fun _ -> loginHttpHandler)
-        route "/projects" >=> GET >=> warbler (fun _ -> projectHttpHandler)
+        route "/login" >=> POST >=> loginHttpHandler
+        authorize >=> 
+            choose [
+                route "/new-projects" >=> GET >=> newProjectHttpHandler
+                route "/preferences" >=> GET >=> preferenceHttpHandler
+                route "/projects" >=> GET >=> projectHttpHandler
+                route "/search-projects" >=> POST >=>  searchProjectHttpHandler
+            ]
+
     ]
     // Note: warbler is used when the route is returning a dynamic (not static) response, hence wrap the function in a "warbler()"
     // This is because functions in f# are eagerly evaluated, hence a normal route will only be evaluated the first time.
@@ -43,50 +58,29 @@ let configureApp (app : IApplicationBuilder) =
                                                                                .AllowAnyHeader()
                                                                                .AllowCredentials() 
                                                                                |> ignore)
-            //.UseStaticFiles()
-            //.UseAuthentication() // <-- Add here, before UseGiraffe
+            .UseStaticFiles()
+            .UseAuthentication()
             .UseGiraffe(webApp)
 
 let configureServices (services : IServiceCollection) =
+    //let sp  = services.BuildServiceProvider()
+    //let env = sp.GetService<IHostEnvironment>() // IHostingEnvironment
+    //let viewsFolderPath = Path.Combine(env.ContentRootPath, "Views")
+
+    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(fun options ->
+                options.TokenValidationParameters <- TokenValidationParameters (
+                    ValidateActor = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "jwtwebapp.net",
+                    ValidAudience = "jwtwebapp.net",
+                    IssuerSigningKey = SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)))
+            ) |> ignore
+    //services.AddRazorEngine viewsFolderPath |> ignore
     services.AddCors()    |> ignore
     services.AddGiraffe() |> ignore
-(*
-    services.AddAuthentication(fun opt -> 
-        // See Note 1
-        opt.DefaultAuthenticateScheme <- JwtBearerDefaults.AuthenticationScheme
-
-        // Not needed, see Note 2 below
-        // opt.DefaultChallengeScheme <- JwtBearerDefaults.AuthenticationScheme
-
-    // Second, we configure our middleware
-    ).AddJwtBearer(fun (opt : JwtBearerOptions)-> 
-
-        // You can set general options of JWT authentication here.  
-        // Find more details at:
-        //   https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions?view=aspnetcore-5.0
-        // Note, however, most of it is not relevant for our simple case
-        
-        opt.TokenValidationParameters <- TokenValidationParameters(
-            // You can configure the actual authentication parameters and options.  
-            // See more at:
-            //   https://docs.microsoft.com/en-us/dotnet/api/microsoft.identitymodel.tokens.tokenvalidationparameters?view=azure-dotnet
-
-            // SecurityKey that is to be used for signature validation.
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-
-            // boolean to control if the issuer will be validated during token validation.
-            ValidateIssuer = true,
-
-            // String that represents a valid issuer that will be used to check against the token's issuer. The default is null.
-            ValidIssuer = issuer,
-
-            // boolean to control if the audience will be validated during token validation.
-            ValidateAudience = true,
-
-            // string that represents a valid audience that will be used to check against the token's audience. The default is null.
-            ValidAudience = audience
-        )) |> ignore
-*)
     
 [<EntryPoint>]
 let main _ =
