@@ -30,8 +30,10 @@ let webApp =
                 route "/preferences" >=> GET >=> preferenceHttpHandler
                 route "/projects" >=> GET >=> projectHttpHandler
                 route "/search-projects" >=> POST >=>  searchProjectHttpHandler
+                route "/save-preferences" >=> PUT >=>  savePreferencesHttpHandler
+                route "/add-project" >=> PUT >=>  addProjectHttpHandler
+                route "/project-propose" >=> POST >=> projectProposeHttpHandler
             ]
-
     ]
     // Note: warbler is used when the route is returning a dynamic (not static) response, hence wrap the function in a "warbler()"
     // This is because functions in f# are eagerly evaluated, hence a normal route will only be evaluated the first time.
@@ -78,7 +80,6 @@ let configureServices (services : IServiceCollection) =
                     ValidAudience = "jwtwebapp.net",
                     IssuerSigningKey = SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)))
             ) |> ignore
-    //services.AddRazorEngine viewsFolderPath |> ignore
     services.AddCors()    |> ignore
     services.AddGiraffe() |> ignore
     

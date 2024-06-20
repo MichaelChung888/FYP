@@ -13,6 +13,5 @@ nuget Fable.Elmish.React
 nuget Fable.Elmish.Browser
 nuget Fable.Elmish.Debugger
 nuget Fable.Elmish.HMR
-nuget FSharp.Json
 nuget Thoth.Fetch
 nuget Zanaptak.TypedCssClasses

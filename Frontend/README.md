@@ -5,7 +5,7 @@ You can find more templates by searching `Fable.Template` packages in [Nuget](ht
 
 ## Requirements
 
-* [.NET 6](https://www.microsoft.com/net/download/core) or higher
+* [.NET 2.0](https://www.microsoft.com/en-us/download/details.aspx?id=6041)
 * [node.js](https://nodejs.org) 4.8.2 or higher
 * npm: JS package manager
 

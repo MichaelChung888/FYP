@@ -92,8 +92,6 @@ NUGET
       Feliz (>= 2.3)
       FSharp.Core (>= 4.7.2)
     FSharp.Core (8.0.300)
-    FSharp.Json (0.4.1)
-      FSharp.Core (>= 4.6.2)
     Thoth.Fetch (3.0.1)
       Fable.Core (>= 3.2.8)
       Fable.Fetch (>= 2.1)

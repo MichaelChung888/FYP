@@ -1,6 +1,6 @@
 import { Union, Record } from "../../fable_modules/fable-library.4.1.4/Types.js";
+import { obj_type, union_type, class_type, record_type, string_type, list_type, bool_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
 import { getFormattedCategory, PreferenceResponse_get_Decoder, Project_get_Decoder, PreferenceResponse_get_Default, PreferenceResponse_$reflection, Project_$reflection } from "../../../../Shared/Shared.fs.js";
-import { obj_type, union_type, class_type, record_type, string_type, list_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
 import { append, map as map_1, cons, ofArray, singleton, empty } from "../../fable_modules/fable-library.4.1.4/List.js";
 import { PromiseBuilder__Delay_62FBFDE1, PromiseBuilder__Run_212F1D4B } from "../../fable_modules/Fable.Promise.3.2.0/Promise.fs.js";
 import { promise } from "../../fable_modules/Fable.Promise.3.2.0/PromiseImpl.fs.js";
@@ -19,17 +19,19 @@ import { toString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.10
 import { Auto_generateBoxedDecoderCached_Z6670B51 } from "../../fable_modules/Thoth.Json.10.2.0/./Decode.fs.js";
 import { fromString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.10.2.0/Decode.fs.js";
 import { Cmd_none, Cmd_OfPromise_either } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
-import { join, split, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
+import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { createElement } from "react";
 import { rgba } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
+import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
 import { RouterModule_nav } from "../../fable_modules/Feliz.Router.4.0.0/./Router.fs.js";
-import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { toString as toString_1 } from "../../fable_modules/fable-library.4.1.4/Date.js";
+import { empty as empty_1, singleton as singleton_1, append as append_1, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
 
 export class Model extends Record {
-    constructor(projects, preference, token) {
+    constructor(loading, projects, preference, token) {
         super();
+        this.loading = loading;
         this.projects = projects;
         this.preference = preference;
         this.token = token;
@@ -37,7 +39,7 @@ export class Model extends Record {
 }
 
 export function Model_$reflection() {
-    return record_type("HomeStudent.Model", [], Model, () => [["projects", list_type(Project_$reflection())], ["preference", PreferenceResponse_$reflection()], ["token", string_type]]);
+    return record_type("HomeStudent.Model", [], Model, () => [["loading", bool_type], ["projects", list_type(Project_$reflection())], ["preference", PreferenceResponse_$reflection()], ["token", string_type]]);
 }
 
 export class InitalLoad extends Record {
@@ -59,16 +61,16 @@ export class Msg extends Union {
         this.fields = fields;
     }
     cases() {
-        return ["SuccessfulLoad", "ErrorLoad"];
+        return ["SuccessLoad", "Error", "Logout"];
     }
 }
 
 export function Msg_$reflection() {
-    return union_type("HomeStudent.Msg", [], Msg, () => [[["Item", InitalLoad_$reflection()]], [["Item", class_type("System.Exception")]]]);
+    return union_type("HomeStudent.Msg", [], Msg, () => [[["Item", InitalLoad_$reflection()]], [["Item", class_type("System.Exception")]], []]);
 }
 
 export function init(token) {
-    const defaultModel = new Model(empty(), PreferenceResponse_get_Default(), token);
+    const defaultModel = new Model(true, empty(), PreferenceResponse_get_Default(), token);
     const initialLoad = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
         let decoder_1, decoder;
         const newProjectsUrl = "http://localhost:1234/new-projects";
@@ -164,16 +166,39 @@ export function init(token) {
 }
 
 export function update(msg, model) {
-    if (msg.tag === 1) {
-        const res = msg.fields[0];
-        toConsole(printf("%A"))(res);
-        return [model, Cmd_none()];
-    }
-    else {
-        const initialLoad = msg.fields[0];
-        return [new Model(initialLoad.projects, initialLoad.preference, model.token), Cmd_none()];
+    switch (msg.tag) {
+        case 1: {
+            const res = msg.fields[0];
+            toConsole(printf("%A"))(res);
+            return [new Model(false, model.projects, model.preference, model.token), Cmd_none()];
+        }
+        case 2:
+            return [model, Cmd_none()];
+        default: {
+            const initialLoad = msg.fields[0];
+            return [new Model(false, initialLoad.projects, initialLoad.preference, model.token), Cmd_none()];
+        }
     }
 }
+
+export const LoadingScreen = createElement("div", createObj(ofArray([["style", {
+    top: 0,
+    left: 0,
+    overflow: "hidden",
+    position: "absolute",
+    height: 100 + "vh",
+    width: 100 + "vw",
+    display: "flex",
+    zIndex: 100,
+    backgroundColor: rgba(0, 0, 0, 0.6),
+    justifyContent: "center",
+    alignItems: "center",
+}], (() => {
+    const elems = [createElement("div", {
+        className: join(" ", ["loader"]),
+    })];
+    return ["children", Interop_reactApi.Children.toArray(Array.from(elems))];
+})()])));
 
 export function TurquoiseBackground(opacity) {
     return createElement("div", {
@@ -206,40 +231,45 @@ export const ImageBackground = createElement("img", {
     src: "/images/imperial.jpg",
 });
 
-export const NavBar = createElement("nav", createObj(Helpers_combineClasses("navbar", ofArray([["style", {
-    backgroundColor: "#48D1CC",
-    fontWeight: 700,
-}], (() => {
-    let elems_1, elms, elms_5, elms_1, elms_4, elms_3, elms_2;
-    const elems_7 = [createElement("div", createObj(Helpers_combineClasses("navbar-brand", ofArray([["onClick", (e) => {
+export function NavBar(dispatch) {
+    let elems_7, elems_1, elems, elms_4, elms, elms_3, elms_2, elms_1;
+    return createElement("nav", createObj(Helpers_combineClasses("navbar", ofArray([["style", {
+        backgroundColor: "#48D1CC",
+        fontWeight: 700,
+    }], (elems_7 = [createElement("div", createObj(Helpers_combineClasses("navbar-brand", ofArray([["onClick", (e) => {
         RouterModule_nav(singleton("home-student"), 1, 2);
-    }], (elems_1 = [(elms = singleton(createElement("img", {
-        src: "https://bulma.io/images/bulma-logo-white.png",
-        height: 28,
-        width: 112,
-    })), createElement("a", {
-        className: "navbar-item",
-        children: Interop_reactApi.Children.toArray(Array.from(elms)),
-    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_5 = ofArray([(elms_1 = ofArray([createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Projects"], ["onClick", (e_1) => {
+    }], ["style", {
+        paddingTop: 3,
+        paddingRight: 20,
+        paddingLeft: 10,
+        cursor: "pointer",
+    }], (elems_1 = [createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-large"], (elems = [createElement("i", {
+        className: "fas fa-home fa-2x",
+    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_4 = ofArray([(elms = ofArray([createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Projects"], ["onClick", (e_1) => {
         RouterModule_nav(ofArray(["home-student", "projects"]), 1, 2);
-    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", singleton(["children", "Preferences"])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", singleton(["children", "Propose a Project"]))))]), createElement("div", {
+    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Preferences"], ["onClick", (e_2) => {
+        RouterModule_nav(ofArray(["home-student", "preferences"]), 1, 2);
+    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Propose a Project"], ["onClick", (e_3) => {
+        RouterModule_nav(singleton("project-propose"), 1, 2);
+    }]]))))]), createElement("div", {
         className: "navbar-start",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
-    })), (elms_4 = singleton((elms_3 = singleton((elms_2 = singleton(createElement("a", createObj(Helpers_combineClasses("button", singleton(["children", "Log Out"]))))), createElement("div", {
+        children: Interop_reactApi.Children.toArray(Array.from(elms)),
+    })), (elms_3 = singleton((elms_2 = singleton((elms_1 = singleton(createElement("a", createObj(Helpers_combineClasses("button", ofArray([["children", "Log Out"], ["onClick", (_arg) => {
+        dispatch(new Msg(2, []));
+    }]]))))), createElement("div", {
         className: "buttons",
+        children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
+    }))), createElement("div", {
+        className: "navbar-item",
         children: Interop_reactApi.Children.toArray(Array.from(elms_2)),
     }))), createElement("div", {
-        className: "navbar-item",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_3)),
-    }))), createElement("div", {
         className: "navbar-end",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_4)),
+        children: Interop_reactApi.Children.toArray(Array.from(elms_3)),
     }))]), createElement("div", {
         className: "navbar-menu",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_5)),
-    }))];
-    return ["children", Interop_reactApi.Children.toArray(Array.from(elems_7))];
-})()]))));
+        children: Interop_reactApi.Children.toArray(Array.from(elms_4)),
+    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_7))])]))));
+}
 
 export function Tag(filter) {
     return createElement("span", createObj(Helpers_combineClasses("tag", ofArray([["children", getFormattedCategory(filter)], ["style", {
@@ -249,23 +279,25 @@ export function Tag(filter) {
 }
 
 export function TableCategories(categories) {
-    return map_1(Tag, ofArray(split(categories, [","], void 0, 0)));
+    return map_1(Tag, ofArray(categories.split(",")));
 }
 
 export function ProjectRow(projectInfo) {
     let children;
     const children_2 = ofArray([createElement("td", {
         children: projectInfo.title,
-    }), createElement("td", {}), createElement("td", {
-        children: projectInfo.p1,
     }), createElement("td", {
-        children: projectInfo.p2,
+        children: projectInfo.supName,
     }), createElement("td", {
-        children: projectInfo.p3,
+        children: projectInfo.r1,
     }), createElement("td", {
-        children: projectInfo.p4,
+        children: projectInfo.r2,
     }), createElement("td", {
-        children: projectInfo.p5,
+        children: projectInfo.r3,
+    }), createElement("td", {
+        children: projectInfo.r4,
+    }), createElement("td", {
+        children: projectInfo.r5,
     }), (children = TableCategories(projectInfo.categories), createElement("td", {
         children: Interop_reactApi.Children.toArray(Array.from(children)),
     })), createElement("td", {
@@ -328,7 +360,7 @@ export function PreferenceRow(_arg1_, _arg1__1) {
     const _arg = [_arg1_, _arg1__1];
     const rank = _arg[1] | 0;
     const projectInfo = _arg[0];
-    if (projectInfo.pid === "-") {
+    if (projectInfo.pid === 0) {
         const children = ofArray([createElement("td", {
             children: rank,
         }), createElement("td", {}), createElement("td", {})]);
@@ -341,7 +373,9 @@ export function PreferenceRow(_arg1_, _arg1__1) {
             children: rank,
         }), createElement("td", {
             children: projectInfo.title,
-        }), createElement("td", {})]);
+        }), createElement("td", {
+            children: projectInfo.supName,
+        })]);
         return createElement("tr", {
             children: Interop_reactApi.Children.toArray(Array.from(children_2)),
         });
@@ -370,52 +404,6 @@ export function PreferenceTable(model) {
     }))]));
 }
 
-export const Media = createElement("article", createObj(Helpers_combineClasses("media", ofArray([["style", {}], (() => {
-    let elms, elems, elms_6, elms_1, children_1, elm, elms_5, elms_2, elems_3, elms_3, elems_5, elms_4, elems_7;
-    const elems_12 = [(elms = singleton(createElement("figure", createObj(Helpers_combineClasses("image", ofArray([["className", "is-64x64"], (elems = [createElement("img", {
-        src: "https://bulma.io/assets/images/placeholders/128x128.png",
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))), createElement("div", {
-        className: "media-left",
-        children: Interop_reactApi.Children.toArray(Array.from(elms)),
-    })), (elms_6 = ofArray([(elms_1 = singleton((children_1 = ofArray([createElement("strong", {
-        children: ["John Smith"],
-    }), createElement("small", {
-        children: ["@johnsmith"],
-    }), createElement("br", {}), createElement("span", {
-        children: ["Lorem ipsum ... vestibulum ut."],
-    })]), createElement("p", {
-        children: Interop_reactApi.Children.toArray(Array.from(children_1)),
-    }))), createElement("div", {
-        className: "content",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
-    })), (elm = [(elms_5 = ofArray([(elms_2 = singleton(createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-small"], (elems_3 = [createElement("i", {
-        className: "fas fa-reply",
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems_3))])]))))), createElement("div", {
-        className: "level-item",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_2)),
-    })), (elms_3 = singleton(createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-small"], (elems_5 = [createElement("i", {
-        className: "fas fa-retweet",
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems_5))])]))))), createElement("div", {
-        className: "level-item",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_3)),
-    })), (elms_4 = singleton(createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-small"], (elems_7 = [createElement("i", {
-        className: "fas fa-heart",
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems_7))])]))))), createElement("div", {
-        className: "level-item",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_4)),
-    }))]), createElement("div", {
-        className: "level-left",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_5)),
-    }))], createElement("nav", {
-        className: "level",
-        children: Interop_reactApi.Children.toArray(Array.from(elm)),
-    }))]), createElement("div", {
-        className: "media-content",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_6)),
-    }))];
-    return ["children", Interop_reactApi.Children.toArray(Array.from(elems_12))];
-})()]))));
-
 export function BulmaTile(classes, styles, props) {
     return createElement("div", createObj(Helpers_combineClasses("tile", ofArray([["className", join(" ", classes)], ["style", createObj(styles)], ["children", Interop_reactApi.Children.toArray(Array.from(props))]]))));
 }
@@ -439,7 +427,7 @@ export function view(model, dispatch) {
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         position: "relative",
-    }], (elems = [TurquoiseBackground(0.5), ImageBackground, NavBar, Tiles(model)], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
+    }], (elems = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(dispatch)), delay(() => singleton_1(Tiles(model)))))))))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
 }
 
 //# sourceMappingURL=HomeStudent.fs.js.map

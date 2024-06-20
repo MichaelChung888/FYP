@@ -1,12 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../Shared/Shared.fs" />
     <Compile Include="pages/Login/Login.fs" />
+    <Compile Include="pages/Preferences/Preferences.fs" />
+    <Compile Include="pages/Proposals/Proposals.fs" />
     <Compile Include="pages/HomeStudent/HomeStudent.fs" />
     <Compile Include="pages/Projects/Projects.fs" />
+    <Compile Include="pages/ProjectPropose/ProjectPropose.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />

@@ -20,33 +20,18 @@ open Zanaptak.TypedCssClasses
 type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css", Naming.PascalCase>
 
 //--------------------------------------------------------------------------------------//
-//                                Categories and Streams                                //
-//--------------------------------------------------------------------------------------//
-
-let categories = ["embedded_systems"; "control_engineering"; "electronics"; "renewable_energy"; 
-"biomedical_engineering"; "system_optimisation_and_modelling"; "high_performance_computing"; 
-"computer_vision"; "digital_signal_processing"; "instrumentation_and_measurement"; "cybersecurity"; 
-"robotics"; "signal_processing"; "power_systems"; "machine_learning"; "photonics"; "other"; "discrete_maths"; 
-"mathematics_signals_and_systems"; "software_systems"; "communications"; "control_systems"; "information_processing"; 
-"instruction_architectures_and_compilers"; "circuit_and_systems"; "power_electronics_and_power_systems"; "electromagnetism"]
-
-let streams = ["E"; "I"; "T"; "D"; "J"]
-
-//--------------------------------------------------------------------------------------//
 //                                        Types                                         //
 //--------------------------------------------------------------------------------------//
 
-type FilterType = 
-    | Category
-    | Stream
-
 type Model = {
+    loading: bool
     projects: List<Project>
     preference: PreferenceResponse
     token: string
     modalState: bool
     addProjectState: bool
     searchTitle: string
+    searchProfessor: string
     selectedCategories: List<string>
     selectedStreams: List<string>
     selectedProject: Project
@@ -59,49 +44,71 @@ type InitalLoad = {
 }
 
 type Msg =
-    | SuccessfulLoad of InitalLoad // Initial fetch requests to the server were successful
+    | SuccessLoad of InitalLoad // Initial fetch requests to the server were successful
     | ErrorLoad of exn // Fetch request to the server failed
+    | Logout // Logout button of account
     | OpenModal of Project // Selected a project to preview
     | CloseModal // Close the selected project preview
+    | AddProject // Send a request to server to add the project to your preference
     | OpenAddProject // Opens the menu to add the selected project to preferences
     | CloseAddProject // Closes the menu to add the selected project to preferences
     | RankAddProject of int // Selecting a rank to preference the selected project
-    | SearchTitleChanged of string // Changing Search Title filter
+    | SearchTitleChanged of string // Changing Search Title field
+    | SearchProfessorChanged of string // Changing Search Professor field
     | ClickedCategoryTag of string // Clicked Search Category tag filter
     | ClickedStreamTag of string // Clicked Stream Category tag filter
     | SearchRequest // Sends a server request containing project filters
     | FetchedProjectsLoad of List<Project> // Recieving the filtered projects
 
 //--------------------------------------------------------------------------------------//
+//                                       Helpers                                        //
+//--------------------------------------------------------------------------------------//
+
+let currentSelectedPreference (model: Model) : int =
+    match model.selectedProjectRank with
+    | 1 -> model.preference.p1.pid
+    | 2 -> model.preference.p2.pid
+    | 3 -> model.preference.p3.pid
+    | 4 -> model.preference.p4.pid
+    | 5 -> model.preference.p5.pid
+    | 6 -> model.preference.p6.pid
+    | 7 -> model.preference.p7.pid
+    | 8 -> model.preference.p8.pid
+    | 9 -> model.preference.p9.pid
+    | 10 -> model.preference.p10.pid
+    | _ -> 0 // Shouldn't happen
+
+//--------------------------------------------------------------------------------------//
 //                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
-let init token : Model * Cmd<Msg> = 
-    let defaultModel = { projects = []; 
+let init (token: string) : Model * Cmd<Msg> = 
+    let defaultModel = { loading = true;
+                        projects = []; 
                         preference = PreferenceResponse.Default;
                         token = token; 
                         modalState = false; 
                         addProjectState = false;
                         searchTitle = "";
+                        searchProfessor = "";
                         selectedCategories = [];
                         selectedStreams = [];
                         selectedProject = Project.Default;
-                        selectedProjectRank = 0}
-    let initialLoad() = 
+                        selectedProjectRank = 0 }
+    let initialLoad () = 
         promise {
-            let newProjectsUrl = "http://localhost:1234/new-projects"
+            let projectsUrl = "http://localhost:1234/projects"
             let preferenceUrl = "http://localhost:1234/preferences"
             
-            let! projects =  Fetch.get(url=newProjectsUrl, 
+            let! projects =  Fetch.get(url=projectsUrl, 
                                        decoder=(Decode.list Project.Decoder),
                                        headers=[Authorization $"Bearer {token}"]) //properties=[Credentials RequestCredentials.Include]
             let! preference =  Fetch.get(url=preferenceUrl, 
                                          decoder=(PreferenceResponse.Decoder),
                                          headers=[Authorization $"Bearer {token}"]) 
             return { projects = projects; preference = preference }
-            
         }
-    defaultModel, Cmd.OfPromise.either initialLoad () SuccessfulLoad ErrorLoad
+    defaultModel, Cmd.OfPromise.either initialLoad () SuccessLoad ErrorLoad
 
 //--------------------------------------------------------------------------------------//
 //               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
@@ -109,15 +116,39 @@ let init token : Model * Cmd<Msg> =
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
-    | SuccessfulLoad initialLoad ->
-        { model with projects = initialLoad.projects; preference = initialLoad.preference }, Cmd.none
+    | SuccessLoad initialLoad ->
+        { model with projects = initialLoad.projects; preference = initialLoad.preference; loading = false }, Cmd.none
     | ErrorLoad res ->
         printfn "%A" res
+        { model with loading = false }, Cmd.none
+    | Logout -> 
         model, Cmd.none
     | OpenModal project ->
         { model with modalState = true; selectedProject = project }, Cmd.none
     | CloseModal ->
         { model with modalState = false; addProjectState = false; selectedProjectRank = 0 }, Cmd.none
+    | AddProject ->
+        let data = {
+            preference = currentSelectedPreference model
+            newPreference = model.selectedProject.pid
+            newPreferenceRankWhere = model.selectedProjectRank
+        }
+        let addPreference () = 
+            promise {
+                let addProjectUrl = "http://localhost:1234/add-project"
+                let projectsUrl = "http://localhost:1234/projects"
+
+                let! newPreference = Fetch.put(url=addProjectUrl, 
+                                              data=data,
+                                              decoder=(PreferenceResponse.Decoder),
+                                              headers=[Authorization $"Bearer {model.token}"])     
+                let! projects =  Fetch.get(url=projectsUrl, 
+                                        decoder=(Decode.list Project.Decoder),
+                                        headers=[Authorization $"Bearer {model.token}"])
+                return { projects = projects; preference = newPreference }      
+            }
+        { model with modalState = false; addProjectState = false; loading = true; selectedProjectRank = 0 }
+        , Cmd.OfPromise.either addPreference () SuccessLoad ErrorLoad
     | OpenAddProject ->
         { model with addProjectState = true }, Cmd.none
     | CloseAddProject ->
@@ -126,6 +157,8 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
         { model with selectedProjectRank = rank }, Cmd.none
     | SearchTitleChanged title ->
         { model with searchTitle = title }, Cmd.ofMsg SearchRequest
+    | SearchProfessorChanged title ->
+        { model with searchProfessor = title }, Cmd.ofMsg SearchRequest
     | ClickedCategoryTag tag ->
         let sc = model.selectedCategories
         match (List.exists (fun c -> c = tag) sc) with
@@ -143,10 +176,11 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     | SearchRequest ->
         let data = {
             title = model.searchTitle;
+            professor = model.searchProfessor;
             categories = model.selectedCategories;
             streams = model.selectedStreams
         }
-        let searchRequest() = 
+        let searchRequest () = 
             promise {
                 let url = "http://localhost:1234/search-projects"
                 return! Fetch.post(url=url, 
@@ -161,6 +195,17 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
 //--------------------------------------------------------------------------------------//
 //                                 Render Subcomponents                                 //
 //--------------------------------------------------------------------------------------//
+
+let LoadingScreen =
+    Html.div [
+        prop.style [style.top 0; style.left 0; style.overflow.hidden; style.position.absolute; 
+                    style.height (length.vh 100); style.width (length.vw 100); style.display.flex
+                    style.zIndex 100; style.backgroundColor (rgba (0, 0, 0, 0.6))
+                    style.justifyContent.center; style.alignItems.center]
+        prop.children [
+            Html.div [ prop.classes [ "loader" ] ]
+        ]
+    ]
 
 let TurquoiseBackground opacity =
     Html.div [
@@ -178,30 +223,37 @@ let ImageBackground =
 
 // ---- NavBar ---------------------------------------------------------------------------
 
-let NavBar =
+let NavBar (dispatch: Msg -> unit) =
     Bulma.navbar [
         prop.style [style.backgroundColor mediumTurqouise; style.fontWeight 700]
         prop.children [
             Bulma.navbarBrand.div [
                 prop.onClick (fun e -> Router.navigatePath("home-student"))
-                prop.children [ Bulma.navbarItem.a [ Html.img [ prop.src "https://bulma.io/images/bulma-logo-white.png"; prop.height 28; prop.width 112] ] ]
+                prop.style [style.paddingTop 3; style.paddingRight 20; style.paddingLeft 10; style.cursor.pointer]
+                prop.children [ 
+                    Bulma.icon [
+                        Bulma.icon.isLarge
+                        prop.children [ Html.i [ prop.className "fas fa-home fa-2x"] ]
+                    ]
+                ] 
             ]
             Bulma.navbarMenu [
                 Bulma.navbarStart.div [
                     Bulma.navbarItem.a [ prop.text "Projects"; prop.onClick (fun e -> Router.navigatePath("home-student", "projects")) ]
-                    Bulma.navbarItem.a [ prop.text "Preferences" ]
-                    Bulma.navbarItem.a [ prop.text "Propose a Project" ]
+                    Bulma.navbarItem.a [ prop.text "Preferences"; prop.onClick (fun e -> Router.navigatePath("home-student", "preferences")) ]
+                    Bulma.navbarItem.a [ prop.text "Propose a Project"; prop.onClick (fun e -> Router.navigatePath("project-propose")) ]
                 ]
                 Bulma.navbarEnd.div [
                     Bulma.navbarItem.div [
                         Bulma.buttons [
-                            Bulma.button.a [ prop.text "Log Out" ]
+                            Bulma.button.a [ prop.text "Log Out"; prop.onClick (fun _ -> dispatch Logout) ]
                         ]
                     ]
                 ]
             ]
         ]
     ]  
+
 // ---- Search ---------------------------------------------------------------------------
 
 let ProjectInput (dispatch: Msg -> unit) = 
@@ -215,7 +267,7 @@ let ProjectInput (dispatch: Msg -> unit) =
                 prop.children [
                     Bulma.input.text [
                         prop.required true
-                        prop.placeholder "Enter your Query"
+                        prop.placeholder "Enter a Project Title"
                         prop.onTextChange (SearchTitleChanged >> dispatch)
                     ]
                     Bulma.icon [
@@ -232,16 +284,17 @@ let ProjectInput (dispatch: Msg -> unit) =
         ]
     ]
 
-let ProfessorInput = 
+let ProfessorInput (dispatch: Msg -> unit) = 
     Bulma.field.div [
         prop.children [
-            Bulma.label [ prop.text "Professor Title" ] 
+            Bulma.label [ prop.text "Professor Name" ] 
             Html.div [
                 prop.classes [Bulma.Control; Bulma.HasIconsLeft]
                 prop.children [
                     Bulma.input.text [
                         prop.required true
-                        prop.placeholder "Enter your Query"
+                        prop.placeholder "Enter a Professor Name"
+                        prop.onTextChange (SearchProfessorChanged >> dispatch)
                     ]
                     Bulma.icon [
                         Bulma.icon.isSmall
@@ -278,9 +331,9 @@ let TagFilter (dispatch: Msg -> unit) (model: Model) (filterType: FilterType) (f
 
 let SearchFilters (dispatch: Msg -> unit) (model: Model) = [
     ProjectInput dispatch
-    ProfessorInput
+    ProfessorInput dispatch
 
-    Bulma.label [ prop.text "Relevant Modules and Skills" ] 
+    Bulma.label [ prop.text "Relevant Project Categories" ] 
     for c in categories do
         TagFilter dispatch model FilterType.Category c
 
@@ -308,17 +361,17 @@ let TableRow (dispatch: Msg -> unit) (model: Model) (projectInfo: Project)  =
         prop.style [style.cursor.pointer]
         prop.children [
             Html.td [prop.text projectInfo.title]
-            Html.td []
-            Html.td [prop.text projectInfo.p1]
-            Html.td [prop.text projectInfo.p2]
-            Html.td [prop.text projectInfo.p3]
-            Html.td [prop.text projectInfo.p4]
-            Html.td [prop.text projectInfo.p5]
-            Html.td [prop.text projectInfo.p6]
-            Html.td [prop.text projectInfo.p7]
-            Html.td [prop.text projectInfo.p8]
-            Html.td [prop.text projectInfo.p9]
-            Html.td [prop.text projectInfo.p10]
+            Html.td [prop.text projectInfo.supName]
+            Html.td [prop.text projectInfo.r1]
+            Html.td [prop.text projectInfo.r2]
+            Html.td [prop.text projectInfo.r3]
+            Html.td [prop.text projectInfo.r4]
+            Html.td [prop.text projectInfo.r5]
+            Html.td [prop.text projectInfo.r6]
+            Html.td [prop.text projectInfo.r7]
+            Html.td [prop.text projectInfo.r8]
+            Html.td [prop.text projectInfo.r9]
+            Html.td [prop.text projectInfo.r10]
             Html.td (TableCategories model projectInfo.categories)
             Html.td [prop.text (projectInfo.updated.ToString "yyyy/MM/dd")]
         ]
@@ -363,68 +416,102 @@ let ProjectTable (model: Model) (dispatch: Msg -> unit) =
 
 // ---- Modal Project Info Content --------------------------------------------------------------------
 
+let modalProjectInfoMedia (sp: Project) =
+    Bulma.media [
+        prop.style [style.marginBottom 40]
+        prop.children [
+            Bulma.mediaLeft [
+                Bulma.image [
+                    Bulma.image.is48x48
+                    prop.children [
+                        Html.img [ prop.src "https://bulma.io/assets/images/placeholders/96x96.png" ]
+                    ]
+                ]
+            ]
+        
+            Bulma.mediaContent [
+                Bulma.title [ prop.classes [ Bulma.Is4 ]; prop.text sp.supName] 
+                Bulma.subtitle [ prop.classes [ Bulma.Is6 ]; prop.text "example123@ic.ac.uk"]
+            ]
+        ]
+    ]
+
+let modalProjectInfoBody (model: Model) (sp: Project) = 
+    Bulma.content [
+        Bulma.columns [
+            Bulma.column [
+                prop.classes [ Bulma.Is4]
+                prop.children [
+                    Html.h3 "Project Rankings"
+                    Html.ol [
+                        prop.style [style.fontWeight 700]
+                        prop.children [
+                            Html.li [ prop.key "1"; prop.text (sp.r1.ToString()) ]
+                            Html.li [ prop.key "2"; prop.text (sp.r2.ToString()) ]
+                            Html.li [ prop.key "3"; prop.text (sp.r3.ToString()) ]
+                            Html.li [ prop.key "4"; prop.text (sp.r4.ToString()) ]
+                            Html.li [ prop.key "5"; prop.text (sp.r5.ToString()) ]
+                            Html.li [ prop.key "6"; prop.text (sp.r6.ToString()) ]
+                            Html.li [ prop.key "7"; prop.text (sp.r7.ToString()) ]
+                            Html.li [ prop.key "8"; prop.text (sp.r8.ToString()) ]
+                            Html.li [ prop.key "9"; prop.text (sp.r9.ToString()) ]
+                            Html.li [ prop.key "10"; prop.text (sp.r10.ToString()) ]
+
+                        ]
+                    ]
+                ]
+            ]
+            Bulma.column [
+                Html.h3 "Project Categories"
+                for c in (TableCategories model sp.categories) do 
+                    c
+
+                Html.h3 "Student Requirements"
+                Html.p sp.requirements
+            ]
+        ]
+
+        Html.h3 "Desired Skills"
+        Html.p sp.skills
+
+        Html.h3 "Project Description"
+        Html.p sp.descr
+
+        Html.h3 "Meeting Dates"
+        Html.p sp.meetings 
+    ]
+
 let modalProjectInfo (model: Model) (dispatch: Msg -> unit) = 
     let sp = model.selectedProject
 
     Bulma.modalCard [
         Bulma.modalCardHead [
-            Bulma.modalCardTitle ("#" + sp.pid + " " + sp.title)
+            Bulma.modalCardTitle ("#" + sp.pid.ToString() + " " + sp.title)
             Bulma.modalClose [ 
                 prop.classes [ Bulma.IsLarge ]
                 prop.onClick (fun _ -> dispatch CloseModal)
             ]
         ]
         Bulma.modalCardBody [
-            Bulma.content [
-                Bulma.columns [
-                    Bulma.column [
-                        prop.classes [ Bulma.Is5 ]
-                        prop.children [
-                            Html.h2 "Project Rankings"
-                            Html.ol [
-                                prop.style [style.fontWeight 700]
-                                prop.children [
-                                    Html.li (Html.p (sp.p1.ToString()))
-                                    Html.li (Html.p (sp.p2.ToString()))
-                                    Html.li (Html.p (sp.p3.ToString()))
-                                    Html.li (Html.p (sp.p4.ToString()))
-                                    Html.li (Html.p (sp.p5.ToString()))
-                                    Html.li (Html.p (sp.p6.ToString()))
-                                    Html.li (Html.p (sp.p7.ToString()))
-                                    Html.li (Html.p (sp.p8.ToString()))
-                                    Html.li (Html.p (sp.p9.ToString()))
-                                    Html.li (Html.p (sp.p10.ToString()))
-                                ]
-                            ]
-                        ]
-                    ]
-                    Bulma.column [
-                        Html.h2 "Project Categories"
-                        for c in (TableCategories model sp.categories) do 
-                            c
-
-                        Html.h2 "Student Requirements"
-                        Html.p sp.requirements
-                    ]
-                ]
-
-                Html.h2 "Desired Skills"
-                Html.p sp.skills
-
-                Html.h2 "Project Description"
-                Html.p sp.descr
-
-                Html.h2 "Meeting Dates"
-                Html.p sp.meetings 
+            prop.classes [ "scrollbar" ]
+            prop.children [ 
+                modalProjectInfoMedia sp
+                modalProjectInfoBody model sp 
             ]
-        ]
 
+        ]
         Bulma.modalCardFoot [
             Bulma.buttons [
                 Bulma.button.button [
-                    Bulma.color.isSuccess
-                    prop.text "Add Project"
-                    prop.onClick (fun _ -> dispatch OpenAddProject)
+                    match model.preference.doc with
+                    | true ->
+                        prop.text "You've entered DOC allocation"
+                        prop.disabled true
+                        Bulma.color.isWarning
+                    | false ->
+                        Bulma.color.isSuccess
+                        prop.text "Add Project"
+                        prop.onClick (fun _ -> dispatch OpenAddProject)
                 ]
                 Bulma.button.button [
                     prop.text "Close Project"
@@ -446,9 +533,9 @@ let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank): P
             prop.children [
                 Html.td [prop.style [style.color.red]; prop.text rank]
                 Html.td [prop.style [style.color.red]; prop.text model.selectedProject.title]
-                Html.td [prop.style [style.color.red]; ]
+                Html.td [prop.style [style.color.red]; prop.text model.selectedProject.supName]
             ]
-        | _, "-" ->
+        | _, 0 ->
             prop.children [
                 Html.td [prop.text rank]
                 Html.td []
@@ -458,7 +545,7 @@ let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank): P
             prop.children [
                 Html.td [prop.text rank]
                 Html.td [prop.text projectInfo.title]
-                Html.td []
+                Html.td [prop.text projectInfo.supName]
             ]
     ]
 
@@ -483,25 +570,27 @@ let modalAddProject (model: Model) (dispatch: Msg -> unit) =
 
     Bulma.modalCard [
         Bulma.modalCardHead [
-            Bulma.modalCardTitle ("#" + sp.pid + " " + sp.title)
+            Bulma.modalCardTitle ("#" + sp.pid.ToString() + " " + sp.title)
             Bulma.modalClose [ 
                 prop.classes [ Bulma.IsLarge ]
                 prop.onClick (fun _ -> dispatch CloseModal)
             ]
         ]
         Bulma.modalCardBody [
-            Bulma.content [
-                Html.h2 "Add Project"
-                Html.p "You are about to add the following project to your preferences:"
-                Html.blockquote ("'" + sp.title + "'")
-                Html.p "Below in your preferences, please select a preference rank 
-                        of where you would like to replace or place the project."
-                
-                Html.h2 "Your Preferences"
-                PreferenceTable model dispatch
+            prop.classes [ "scrollbar" ]
+            prop.children [
+                Bulma.content [
+                    Html.h3 "Add Project"
+                    Html.p "You are about to add the following project to your preferences:"
+                    Html.blockquote ("'" + sp.title + "'")
+                    Html.p "Below in your preferences, please select a preference rank 
+                            of where you would like to replace or place the project."
+                    
+                    Html.h3 "Your Preferences"
+                    PreferenceTable model dispatch
+                ]
             ]
         ]
-
         Bulma.modalCardFoot [
             Bulma.buttons [
                 Bulma.button.button [
@@ -510,7 +599,7 @@ let modalAddProject (model: Model) (dispatch: Msg -> unit) =
                     | true -> // If true then selectedProject hasen't been preferenced yet, hence can't save changes
                         prop.disabled true
                     | false -> // If false then selectedProject has been preferenced, hence can now save changes
-                        prop.onClick (fun _ -> dispatch OpenAddProject)
+                        prop.onClick (fun _ -> dispatch AddProject)
                         Bulma.color.isSuccess
                 ]
                 Bulma.button.button [
@@ -529,12 +618,13 @@ let view (model: Model) (dispatch: Msg -> unit) =
     Html.body [
         prop.style [style.height (length.vh 100); style.position.relative]
         prop.children [
+            if model.loading then LoadingScreen
             TurquoiseBackground 0.5
             ImageBackground
-            NavBar
+            NavBar dispatch
 
             Bulma.columns [
-                prop.style [ style.height (length.vh 85); style.margin (length.perc 1)]
+                prop.style [ style.height (length.vh 90); style.margin (length.perc 1)]
                 prop.children [
 
                     Bulma.column [
@@ -566,7 +656,6 @@ let view (model: Model) (dispatch: Msg -> unit) =
                                 modalAddProject model dispatch
                         ]
                     ]
-
                 ]   
             ]
  

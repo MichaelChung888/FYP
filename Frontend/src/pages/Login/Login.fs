@@ -22,13 +22,14 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 //--------------------------------------------------------------------------------------//
 
 type Model = {
+    loading: bool
     login: LoginRequest
 }
 
 type Msg =
     | InputChanged of string
     | Submit of Browser.Types.Event
-    | Success of Account
+    | SuccessLogin of Account
     | Error of exn
 
 //--------------------------------------------------------------------------------------//
@@ -36,7 +37,7 @@ type Msg =
 //--------------------------------------------------------------------------------------//
 
 let init () : Model * Cmd<Msg> = 
-    { login = { eeid = "" } }, Cmd.none
+    { loading = false; login = { eeid = "" } }, Cmd.none
 
 //--------------------------------------------------------------------------------------//
 //               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
@@ -47,8 +48,8 @@ let update (msg: Msg) (model: Model) =
     | InputChanged newInput ->
         { model with login = { model.login with eeid = newInput } }, Cmd.none
     | Submit ev ->
-        ev.preventDefault()
-        let handleSubmit() = 
+        ev.preventDefault ()
+        let handleSubmit () = 
             promise {
                 let url = "http://localhost:1234/login"
                 return! Fetch.post(url=url, 
@@ -56,17 +57,28 @@ let update (msg: Msg) (model: Model) =
                                    decoder=Account.Decoder, 
                                    properties=[Credentials RequestCredentials.Include])
             }
-        model, Cmd.OfPromise.either handleSubmit () Success Error
-    | Success res ->
+        { model with loading = true }, Cmd.OfPromise.either handleSubmit () SuccessLogin Error
+    | SuccessLogin res ->
         printfn "%A" res
-        model, Cmd.none
+        { model with loading = false }, Cmd.none
     | Error res ->
         printfn "%A" res
-        model, Cmd.none
+        { model with loading = false }, Cmd.none
 
 //--------------------------------------------------------------------------------------//
 //                                 Render Subcomponents                                 //
 //--------------------------------------------------------------------------------------//
+
+let LoadingScreen =
+    Html.div [
+        prop.style [style.top 0; style.left 0; style.overflow.hidden; style.position.absolute; 
+                    style.height (length.vh 100); style.width (length.vw 100); style.display.flex
+                    style.zIndex 100; style.backgroundColor (rgba (0, 0, 0, 0.6))
+                    style.justifyContent.center; style.alignItems.center]
+        prop.children [
+            Html.div [ prop.classes [ "loader" ] ]
+        ]
+    ]
 
 let TurquoiseBackground opacity =
     Html.div [
@@ -118,12 +130,12 @@ let view (model: Model) (dispatch: Msg -> unit) =
     Html.body [
         prop.style [style.height (length.vh 100); style.display.flex; style.alignItems.center; style.justifyContent.center]
         prop.children [
-
+            if model.loading then LoadingScreen
             TurquoiseBackground 0.5
             ImageBackground
 
             Html.div [
-                prop.style [TurquoiseBackgroundStyle 0.7; style.position.relative; style.borderStyle.solid; style.borderColor mediumTurqouise; style.width (length.px 400); style.height (length.px 550); style.padding (length.px 10); style.display.flex; style.flexDirection.column; style.alignItems.center; style.justifyContent.center; style.borderRadius (length.perc 3)] //style.backgroundColor (rgb (0,0,0))
+                prop.style [TurquoiseBackgroundStyle 0.7; style.position.relative; style.borderStyle.solid; style.borderColor mediumTurqouise; style.width (length.px 400); style.height (length.px 550); style.padding (length.px 10); style.display.flex; style.flexDirection.column; style.alignItems.center; style.justifyContent.center; style.borderRadius (length.perc 3)]
                 prop.children [
                     Html.section [
                         prop.classes ["title"; "is-2"; Bulma.Field]

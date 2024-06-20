@@ -1,6 +1,6 @@
 import { Union, Record } from "../../fable_modules/fable-library.4.1.4/Types.js";
+import { union_type, class_type, string_type, record_type, bool_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
 import { Account_get_Decoder, LoginRequest, Account_$reflection, LoginRequest_$reflection } from "../../../../Shared/Shared.fs.js";
-import { union_type, class_type, string_type, record_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
 import { Cmd_OfPromise_either, Cmd_none } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
 import { PromiseBuilder__Delay_62FBFDE1, PromiseBuilder__Run_212F1D4B } from "../../fable_modules/Fable.Promise.3.2.0/Promise.fs.js";
 import { promise } from "../../fable_modules/Fable.Promise.3.2.0/PromiseImpl.fs.js";
@@ -21,20 +21,22 @@ import { createObj, uncurry2 } from "../../fable_modules/fable-library.4.1.4/Uti
 import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { createElement } from "react";
 import { rgba } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
+import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
 import { PropHelpers_createOnKey } from "../../fable_modules/Feliz.2.7.0/./Properties.fs.js";
 import { key_enter } from "../../fable_modules/Feliz.2.7.0/Key.fs.js";
-import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
+import { empty as empty_1, singleton as singleton_1, append, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
 
 export class Model extends Record {
-    constructor(login) {
+    constructor(loading, login) {
         super();
+        this.loading = loading;
         this.login = login;
     }
 }
 
 export function Model_$reflection() {
-    return record_type("Login.Model", [], Model, () => [["login", LoginRequest_$reflection()]]);
+    return record_type("Login.Model", [], Model, () => [["loading", bool_type], ["login", LoginRequest_$reflection()]]);
 }
 
 export class Msg extends Union {
@@ -44,7 +46,7 @@ export class Msg extends Union {
         this.fields = fields;
     }
     cases() {
-        return ["InputChanged", "Submit", "Success", "Error"];
+        return ["InputChanged", "Submit", "SuccessLogin", "Error"];
     }
 }
 
@@ -53,7 +55,7 @@ export function Msg_$reflection() {
 }
 
 export function init() {
-    return [new Model(new LoginRequest("")), Cmd_none()];
+    return [new Model(false, new LoginRequest("")), Cmd_none()];
 }
 
 export function update(msg, model) {
@@ -105,24 +107,43 @@ export function update(msg, model) {
                     });
                 }))));
             }));
-            return [model, Cmd_OfPromise_either(handleSubmit, void 0, (arg_4) => (new Msg(2, [arg_4])), (arg_5) => (new Msg(3, [arg_5])))];
+            return [new Model(true, model.login), Cmd_OfPromise_either(handleSubmit, void 0, (arg_4) => (new Msg(2, [arg_4])), (arg_5) => (new Msg(3, [arg_5])))];
         }
         case 2: {
             const res = msg.fields[0];
             toConsole(printf("%A"))(res);
-            return [model, Cmd_none()];
+            return [new Model(false, model.login), Cmd_none()];
         }
         case 3: {
             const res_1 = msg.fields[0];
             toConsole(printf("%A"))(res_1);
-            return [model, Cmd_none()];
+            return [new Model(false, model.login), Cmd_none()];
         }
         default: {
             const newInput = msg.fields[0];
-            return [new Model(new LoginRequest(newInput)), Cmd_none()];
+            return [new Model(model.loading, new LoginRequest(newInput)), Cmd_none()];
         }
     }
 }
+
+export const LoadingScreen = createElement("div", createObj(ofArray([["style", {
+    top: 0,
+    left: 0,
+    overflow: "hidden",
+    position: "absolute",
+    height: 100 + "vh",
+    width: 100 + "vw",
+    display: "flex",
+    zIndex: 100,
+    backgroundColor: rgba(0, 0, 0, 0.6),
+    justifyContent: "center",
+    alignItems: "center",
+}], (() => {
+    const elems = [createElement("div", {
+        className: join(" ", ["loader"]),
+    })];
+    return ["children", Interop_reactApi.Children.toArray(Array.from(elems))];
+})()])));
 
 export function TurquoiseBackground(opacity) {
     return createElement("div", {
@@ -166,32 +187,35 @@ export function Input(dispatch) {
 }
 
 export function view(model, dispatch) {
-    let elems_4, elems_3, elems_2, elems_1, elms;
+    let elems_4;
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-    }], (elems_4 = [TurquoiseBackground(0.5), ImageBackground, createElement("div", createObj(ofArray([["style", createObj(ofArray([TurquoiseBackgroundStyle(0.7), ["position", "relative"], ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["width", 400 + "px"], ["height", 550 + "px"], ["padding", 10 + "px"], ["display", "flex"], ["flexDirection", "column"], ["alignItems", "center"], ["justifyContent", "center"], ["borderRadius", 3 + "%"]]))], (elems_3 = [createElement("section", {
-        className: join(" ", ["title", "is-2", "field"]),
-        children: "EEFYP",
-    }), createElement("section", {
-        style: {
-            textAlign: "center",
-            color: "#808080",
-        },
-        className: join(" ", ["section", "subtitle", "is-5", "field"]),
-        children: "Electrical and Electronic final year project selection page",
-    }), createElement("form", createObj(ofArray([["onSubmit", (arg_1) => {
-        dispatch(new Msg(1, [arg_1]));
-    }], ["style", {
-        width: 80 + "%",
-    }], (elems_2 = [Input(dispatch), createElement("div", createObj(ofArray([["style", {
-        marginTop: 35 + "px",
-    }], ["className", join(" ", ["field", "is-grouped", "is-grouped-centered"])], (elems_1 = [(elms = singleton(createElement("button", createObj(Helpers_combineClasses("button", ofArray([["className", "is-info"], ["children", "Login"]]))))), createElement("div", {
-        className: "control",
-        children: Interop_reactApi.Children.toArray(Array.from(elms)),
-    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_3))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_4))])])));
+    }], (elems_4 = toList(delay(() => append(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append(singleton_1(TurquoiseBackground(0.5)), delay(() => append(singleton_1(ImageBackground), delay(() => {
+        let elems_3, elems_2, elems_1, elms;
+        return singleton_1(createElement("div", createObj(ofArray([["style", createObj(ofArray([TurquoiseBackgroundStyle(0.7), ["position", "relative"], ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["width", 400 + "px"], ["height", 550 + "px"], ["padding", 10 + "px"], ["display", "flex"], ["flexDirection", "column"], ["alignItems", "center"], ["justifyContent", "center"], ["borderRadius", 3 + "%"]]))], (elems_3 = [createElement("section", {
+            className: join(" ", ["title", "is-2", "field"]),
+            children: "EEFYP",
+        }), createElement("section", {
+            style: {
+                textAlign: "center",
+                color: "#808080",
+            },
+            className: join(" ", ["section", "subtitle", "is-5", "field"]),
+            children: "Electrical and Electronic final year project selection page",
+        }), createElement("form", createObj(ofArray([["onSubmit", (arg_1) => {
+            dispatch(new Msg(1, [arg_1]));
+        }], ["style", {
+            width: 80 + "%",
+        }], (elems_2 = [Input(dispatch), createElement("div", createObj(ofArray([["style", {
+            marginTop: 35 + "px",
+        }], ["className", join(" ", ["field", "is-grouped", "is-grouped-centered"])], (elems_1 = [(elms = singleton(createElement("button", createObj(Helpers_combineClasses("button", ofArray([["className", "is-info"], ["children", "Login"]]))))), createElement("div", {
+            className: "control",
+            children: Interop_reactApi.Children.toArray(Array.from(elms)),
+        }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_3))])]))));
+    })))))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems_4))])])));
 }
 
 //# sourceMappingURL=Login.fs.js.map

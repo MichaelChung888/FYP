@@ -22,6 +22,7 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 //--------------------------------------------------------------------------------------//
 
 type Model = {
+    loading: bool
     projects: List<Project>
     preference: PreferenceResponse
     token: string
@@ -33,16 +34,17 @@ type InitalLoad = {
 }
 
 type Msg =
-    | SuccessfulLoad of InitalLoad
-    | ErrorLoad of exn
+    | SuccessLoad of InitalLoad
+    | Error of exn
+    | Logout
 
 //--------------------------------------------------------------------------------------//
 //                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
-let init token : Model * Cmd<Msg> = 
-    let defaultModel = { projects = []; preference = PreferenceResponse.Default; token = token }
-    let initialLoad() = 
+let init (token: string) : Model * Cmd<Msg> = 
+    let defaultModel = { loading = true; projects = []; preference = PreferenceResponse.Default; token = token }
+    let initialLoad () = 
         promise {
             let newProjectsUrl = "http://localhost:1234/new-projects"
             let preferenceUrl = "http://localhost:1234/preferences"
@@ -56,7 +58,7 @@ let init token : Model * Cmd<Msg> =
             return { projects = projects; preference = preference }
             
         }
-    defaultModel, Cmd.OfPromise.either initialLoad () SuccessfulLoad ErrorLoad
+    defaultModel, Cmd.OfPromise.either initialLoad () SuccessLoad Error
 
 //--------------------------------------------------------------------------------------//
 //               Model Update [update : Msg -> Model -> Model * Cmd<Msg>]               //
@@ -64,15 +66,27 @@ let init token : Model * Cmd<Msg> =
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
-    | SuccessfulLoad initialLoad ->
-        { model with projects = initialLoad.projects; preference = initialLoad.preference }, Cmd.none
-    | ErrorLoad res ->
+    | SuccessLoad initialLoad ->
+        { model with projects = initialLoad.projects; preference = initialLoad.preference; loading = false }, Cmd.none
+    | Error res ->
         printfn "%A" res
+        { model with loading = false }, Cmd.none
+    | Logout -> 
         model, Cmd.none
-
 //--------------------------------------------------------------------------------------//
 //                                 Render Subcomponents                                 //
 //--------------------------------------------------------------------------------------//
+
+let LoadingScreen =
+    Html.div [
+        prop.style [style.top 0; style.left 0; style.overflow.hidden; style.position.absolute; 
+                    style.height (length.vh 100); style.width (length.vw 100); style.display.flex
+                    style.zIndex 100; style.backgroundColor (rgba (0, 0, 0, 0.6))
+                    style.justifyContent.center; style.alignItems.center]
+        prop.children [
+            Html.div [ prop.classes [ "loader" ] ]
+        ]
+    ]
 
 let TurquoiseBackground opacity =
     Html.div [
@@ -90,24 +104,30 @@ let ImageBackground =
 
 // ---- Navigation Bar -------------------------------------------------------------------
 
-let NavBar =
+let NavBar (dispatch: Msg -> unit) =
     Bulma.navbar [
         prop.style [style.backgroundColor mediumTurqouise; style.fontWeight 700]
         prop.children [
             Bulma.navbarBrand.div [
                 prop.onClick (fun e -> Router.navigatePath("home-student"))
-                prop.children [ Bulma.navbarItem.a [ Html.img [ prop.src "https://bulma.io/images/bulma-logo-white.png"; prop.height 28; prop.width 112] ] ]
+                prop.style [style.paddingTop 3; style.paddingRight 20; style.paddingLeft 10; style.cursor.pointer]
+                prop.children [ 
+                    Bulma.icon [
+                        Bulma.icon.isLarge
+                        prop.children [ Html.i [ prop.className "fas fa-home fa-2x"] ]
+                    ]
+                ] 
             ]
             Bulma.navbarMenu [
                 Bulma.navbarStart.div [
                     Bulma.navbarItem.a [ prop.text "Projects"; prop.onClick (fun e -> Router.navigatePath("home-student", "projects")) ]
-                    Bulma.navbarItem.a [ prop.text "Preferences" ]
-                    Bulma.navbarItem.a [ prop.text "Propose a Project" ]
+                    Bulma.navbarItem.a [ prop.text "Preferences"; prop.onClick (fun e -> Router.navigatePath("home-student", "preferences")) ]
+                    Bulma.navbarItem.a [ prop.text "Propose a Project"; prop.onClick (fun e -> Router.navigatePath("project-propose")) ]
                 ]
                 Bulma.navbarEnd.div [
                     Bulma.navbarItem.div [
                         Bulma.buttons [
-                            Bulma.button.a [ prop.text "Log Out" ]
+                            Bulma.button.a [ prop.text "Log Out"; prop.onClick (fun _ -> dispatch Logout) ]
                         ]
                     ]
                 ]
@@ -129,12 +149,12 @@ let TableCategories (categories: string) =
 let ProjectRow (projectInfo: Project) = 
     Html.tr [
             Html.td [prop.text projectInfo.title]
-            Html.td []
-            Html.td [prop.text projectInfo.p1]
-            Html.td [prop.text projectInfo.p2]
-            Html.td [prop.text projectInfo.p3]
-            Html.td [prop.text projectInfo.p4]
-            Html.td [prop.text projectInfo.p5]
+            Html.td [prop.text projectInfo.supName]
+            Html.td [prop.text projectInfo.r1]
+            Html.td [prop.text projectInfo.r2]
+            Html.td [prop.text projectInfo.r3]
+            Html.td [prop.text projectInfo.r4]
+            Html.td [prop.text projectInfo.r5]
             Html.td (TableCategories projectInfo.categories)
             Html.td [prop.text (projectInfo.updated.ToString "yyyy/MM/dd")]
     ]
@@ -175,7 +195,7 @@ let NewTable (model: Model) =
 
 let PreferenceRow ((projectInfo, rank): Project * int) = 
     match projectInfo.pid with
-    | "-" ->
+    | 0 ->
         Html.tr [
             Html.td [prop.text rank]
             Html.td []
@@ -185,7 +205,7 @@ let PreferenceRow ((projectInfo, rank): Project * int) =
         Html.tr [
             Html.td [prop.text rank]
             Html.td [prop.text projectInfo.title]
-            Html.td []
+            Html.td [prop.text projectInfo.supName]
         ]
 
 let PreferenceTable (model: Model) =
@@ -201,63 +221,6 @@ let PreferenceTable (model: Model) =
             ]
         ]
         Html.tbody (List.map PreferenceRow prefList)
-    ]
-
-// ---- Media ----------------------------------------------------------------------------
-
-let Media =
-    Bulma.media [
-        prop.style []
-        prop.children [
-            Bulma.mediaLeft [
-                Bulma.image [
-                    Bulma.image.is64x64
-                    prop.children [
-                        Html.img [
-                            prop.src "https://bulma.io/assets/images/placeholders/128x128.png"
-                        ]
-                    ]
-                ]
-            ]
-            Bulma.mediaContent [
-                Bulma.content [
-                    Html.p [
-                        Html.strong "John Smith"
-                        Html.small "@johnsmith"
-                        Html.br []
-                        Html.span "Lorem ipsum ... vestibulum ut."
-                    ]
-                ]
-                Bulma.level [
-                    Bulma.levelLeft [
-                        Bulma.levelItem [
-                            Bulma.icon [
-                                Bulma.icon.isSmall
-                                prop.children [
-                                    Html.i [ prop.className "fas fa-reply" ]
-                                ]
-                            ]
-                        ]
-                        Bulma.levelItem [
-                            Bulma.icon [
-                                Bulma.icon.isSmall
-                                prop.children [
-                                    Html.i [ prop.className "fas fa-retweet" ]
-                                ]
-                            ]
-                        ]
-                        Bulma.levelItem [
-                            Bulma.icon [
-                                Bulma.icon.isSmall
-                                prop.children [
-                                    Html.i [ prop.className "fas fa-heart" ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
     ]
 
 // ---- Tiles ----------------------------------------------------------------------------
@@ -303,9 +266,10 @@ let view (model: Model) (dispatch: Msg -> unit) =
     Html.body [
         prop.style [style.height (length.vh 100); style.position.relative]
         prop.children [
+            if model.loading then LoadingScreen
             TurquoiseBackground 0.5
             ImageBackground
-            NavBar
+            NavBar dispatch
             Tiles model
         ]
     ]

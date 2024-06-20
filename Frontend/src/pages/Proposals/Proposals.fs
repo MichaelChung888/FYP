@@ -690,9 +690,9 @@ let view (model: Model) (dispatch: Msg -> unit) =
                     Bulma.column [
                         prop.style TileCss
                         prop.children [ 
-                            Tabs model dispatch
-                            if model.isPreferenceTab then (PreferenceTable model dispatch) else (Comments model dispatch)
-                            saveChangesButtons model dispatch
+                            //if model.isPreferenceTab then (PreferenceTable model dispatch) else (Comments model dispatch)
+                            (PreferenceTable model dispatch)
+                            //saveChangesButtons model dispatch
                         ]
                     ]
 
