@@ -1,8 +1,8 @@
-import { Union, Record } from "../Frontend/src/fable_modules/fable-library.4.1.4/Types.js";
-import { union_type, class_type, int32_type, bool_type, list_type, record_type, string_type } from "../Frontend/src/fable_modules/fable-library.4.1.4/Reflection.js";
+import { Record } from "../Frontend/src/fable_modules/fable-library.4.1.4/Types.js";
+import { class_type, int32_type, bool_type, list_type, record_type, string_type } from "../Frontend/src/fable_modules/fable-library.4.1.4/Reflection.js";
 import { list as list_2, object } from "../Frontend/src/fable_modules/Thoth.Json.10.2.0/Encode.fs.js";
-import { bool, datetimeLocal, int, string, object as object_1 } from "../Frontend/src/fable_modules/Thoth.Json.10.2.0/Decode.fs.js";
-import { ofArray, map } from "../Frontend/src/fable_modules/fable-library.4.1.4/List.js";
+import { list as list_3, bool, datetimeLocal, int, string, object as object_1 } from "../Frontend/src/fable_modules/Thoth.Json.10.2.0/Decode.fs.js";
+import { empty, map } from "../Frontend/src/fable_modules/fable-library.4.1.4/List.js";
 import { uncurry2, int32ToString } from "../Frontend/src/fable_modules/fable-library.4.1.4/Util.js";
 import { now } from "../Frontend/src/fable_modules/fable-library.4.1.4/Date.js";
 
@@ -74,20 +74,20 @@ export function SavePreferenceRequest_Encoder_6A67AF29(savePreferenceRequest) {
 }
 
 export class AddPreferenceRequest extends Record {
-    constructor(preference, newPreference, newPreferenceRankWhere) {
+    constructor(preference, newPreference, newPreferenceIndex) {
         super();
         this.preference = (preference | 0);
         this.newPreference = (newPreference | 0);
-        this.newPreferenceRankWhere = (newPreferenceRankWhere | 0);
+        this.newPreferenceIndex = (newPreferenceIndex | 0);
     }
 }
 
 export function AddPreferenceRequest_$reflection() {
-    return record_type("Shared.AddPreferenceRequest", [], AddPreferenceRequest, () => [["preference", int32_type], ["newPreference", int32_type], ["newPreferenceRankWhere", int32_type]]);
+    return record_type("Shared.AddPreferenceRequest", [], AddPreferenceRequest, () => [["preference", int32_type], ["newPreference", int32_type], ["newPreferenceIndex", int32_type]]);
 }
 
 export function AddPreferenceRequest_Encoder_5C6A6B69(addPreferenceRequest) {
-    return object([["preference", int32ToString(addPreferenceRequest.preference)], ["newPreference", int32ToString(addPreferenceRequest.newPreference)], ["newPreferenceRank", addPreferenceRequest.newPreferenceRankWhere]]);
+    return object([["preference", int32ToString(addPreferenceRequest.preference)], ["newPreference", int32ToString(addPreferenceRequest.newPreference)], ["newPreferenceRank", addPreferenceRequest.newPreferenceIndex]]);
 }
 
 export class ProjectProposeRequest extends Record {
@@ -110,6 +110,45 @@ export function ProjectProposeRequest_$reflection() {
 
 export function ProjectProposeRequest_Encoder_Z37BC34FE(studentPreferenceRequest) {
     return object([["title", studentPreferenceRequest.title], ["isStudent", studentPreferenceRequest.isStudent], ["categories", encodeStringList(studentPreferenceRequest.categories)], ["streams", encodeStringList(studentPreferenceRequest.streams)], ["requirements", studentPreferenceRequest.requirements], ["description", studentPreferenceRequest.description], ["skills", studentPreferenceRequest.skills], ["meetings", studentPreferenceRequest.meetings]]);
+}
+
+export class EditProposalRequest extends Record {
+    constructor(pid, isStudent, title, categories, streams, requirements, description, skills, meetings) {
+        super();
+        this.pid = (pid | 0);
+        this.isStudent = isStudent;
+        this.title = title;
+        this.categories = categories;
+        this.streams = streams;
+        this.requirements = requirements;
+        this.description = description;
+        this.skills = skills;
+        this.meetings = meetings;
+    }
+}
+
+export function EditProposalRequest_$reflection() {
+    return record_type("Shared.EditProposalRequest", [], EditProposalRequest, () => [["pid", int32_type], ["isStudent", bool_type], ["title", string_type], ["categories", list_type(string_type)], ["streams", list_type(string_type)], ["requirements", string_type], ["description", string_type], ["skills", string_type], ["meetings", string_type]]);
+}
+
+export function EditProposalRequest_Encoder_Z4372321D(projectEditRequest) {
+    return object([["pid", projectEditRequest.pid], ["title", projectEditRequest.title], ["isStudent", projectEditRequest.isStudent], ["categories", encodeStringList(projectEditRequest.categories)], ["streams", encodeStringList(projectEditRequest.streams)], ["requirements", projectEditRequest.requirements], ["description", projectEditRequest.description], ["skills", projectEditRequest.skills], ["meetings", projectEditRequest.meetings]]);
+}
+
+export class DeleteProposalRequest extends Record {
+    constructor(isStudent, pid) {
+        super();
+        this.isStudent = isStudent;
+        this.pid = (pid | 0);
+    }
+}
+
+export function DeleteProposalRequest_$reflection() {
+    return record_type("Shared.DeleteProposalRequest", [], DeleteProposalRequest, () => [["isStudent", bool_type], ["pid", int32_type]]);
+}
+
+export function DeleteProposalRequest_Encoder_Z612E0F3A(deleteProposalRequest) {
+    return object([["isStudent", deleteProposalRequest.isStudent], ["proposal", deleteProposalRequest.pid]]);
 }
 
 export class Person extends Record {
@@ -198,7 +237,7 @@ export function Project_get_Default() {
 }
 
 export class Preference extends Record {
-    constructor(eeid, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, upddate, comments, feedback, doc) {
+    constructor(eeid, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, upddate, comments, feedback, doc) {
         super();
         this.eeid = eeid;
         this.p1 = (p1 | 0);
@@ -221,6 +260,16 @@ export class Preference extends Record {
         this.n8 = (n8 | 0);
         this.n9 = (n9 | 0);
         this.n10 = (n10 | 0);
+        this.s1 = s1;
+        this.s2 = s2;
+        this.s3 = s3;
+        this.s4 = s4;
+        this.s5 = s5;
+        this.s6 = s6;
+        this.s7 = s7;
+        this.s8 = s8;
+        this.s9 = s9;
+        this.s10 = s10;
         this.upddate = upddate;
         this.comments = comments;
         this.feedback = feedback;
@@ -229,18 +278,18 @@ export class Preference extends Record {
 }
 
 export function Preference_$reflection() {
-    return record_type("Shared.Preference", [], Preference, () => [["eeid", string_type], ["p1", int32_type], ["p2", int32_type], ["p3", int32_type], ["p4", int32_type], ["p5", int32_type], ["p6", int32_type], ["p7", int32_type], ["p8", int32_type], ["p9", int32_type], ["p10", int32_type], ["n1", int32_type], ["n2", int32_type], ["n3", int32_type], ["n4", int32_type], ["n5", int32_type], ["n6", int32_type], ["n7", int32_type], ["n8", int32_type], ["n9", int32_type], ["n10", int32_type], ["upddate", class_type("System.DateTime")], ["comments", string_type], ["feedback", string_type], ["doc", bool_type]]);
+    return record_type("Shared.Preference", [], Preference, () => [["eeid", string_type], ["p1", int32_type], ["p2", int32_type], ["p3", int32_type], ["p4", int32_type], ["p5", int32_type], ["p6", int32_type], ["p7", int32_type], ["p8", int32_type], ["p9", int32_type], ["p10", int32_type], ["n1", int32_type], ["n2", int32_type], ["n3", int32_type], ["n4", int32_type], ["n5", int32_type], ["n6", int32_type], ["n7", int32_type], ["n8", int32_type], ["n9", int32_type], ["n10", int32_type], ["s1", string_type], ["s2", string_type], ["s3", string_type], ["s4", string_type], ["s5", string_type], ["s6", string_type], ["s7", string_type], ["s8", string_type], ["s9", string_type], ["s10", string_type], ["upddate", class_type("System.DateTime")], ["comments", string_type], ["feedback", string_type], ["doc", bool_type]]);
 }
 
 export function Preference_get_Decoder() {
-    return (path_5) => ((v) => object_1((json) => {
-        let objectArg, objectArg_1, objectArg_2, objectArg_3, objectArg_4, objectArg_5, objectArg_6, objectArg_7, objectArg_8, objectArg_9, objectArg_10, objectArg_11, objectArg_12, objectArg_13, objectArg_14, objectArg_15, objectArg_16, objectArg_17, objectArg_18, objectArg_19, objectArg_20, objectArg_21, objectArg_22, objectArg_23, objectArg_24;
-        return new Preference((objectArg = json.Required, objectArg.Field("eeid", string)), (objectArg_1 = json.Required, objectArg_1.Field("p1", uncurry2(int))), (objectArg_2 = json.Required, objectArg_2.Field("p2", uncurry2(int))), (objectArg_3 = json.Required, objectArg_3.Field("p3", uncurry2(int))), (objectArg_4 = json.Required, objectArg_4.Field("p4", uncurry2(int))), (objectArg_5 = json.Required, objectArg_5.Field("p5", uncurry2(int))), (objectArg_6 = json.Required, objectArg_6.Field("p6", uncurry2(int))), (objectArg_7 = json.Required, objectArg_7.Field("p7", uncurry2(int))), (objectArg_8 = json.Required, objectArg_8.Field("p8", uncurry2(int))), (objectArg_9 = json.Required, objectArg_9.Field("p9", uncurry2(int))), (objectArg_10 = json.Required, objectArg_10.Field("p10", uncurry2(int))), (objectArg_11 = json.Required, objectArg_11.Field("n1", uncurry2(int))), (objectArg_12 = json.Required, objectArg_12.Field("n2", uncurry2(int))), (objectArg_13 = json.Required, objectArg_13.Field("n3", uncurry2(int))), (objectArg_14 = json.Required, objectArg_14.Field("n4", uncurry2(int))), (objectArg_15 = json.Required, objectArg_15.Field("n5", uncurry2(int))), (objectArg_16 = json.Required, objectArg_16.Field("n6", uncurry2(int))), (objectArg_17 = json.Required, objectArg_17.Field("n7", uncurry2(int))), (objectArg_18 = json.Required, objectArg_18.Field("n8", uncurry2(int))), (objectArg_19 = json.Required, objectArg_19.Field("n9", uncurry2(int))), (objectArg_20 = json.Required, objectArg_20.Field("n10", uncurry2(int))), (objectArg_21 = json.Required, objectArg_21.Field("upddate", datetimeLocal)), (objectArg_22 = json.Required, objectArg_22.Field("comments", string)), (objectArg_23 = json.Required, objectArg_23.Field("feedback", string)), (objectArg_24 = json.Required, objectArg_24.Field("doc", bool)));
-    }, path_5, v));
+    return (path_15) => ((v) => object_1((json) => {
+        let objectArg, objectArg_1, objectArg_2, objectArg_3, objectArg_4, objectArg_5, objectArg_6, objectArg_7, objectArg_8, objectArg_9, objectArg_10, objectArg_11, objectArg_12, objectArg_13, objectArg_14, objectArg_15, objectArg_16, objectArg_17, objectArg_18, objectArg_19, objectArg_20, objectArg_21, objectArg_22, objectArg_23, objectArg_24, objectArg_25, objectArg_26, objectArg_27, objectArg_28, objectArg_29, objectArg_30, objectArg_31, objectArg_32, objectArg_33, objectArg_34;
+        return new Preference((objectArg = json.Required, objectArg.Field("eeid", string)), (objectArg_1 = json.Required, objectArg_1.Field("p1", uncurry2(int))), (objectArg_2 = json.Required, objectArg_2.Field("p2", uncurry2(int))), (objectArg_3 = json.Required, objectArg_3.Field("p3", uncurry2(int))), (objectArg_4 = json.Required, objectArg_4.Field("p4", uncurry2(int))), (objectArg_5 = json.Required, objectArg_5.Field("p5", uncurry2(int))), (objectArg_6 = json.Required, objectArg_6.Field("p6", uncurry2(int))), (objectArg_7 = json.Required, objectArg_7.Field("p7", uncurry2(int))), (objectArg_8 = json.Required, objectArg_8.Field("p8", uncurry2(int))), (objectArg_9 = json.Required, objectArg_9.Field("p9", uncurry2(int))), (objectArg_10 = json.Required, objectArg_10.Field("p10", uncurry2(int))), (objectArg_11 = json.Required, objectArg_11.Field("n1", uncurry2(int))), (objectArg_12 = json.Required, objectArg_12.Field("n2", uncurry2(int))), (objectArg_13 = json.Required, objectArg_13.Field("n3", uncurry2(int))), (objectArg_14 = json.Required, objectArg_14.Field("n4", uncurry2(int))), (objectArg_15 = json.Required, objectArg_15.Field("n5", uncurry2(int))), (objectArg_16 = json.Required, objectArg_16.Field("n6", uncurry2(int))), (objectArg_17 = json.Required, objectArg_17.Field("n7", uncurry2(int))), (objectArg_18 = json.Required, objectArg_18.Field("n8", uncurry2(int))), (objectArg_19 = json.Required, objectArg_19.Field("n9", uncurry2(int))), (objectArg_20 = json.Required, objectArg_20.Field("n10", uncurry2(int))), (objectArg_21 = json.Required, objectArg_21.Field("s1", string)), (objectArg_22 = json.Required, objectArg_22.Field("s2", string)), (objectArg_23 = json.Required, objectArg_23.Field("s3", string)), (objectArg_24 = json.Required, objectArg_24.Field("s4", string)), (objectArg_25 = json.Required, objectArg_25.Field("s5", string)), (objectArg_26 = json.Required, objectArg_26.Field("s6", string)), (objectArg_27 = json.Required, objectArg_27.Field("s7", string)), (objectArg_28 = json.Required, objectArg_28.Field("s8", string)), (objectArg_29 = json.Required, objectArg_29.Field("s9", string)), (objectArg_30 = json.Required, objectArg_30.Field("s10", string)), (objectArg_31 = json.Required, objectArg_31.Field("upddate", datetimeLocal)), (objectArg_32 = json.Required, objectArg_32.Field("comments", string)), (objectArg_33 = json.Required, objectArg_33.Field("feedback", string)), (objectArg_34 = json.Required, objectArg_34.Field("doc", bool)));
+    }, path_15, v));
 }
 
 export class PreferenceResponse extends Record {
-    constructor(eeid, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, upddate, comments, feedback, doc) {
+    constructor(eeid, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, upddate, comments, feedback, doc) {
         super();
         this.eeid = eeid;
         this.p1 = p1;
@@ -263,6 +312,16 @@ export class PreferenceResponse extends Record {
         this.n8 = (n8 | 0);
         this.n9 = (n9 | 0);
         this.n10 = (n10 | 0);
+        this.s1 = s1;
+        this.s2 = s2;
+        this.s3 = s3;
+        this.s4 = s4;
+        this.s5 = s5;
+        this.s6 = s6;
+        this.s7 = s7;
+        this.s8 = s8;
+        this.s9 = s9;
+        this.s10 = s10;
         this.upddate = upddate;
         this.comments = comments;
         this.feedback = feedback;
@@ -271,18 +330,18 @@ export class PreferenceResponse extends Record {
 }
 
 export function PreferenceResponse_$reflection() {
-    return record_type("Shared.PreferenceResponse", [], PreferenceResponse, () => [["eeid", string_type], ["p1", Project_$reflection()], ["p2", Project_$reflection()], ["p3", Project_$reflection()], ["p4", Project_$reflection()], ["p5", Project_$reflection()], ["p6", Project_$reflection()], ["p7", Project_$reflection()], ["p8", Project_$reflection()], ["p9", Project_$reflection()], ["p10", Project_$reflection()], ["n1", int32_type], ["n2", int32_type], ["n3", int32_type], ["n4", int32_type], ["n5", int32_type], ["n6", int32_type], ["n7", int32_type], ["n8", int32_type], ["n9", int32_type], ["n10", int32_type], ["upddate", class_type("System.DateTime")], ["comments", string_type], ["feedback", string_type], ["doc", bool_type]]);
+    return record_type("Shared.PreferenceResponse", [], PreferenceResponse, () => [["eeid", string_type], ["p1", Project_$reflection()], ["p2", Project_$reflection()], ["p3", Project_$reflection()], ["p4", Project_$reflection()], ["p5", Project_$reflection()], ["p6", Project_$reflection()], ["p7", Project_$reflection()], ["p8", Project_$reflection()], ["p9", Project_$reflection()], ["p10", Project_$reflection()], ["n1", int32_type], ["n2", int32_type], ["n3", int32_type], ["n4", int32_type], ["n5", int32_type], ["n6", int32_type], ["n7", int32_type], ["n8", int32_type], ["n9", int32_type], ["n10", int32_type], ["s1", string_type], ["s2", string_type], ["s3", string_type], ["s4", string_type], ["s5", string_type], ["s6", string_type], ["s7", string_type], ["s8", string_type], ["s9", string_type], ["s10", string_type], ["upddate", class_type("System.DateTime")], ["comments", string_type], ["feedback", string_type], ["doc", bool_type]]);
 }
 
 export function PreferenceResponse_get_Decoder() {
-    return (path_5) => ((v) => object_1((json) => {
-        let objectArg, arg_3, objectArg_1, arg_5, objectArg_2, arg_7, objectArg_3, arg_9, objectArg_4, arg_11, objectArg_5, arg_13, objectArg_6, arg_15, objectArg_7, arg_17, objectArg_8, arg_19, objectArg_9, arg_21, objectArg_10, objectArg_11, objectArg_12, objectArg_13, objectArg_14, objectArg_15, objectArg_16, objectArg_17, objectArg_18, objectArg_19, objectArg_20, objectArg_21, objectArg_22, objectArg_23, objectArg_24;
-        return new PreferenceResponse((objectArg = json.Required, objectArg.Field("eeid", string)), (arg_3 = Project_get_Decoder(), (objectArg_1 = json.Required, objectArg_1.Field("p1", uncurry2(arg_3)))), (arg_5 = Project_get_Decoder(), (objectArg_2 = json.Required, objectArg_2.Field("p2", uncurry2(arg_5)))), (arg_7 = Project_get_Decoder(), (objectArg_3 = json.Required, objectArg_3.Field("p3", uncurry2(arg_7)))), (arg_9 = Project_get_Decoder(), (objectArg_4 = json.Required, objectArg_4.Field("p4", uncurry2(arg_9)))), (arg_11 = Project_get_Decoder(), (objectArg_5 = json.Required, objectArg_5.Field("p5", uncurry2(arg_11)))), (arg_13 = Project_get_Decoder(), (objectArg_6 = json.Required, objectArg_6.Field("p6", uncurry2(arg_13)))), (arg_15 = Project_get_Decoder(), (objectArg_7 = json.Required, objectArg_7.Field("p7", uncurry2(arg_15)))), (arg_17 = Project_get_Decoder(), (objectArg_8 = json.Required, objectArg_8.Field("p8", uncurry2(arg_17)))), (arg_19 = Project_get_Decoder(), (objectArg_9 = json.Required, objectArg_9.Field("p9", uncurry2(arg_19)))), (arg_21 = Project_get_Decoder(), (objectArg_10 = json.Required, objectArg_10.Field("p10", uncurry2(arg_21)))), (objectArg_11 = json.Required, objectArg_11.Field("n1", uncurry2(int))), (objectArg_12 = json.Required, objectArg_12.Field("n2", uncurry2(int))), (objectArg_13 = json.Required, objectArg_13.Field("n3", uncurry2(int))), (objectArg_14 = json.Required, objectArg_14.Field("n4", uncurry2(int))), (objectArg_15 = json.Required, objectArg_15.Field("n5", uncurry2(int))), (objectArg_16 = json.Required, objectArg_16.Field("n6", uncurry2(int))), (objectArg_17 = json.Required, objectArg_17.Field("n7", uncurry2(int))), (objectArg_18 = json.Required, objectArg_18.Field("n8", uncurry2(int))), (objectArg_19 = json.Required, objectArg_19.Field("n9", uncurry2(int))), (objectArg_20 = json.Required, objectArg_20.Field("n10", uncurry2(int))), (objectArg_21 = json.Required, objectArg_21.Field("upddate", datetimeLocal)), (objectArg_22 = json.Required, objectArg_22.Field("comments", string)), (objectArg_23 = json.Required, objectArg_23.Field("feedback", string)), (objectArg_24 = json.Required, objectArg_24.Field("doc", bool)));
-    }, path_5, v));
+    return (path_15) => ((v) => object_1((json) => {
+        let objectArg, arg_3, objectArg_1, arg_5, objectArg_2, arg_7, objectArg_3, arg_9, objectArg_4, arg_11, objectArg_5, arg_13, objectArg_6, arg_15, objectArg_7, arg_17, objectArg_8, arg_19, objectArg_9, arg_21, objectArg_10, objectArg_11, objectArg_12, objectArg_13, objectArg_14, objectArg_15, objectArg_16, objectArg_17, objectArg_18, objectArg_19, objectArg_20, objectArg_21, objectArg_22, objectArg_23, objectArg_24, objectArg_25, objectArg_26, objectArg_27, objectArg_28, objectArg_29, objectArg_30, objectArg_31, objectArg_32, objectArg_33, objectArg_34;
+        return new PreferenceResponse((objectArg = json.Required, objectArg.Field("eeid", string)), (arg_3 = Project_get_Decoder(), (objectArg_1 = json.Required, objectArg_1.Field("p1", uncurry2(arg_3)))), (arg_5 = Project_get_Decoder(), (objectArg_2 = json.Required, objectArg_2.Field("p2", uncurry2(arg_5)))), (arg_7 = Project_get_Decoder(), (objectArg_3 = json.Required, objectArg_3.Field("p3", uncurry2(arg_7)))), (arg_9 = Project_get_Decoder(), (objectArg_4 = json.Required, objectArg_4.Field("p4", uncurry2(arg_9)))), (arg_11 = Project_get_Decoder(), (objectArg_5 = json.Required, objectArg_5.Field("p5", uncurry2(arg_11)))), (arg_13 = Project_get_Decoder(), (objectArg_6 = json.Required, objectArg_6.Field("p6", uncurry2(arg_13)))), (arg_15 = Project_get_Decoder(), (objectArg_7 = json.Required, objectArg_7.Field("p7", uncurry2(arg_15)))), (arg_17 = Project_get_Decoder(), (objectArg_8 = json.Required, objectArg_8.Field("p8", uncurry2(arg_17)))), (arg_19 = Project_get_Decoder(), (objectArg_9 = json.Required, objectArg_9.Field("p9", uncurry2(arg_19)))), (arg_21 = Project_get_Decoder(), (objectArg_10 = json.Required, objectArg_10.Field("p10", uncurry2(arg_21)))), (objectArg_11 = json.Required, objectArg_11.Field("n1", uncurry2(int))), (objectArg_12 = json.Required, objectArg_12.Field("n2", uncurry2(int))), (objectArg_13 = json.Required, objectArg_13.Field("n3", uncurry2(int))), (objectArg_14 = json.Required, objectArg_14.Field("n4", uncurry2(int))), (objectArg_15 = json.Required, objectArg_15.Field("n5", uncurry2(int))), (objectArg_16 = json.Required, objectArg_16.Field("n6", uncurry2(int))), (objectArg_17 = json.Required, objectArg_17.Field("n7", uncurry2(int))), (objectArg_18 = json.Required, objectArg_18.Field("n8", uncurry2(int))), (objectArg_19 = json.Required, objectArg_19.Field("n9", uncurry2(int))), (objectArg_20 = json.Required, objectArg_20.Field("n10", uncurry2(int))), (objectArg_21 = json.Required, objectArg_21.Field("s1", string)), (objectArg_22 = json.Required, objectArg_22.Field("s2", string)), (objectArg_23 = json.Required, objectArg_23.Field("s3", string)), (objectArg_24 = json.Required, objectArg_24.Field("s4", string)), (objectArg_25 = json.Required, objectArg_25.Field("s5", string)), (objectArg_26 = json.Required, objectArg_26.Field("s6", string)), (objectArg_27 = json.Required, objectArg_27.Field("s7", string)), (objectArg_28 = json.Required, objectArg_28.Field("s8", string)), (objectArg_29 = json.Required, objectArg_29.Field("s9", string)), (objectArg_30 = json.Required, objectArg_30.Field("s10", string)), (objectArg_31 = json.Required, objectArg_31.Field("upddate", datetimeLocal)), (objectArg_32 = json.Required, objectArg_32.Field("comments", string)), (objectArg_33 = json.Required, objectArg_33.Field("feedback", string)), (objectArg_34 = json.Required, objectArg_34.Field("doc", bool)));
+    }, path_15, v));
 }
 
 export function PreferenceResponse_get_Default() {
-    return new PreferenceResponse("", Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, now(), "", "", false);
+    return new PreferenceResponse("", Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), Project_get_Default(), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "Pending", "Pending", "Pending", "Pending", "Pending", "Pending", "Pending", "Pending", "Pending", "Pending", now(), "", "", false);
 }
 
 export class ProjectPopularity extends Record {
@@ -313,94 +372,48 @@ export function ProjectPopularity_get_Decoder() {
     }, path_1, v));
 }
 
-export class FilterType extends Union {
-    constructor(tag, fields) {
+export class Applicant extends Record {
+    constructor(eeid, forenames, preference, suitability) {
         super();
-        this.tag = tag;
-        this.fields = fields;
-    }
-    cases() {
-        return ["Category", "Stream"];
+        this.eeid = eeid;
+        this.forenames = forenames;
+        this.preference = (preference | 0);
+        this.suitability = suitability;
     }
 }
 
-export function FilterType_$reflection() {
-    return union_type("Shared.FilterType", [], FilterType, () => [[], []]);
+export function Applicant_$reflection() {
+    return record_type("Shared.Applicant", [], Applicant, () => [["eeid", string_type], ["forenames", string_type], ["preference", int32_type], ["suitability", string_type]]);
 }
 
-export const categories = ofArray(["embedded_systems", "control_engineering", "electronics", "renewable_energy", "biomedical_engineering", "system_optimisation_and_modelling", "high_performance_computing", "computer_vision", "digital_signal_processing", "instrumentation_and_measurement", "cybersecurity", "robotics", "signal_processing", "power_systems", "machine_learning", "photonics", "other", "discrete_maths", "mathematics_signals_and_systems", "software_systems", "communications", "control_systems", "information_processing", "instruction_architectures_and_compilers", "circuit_and_systems", "power_electronics_and_power_systems", "electromagnetism"]);
+export function Applicant_get_Decoder() {
+    return (path_3) => ((v) => object_1((json) => {
+        let objectArg, objectArg_1, objectArg_2, objectArg_3;
+        return new Applicant((objectArg = json.Required, objectArg.Field("eeid", string)), (objectArg_1 = json.Required, objectArg_1.Field("forenames", string)), (objectArg_2 = json.Required, objectArg_2.Field("preference", uncurry2(int))), (objectArg_3 = json.Required, objectArg_3.Field("suitability", string)));
+    }, path_3, v));
+}
 
-export const streams = ofArray(["E", "I", "T", "D", "J"]);
-
-export function getFormattedCategory(_arg) {
-    switch (_arg) {
-        case "embedded_systems":
-            return "Embedded Systems";
-        case "control_engineering":
-            return "Control Engineering";
-        case "electronics":
-            return "Electronics";
-        case "renewable_energy":
-            return "Renewable Energy";
-        case "biomedical_engineering":
-            return "Biomedical Engineering";
-        case "system_optimisation_and_modelling":
-            return "System Optimisation and Modelling";
-        case "high_performance_computing":
-            return "High Performance Computing";
-        case "computer_vision":
-            return "Computer Vision";
-        case "digital_signal_processing":
-            return "Digital Signal Processing";
-        case "instrumentation_and_measurement":
-            return "Instrumentation and Measurement";
-        case "cybersecurity":
-            return "Cybersecurity";
-        case "robotics":
-            return "Robotics";
-        case "signal_processing":
-            return "Signal Processing";
-        case "power_systems":
-            return "Power Systems";
-        case "machine_learning":
-            return "Machine Learning";
-        case "photonics":
-            return "Photonics";
-        case "other":
-            return "Other";
-        case "discrete_maths":
-            return "Discrete Maths";
-        case "mathematics_signals_and_systems":
-            return "Mathematics, Signals and Systems";
-        case "software_systems":
-            return "Software Systems";
-        case "communications":
-            return "Communications";
-        case "control_systems":
-            return "Control Systems";
-        case "information_processing":
-            return "Information Processing";
-        case "instruction_architectures_and_compilers":
-            return "Instruction Architectures and Compilers";
-        case "circuit_and_systems":
-            return "Circuit and Systems";
-        case "power_electronics_and_power_systems":
-            return "Power Electronics and Power Systems";
-        case "electromagnetism":
-            return "Electromagnetism";
-        case "E":
-            return "EEE3";
-        case "I":
-            return "EIE3";
-        case "T":
-            return "TECH4";
-        case "D":
-            return "MANGEMENT4";
-        case "J":
-            return "EIE4";
-        default:
-            return "Unknown Category";
+export class Proposal extends Record {
+    constructor(project, applicants) {
+        super();
+        this.project = project;
+        this.applicants = applicants;
     }
+}
+
+export function Proposal_$reflection() {
+    return record_type("Shared.Proposal", [], Proposal, () => [["project", Project_$reflection()], ["applicants", list_type(Applicant_$reflection())]]);
+}
+
+export function Proposal_get_Decoder() {
+    return (path_1) => ((v) => object_1((json) => {
+        let arg_1, objectArg, arg_3, decoder, objectArg_1;
+        return new Proposal((arg_1 = Project_get_Decoder(), (objectArg = json.Required, objectArg.Field("project", uncurry2(arg_1)))), (arg_3 = ((decoder = Applicant_get_Decoder(), (path) => ((value) => list_3(uncurry2(decoder), path, value)))), (objectArg_1 = json.Required, objectArg_1.Field("applicants", uncurry2(arg_3)))));
+    }, path_1, v));
+}
+
+export function Proposal_get_Default() {
+    return new Proposal(Project_get_Default(), empty());
 }
 
 //# sourceMappingURL=Shared.fs.js.map

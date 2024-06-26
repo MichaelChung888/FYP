@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "7emBGeaSYTnF+PbdOXSfpPFZT14EdNCRgZraxC+8ORgpCm7dvuOB06HI7JyoXbBlSfPAY1tnzPTTDm33XAE0Ow==",
+  "dgSpecHash": "VLACgg9qAu3v1yC4caP7+vi0nGM0q0qghKuYj6r5mSbUY/eyTvfBUcXZwCaVWjMC9dKRiwKy1HQ5lJNKAnQyxA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Brandon Chung\\Documents\\IMPERIAL_WORK\\Year3\\FYP\\FYPForm\\Backend\\Server.fsproj",
   "expectedPackageFiles": [
     "C:\\Users\\Brandon Chung\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\Brandon Chung\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
+    "C:\\Users\\Brandon Chung\\.nuget\\packages\\dotenv.net\\3.1.3\\dotenv.net.3.1.3.nupkg.sha512",
     "C:\\Users\\Brandon Chung\\.nuget\\packages\\fable.core\\4.3.0\\fable.core.4.3.0.nupkg.sha512",
     "C:\\Users\\Brandon Chung\\.nuget\\packages\\fsharp.core\\8.0.200\\fsharp.core.8.0.200.nupkg.sha512",
     "C:\\Users\\Brandon Chung\\.nuget\\packages\\fsharp.data\\6.3.0\\fsharp.data.6.3.0.nupkg.sha512",

@@ -90,3 +90,4 @@ C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Deb
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Fable.Core.dll
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Thoth.Json.dll
 C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Brandon Chung\Documents\IMPERIAL_WORK\Year3\FYP\FYPForm\Backend\bin\Debug\net8.0\dotenv.net.dll

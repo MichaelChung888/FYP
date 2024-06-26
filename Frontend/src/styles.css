@@ -85,3 +85,22 @@ textarea {
 .field:not(:last-child) {
     margin-bottom: 2rem;
 }
+
+/* Select menu */
+.custom-select {
+    position: relative;
+    width: 50px;
+}
+
+select {
+    font-size: 16px;
+    padding: 5px;
+    background-color: #fff;
+    border: 1px solid #caced1;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+option {
+    color: black;
+}

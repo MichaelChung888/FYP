@@ -33,5 +33,6 @@
     <PkgGiraffe Condition=" '$(PkgGiraffe)' == '' ">C:\Users\Brandon Chung\.nuget\packages\giraffe\6.0.0</PkgGiraffe>
     <PkgFSharp_Json_New Condition=" '$(PkgFSharp_Json_New)' == '' ">C:\Users\Brandon Chung\.nuget\packages\fsharp.json.new\0.4.2</PkgFSharp_Json_New>
     <PkgFSharp_Data Condition=" '$(PkgFSharp_Data)' == '' ">C:\Users\Brandon Chung\.nuget\packages\fsharp.data\6.3.0</PkgFSharp_Data>
+    <Pkgdotenv_net Condition=" '$(Pkgdotenv_net)' == '' ">C:\Users\Brandon Chung\.nuget\packages\dotenv.net\3.1.3</Pkgdotenv_net>
   </PropertyGroup>
 </Project>

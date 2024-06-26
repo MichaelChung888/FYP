@@ -4,6 +4,13 @@ open Thoth.Json
 open System
 
 //--------------------------------------------------------------------------------------//
+//                                       Origins                                        //
+//--------------------------------------------------------------------------------------//
+
+let [<Literal>] Client = "http://localhost:5173"
+let [<Literal>] Server = "http://localhost:1234"
+
+//--------------------------------------------------------------------------------------//
 //                                       Requests                                       //
 //--------------------------------------------------------------------------------------//
 
@@ -72,15 +79,17 @@ type AddPreferenceRequest =
     {
         preference: int
         newPreference: int
-        newPreferenceRankWhere: int
+        newPreferenceIndex: int
     }
     // Transform savePreferenceRequest -> JSON
     static member Encoder (addPreferenceRequest: AddPreferenceRequest) =
         Encode.object [
             "preference", string addPreferenceRequest.preference
             "newPreference", string addPreferenceRequest.newPreference
-            "newPreferenceRank", int addPreferenceRequest.newPreferenceRankWhere
+            "newPreferenceRank", int addPreferenceRequest.newPreferenceIndex
         ]
+
+
 
 type ProjectProposeRequest =
     {
@@ -104,6 +113,48 @@ type ProjectProposeRequest =
             "description", Encode.string studentPreferenceRequest.description
             "skills", Encode.string studentPreferenceRequest.skills
             "meetings", Encode.string studentPreferenceRequest.meetings
+        ]
+
+
+
+type EditProposalRequest =
+    {
+        pid: int
+        isStudent: bool
+        title: string
+        categories: List<string>
+        streams: List<string>
+        requirements: string
+        description: string
+        skills: string
+        meetings: string
+    }
+    // Transform savePreferenceRequest -> JSON
+    static member Encoder (projectEditRequest: EditProposalRequest) =
+        Encode.object [
+            "pid", Encode.int projectEditRequest.pid
+            "title", Encode.string projectEditRequest.title
+            "isStudent", Encode.bool projectEditRequest.isStudent
+            "categories", encodeStringList projectEditRequest.categories
+            "streams", encodeStringList projectEditRequest.streams
+            "requirements", Encode.string projectEditRequest.requirements
+            "description", Encode.string projectEditRequest.description
+            "skills", Encode.string projectEditRequest.skills
+            "meetings", Encode.string projectEditRequest.meetings
+        ]
+
+
+
+type DeleteProposalRequest =
+    {
+        isStudent: bool
+        pid: int
+    }
+    // Transform savePreferenceRequest -> JSON
+    static member Encoder (deleteProposalRequest: DeleteProposalRequest) =
+        Encode.object [
+            "isStudent", Encode.bool deleteProposalRequest.isStudent
+            "proposal", Encode.int deleteProposalRequest.pid
         ]
 
 //--------------------------------------------------------------------------------------//
@@ -212,6 +263,7 @@ type Preference =
         eeid: string
         p1: int; p2: int; p3: int; p4: int; p5: int; p6: int; p7: int; p8: int; p9: int; p10: int
         n1: int; n2: int; n3: int; n4: int; n5: int; n6: int; n7: int; n8: int; n9: int; n10: int
+        s1: string; s2: string; s3: string; s4: string; s5: string; s6: string; s7: string; s8: string; s9: string; s10:string
         upddate: DateTime
         comments: string
         feedback: string
@@ -240,6 +292,16 @@ type Preference =
             n8 = json.Required.Field "n8" Decode.int
             n9 = json.Required.Field "n9" Decode.int
             n10 = json.Required.Field "n10" Decode.int
+            s1 = json.Required.Field "s1" Decode.string
+            s2 = json.Required.Field "s2" Decode.string
+            s3 = json.Required.Field "s3" Decode.string
+            s4 = json.Required.Field "s4" Decode.string
+            s5 = json.Required.Field "s5" Decode.string
+            s6 = json.Required.Field "s6" Decode.string
+            s7 = json.Required.Field "s7" Decode.string
+            s8 = json.Required.Field "s8" Decode.string
+            s9 = json.Required.Field "s9" Decode.string
+            s10 = json.Required.Field "s10" Decode.string
             upddate = json.Required.Field "upddate" Decode.datetimeLocal
             comments = json.Required.Field "comments" Decode.string
             feedback = json.Required.Field "feedback" Decode.string
@@ -253,6 +315,7 @@ type PreferenceResponse =
         eeid: string
         p1: Project; p2: Project; p3: Project; p4: Project; p5: Project; p6: Project; p7: Project; p8: Project; p9: Project; p10: Project
         n1: int; n2: int; n3: int; n4: int; n5: int; n6: int; n7: int; n8: int; n9: int; n10: int
+        s1: string; s2: string; s3: string; s4: string; s5: string; s6: string; s7: string; s8: string; s9: string; s10:string
         upddate: DateTime
         comments: string
         feedback: string
@@ -281,6 +344,16 @@ type PreferenceResponse =
             n8 = json.Required.Field "n8" Decode.int
             n9 = json.Required.Field "n9" Decode.int
             n10 = json.Required.Field "n10" Decode.int
+            s1 = json.Required.Field "s1" Decode.string
+            s2 = json.Required.Field "s2" Decode.string
+            s3 = json.Required.Field "s3" Decode.string
+            s4 = json.Required.Field "s4" Decode.string
+            s5 = json.Required.Field "s5" Decode.string
+            s6 = json.Required.Field "s6" Decode.string
+            s7 = json.Required.Field "s7" Decode.string
+            s8 = json.Required.Field "s8" Decode.string
+            s9 = json.Required.Field "s9" Decode.string
+            s10 = json.Required.Field "s10" Decode.string
             upddate = json.Required.Field "upddate" Decode.datetimeLocal
             comments = json.Required.Field "comments" Decode.string
             feedback = json.Required.Field "feedback" Decode.string
@@ -292,6 +365,8 @@ type PreferenceResponse =
             p1 = Project.Default; p2 = Project.Default; p3 = Project.Default; p4 = Project.Default; p5 = Project.Default
             p6 = Project.Default; p7 = Project.Default; p8 = Project.Default; p9 = Project.Default; p10 = Project.Default
             n1 = 1; n2 = 2; n3 = 3; n4 = 4; n5 = 5; n6 = 6; n7 = 7; n8 = 8; n9 = 9; n10 = 10;
+            s1 = "Pending"; s2 = "Pending"; s3 = "Pending"; s4 = "Pending"; s5 = "Pending"; 
+            s6 = "Pending"; s7 = "Pending"; s8 = "Pending"; s9 = "Pending"; s10 = "Pending";
             upddate = DateTime.Now
             comments = ""
             feedback = ""
@@ -321,55 +396,37 @@ type ProjectPopularity =
             p10Count = json.Required.Field "p10Count" Decode.int
         })
 
-//--------------------------------------------------------------------------------------//
-//                                Categories and Streams                                //
-//--------------------------------------------------------------------------------------//
 
-type FilterType = 
-    | Category
-    | Stream
 
-let categories = ["embedded_systems"; "control_engineering"; "electronics"; "renewable_energy"; 
-"biomedical_engineering"; "system_optimisation_and_modelling"; "high_performance_computing"; 
-"computer_vision"; "digital_signal_processing"; "instrumentation_and_measurement"; "cybersecurity"; 
-"robotics"; "signal_processing"; "power_systems"; "machine_learning"; "photonics"; "other"; "discrete_maths"; 
-"mathematics_signals_and_systems"; "software_systems"; "communications"; "control_systems"; "information_processing"; 
-"instruction_architectures_and_compilers"; "circuit_and_systems"; "power_electronics_and_power_systems"; "electromagnetism"]
+type Applicant =
+    {
+        eeid: string
+        forenames: string
+        preference: int
+        suitability: string
+    }
+    static member Decoder =
+        Decode.object (fun json -> {
+            eeid = json.Required.Field "eeid" Decode.string
+            forenames = json.Required.Field "forenames" Decode.string
+            preference = json.Required.Field "preference" Decode.int
+            suitability = json.Required.Field "suitability" Decode.string
+        })
 
-let streams = ["E"; "I"; "T"; "D"; "J"]
 
-let getFormattedCategory = function
-    | "embedded_systems" -> "Embedded Systems"
-    | "control_engineering" -> "Control Engineering"
-    | "electronics" -> "Electronics"
-    | "renewable_energy" -> "Renewable Energy"
-    | "biomedical_engineering" -> "Biomedical Engineering"
-    | "system_optimisation_and_modelling" -> "System Optimisation and Modelling"
-    | "high_performance_computing" -> "High Performance Computing"
-    | "computer_vision" -> "Computer Vision"
-    | "digital_signal_processing" -> "Digital Signal Processing"
-    | "instrumentation_and_measurement" -> "Instrumentation and Measurement"
-    | "cybersecurity" -> "Cybersecurity"
-    | "robotics" -> "Robotics"
-    | "signal_processing" -> "Signal Processing"
-    | "power_systems" -> "Power Systems"
-    | "machine_learning" -> "Machine Learning"
-    | "photonics" -> "Photonics"
-    | "other" -> "Other"
-    | "discrete_maths" -> "Discrete Maths"
-    | "mathematics_signals_and_systems" -> "Mathematics, Signals and Systems"
-    | "software_systems" -> "Software Systems"
-    | "communications" -> "Communications"
-    | "control_systems" -> "Control Systems"
-    | "information_processing" -> "Information Processing"
-    | "instruction_architectures_and_compilers" -> "Instruction Architectures and Compilers"
-    | "circuit_and_systems" -> "Circuit and Systems"
-    | "power_electronics_and_power_systems" -> "Power Electronics and Power Systems"
-    | "electromagnetism" -> "Electromagnetism"
-    | "E" -> "EEE3"
-    | "I" -> "EIE3"
-    | "T" -> "TECH4"
-    | "D" -> "MANGEMENT4"
-    | "J" -> "EIE4"
-    | _ -> "Unknown Category"
 
+type Proposal =
+    {
+        project: Project
+        applicants: List<Applicant>
+    }
+    static member Decoder =
+        Decode.object (fun json -> {
+            project = json.Required.Field "project" Project.Decoder
+            applicants = json.Required.Field "applicants" (Decode.list Applicant.Decoder)
+        })
+    static member Default =
+        {
+            project = Project.Default;
+            applicants = [];
+        }

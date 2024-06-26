@@ -1,9 +1,9 @@
-import { Record, Union } from "../../fable_modules/fable-library.4.1.4/Types.js";
-import { class_type, record_type, option_type, list_type, string_type, bool_type, union_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
-import { streams, categories, FilterType, getFormattedCategory, ProjectProposeRequest_$reflection, ProjectProposeRequest, Person_$reflection } from "../../../../Shared/Shared.fs.js";
-import { cons, ofArray, singleton, append, filter as filter_1, exists, empty, length } from "../../fable_modules/fable-library.4.1.4/List.js";
+import { cons, ofArray, singleton, append, filter, exists, empty } from "../../fable_modules/fable-library.4.1.4/List.js";
+import { Msg, Model, ResponseResult } from "./ProjectProposeTypes.fs.js";
 import { Cmd_OfPromise_either, Cmd_none } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
 import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
+import { TileCss, ImageBackground, TurquoiseBackground, LoadingScreen, isStudent } from "../../Common.fs.js";
+import { ProjectProposeRequest_$reflection, ProjectProposeRequest } from "../../../../Shared/Shared.fs.js";
 import { PromiseBuilder__Delay_62FBFDE1, PromiseBuilder__Run_212F1D4B } from "../../fable_modules/Fable.Promise.3.2.0/Promise.fs.js";
 import { promise } from "../../fable_modules/Fable.Promise.3.2.0/PromiseImpl.fs.js";
 import { PromiseBuilder__Delay_62FBFDE1 as PromiseBuilder__Delay_62FBFDE1_1, PromiseBuilder__Run_212F1D4B as PromiseBuilder__Run_212F1D4B_1 } from "../../fable_modules/Thoth.Fetch.3.0.1/../Fable.Promise.3.2.0/Promise.fs.js";
@@ -18,122 +18,15 @@ import { Auto_generateBoxedEncoderCached_437914C6 } from "../../fable_modules/Th
 import { toString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.10.2.0/Encode.fs.js";
 import { string } from "../../fable_modules/Thoth.Json.10.2.0/Decode.fs.js";
 import { Auto_generateBoxedDecoderCached_Z6670B51 } from "../../fable_modules/Thoth.Json.10.2.0/./Decode.fs.js";
+import { string_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
 import { fromString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.10.2.0/Decode.fs.js";
 import { createObj, uncurry2 } from "../../fable_modules/fable-library.4.1.4/Util.js";
 import { createElement } from "react";
-import { rgba } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
-import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
+import { empty as empty_1, singleton as singleton_1, append as append_1, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
+import { NavBar } from "./ProjectProposeNavBar.fs.js";
 import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
-import { RouterModule_nav } from "../../fable_modules/Feliz.Router.4.0.0/./Router.fs.js";
-import { map as map_1, empty as empty_1, singleton as singleton_1, append as append_1, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
-
-export class ResponseResult extends Union {
-    constructor(tag, fields) {
-        super();
-        this.tag = tag;
-        this.fields = fields;
-    }
-    cases() {
-        return ["Success", "Failed", "Neither"];
-    }
-}
-
-export function ResponseResult_$reflection() {
-    return union_type("ProjectPropose.ResponseResult", [], ResponseResult, () => [[], [], []]);
-}
-
-export class Model extends Record {
-    constructor(loading, token, user, projectTitle, selectedCategories, selectedStreams, requirements, description, skills, meetings, validationMessage, responseResult) {
-        super();
-        this.loading = loading;
-        this.token = token;
-        this.user = user;
-        this.projectTitle = projectTitle;
-        this.selectedCategories = selectedCategories;
-        this.selectedStreams = selectedStreams;
-        this.requirements = requirements;
-        this.description = description;
-        this.skills = skills;
-        this.meetings = meetings;
-        this.validationMessage = validationMessage;
-        this.responseResult = responseResult;
-    }
-}
-
-export function Model_$reflection() {
-    return record_type("ProjectPropose.Model", [], Model, () => [["loading", bool_type], ["token", string_type], ["user", Person_$reflection()], ["projectTitle", string_type], ["selectedCategories", list_type(string_type)], ["selectedStreams", list_type(string_type)], ["requirements", string_type], ["description", string_type], ["skills", string_type], ["meetings", string_type], ["validationMessage", option_type(string_type)], ["responseResult", ResponseResult_$reflection()]]);
-}
-
-export class Msg extends Union {
-    constructor(tag, fields) {
-        super();
-        this.tag = tag;
-        this.fields = fields;
-    }
-    cases() {
-        return ["SuccessLoad", "Error", "Logout", "ProjectTitleChanged", "ClickedCategoryTag", "ClickedStreamTag", "RequirementsChanged", "SkillsChanged", "DescriptionChanged", "MeetingsChanged", "Submit"];
-    }
-}
-
-export function Msg_$reflection() {
-    return union_type("ProjectPropose.Msg", [], Msg, () => [[["Item", string_type]], [["Item", class_type("System.Exception")]], [], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", class_type("Browser.Types.Event", void 0)]]]);
-}
-
-export function isStudent(user) {
-    const matchValue = user.categ;
-    switch (matchValue) {
-        case "U":
-        case "M":
-            return true;
-        default:
-            return false;
-    }
-}
-
-export function titleValid(model) {
-    return model.projectTitle !== "";
-}
-
-export function requirementsValid(model) {
-    return model.requirements !== "";
-}
-
-export function skillsValid(model) {
-    return model.skills !== "";
-}
-
-export function descriptionValid(model) {
-    return model.description !== "";
-}
-
-export function meetingsValid(model) {
-    return model.meetings !== "";
-}
-
-export function streamValid(model) {
-    return length(model.selectedStreams) > 0;
-}
-
-export function categoryValid(model) {
-    return length(model.selectedCategories) > 0;
-}
-
-export function isFormValid(model) {
-    if (isStudent(model.user)) {
-        if ((titleValid(model) && descriptionValid(model)) && meetingsValid(model)) {
-            return categoryValid(model);
-        }
-        else {
-            return false;
-        }
-    }
-    else if (((((titleValid(model) && requirementsValid(model)) && skillsValid(model)) && descriptionValid(model)) && meetingsValid(model)) && categoryValid(model)) {
-        return streamValid(model);
-    }
-    else {
-        return false;
-    }
-}
+import { SubmitButton, Meetings, Description, Skills, Requirements, Streams, Categories, ProjectTitle, Name, ValidityCheck, ResponseResultMessage, Tabs } from "./ProjectProposeForm.fs.js";
+import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 
 export function init(token, user) {
     const defaultModel = new Model(false, token, user, "", empty(), empty(), "", "", "", "", void 0, new ResponseResult(2, []));
@@ -157,7 +50,7 @@ export function update(msg, model) {
             const tag = msg.fields[0];
             const sc = model.selectedCategories;
             if (exists((c) => (c === tag), sc)) {
-                return [new Model(model.loading, model.token, model.user, model.projectTitle, filter_1((c_1) => (c_1 !== tag), sc), model.selectedStreams, model.requirements, model.description, model.skills, model.meetings, model.validationMessage, new ResponseResult(2, [])), Cmd_none()];
+                return [new Model(model.loading, model.token, model.user, model.projectTitle, filter((c_1) => (c_1 !== tag), sc), model.selectedStreams, model.requirements, model.description, model.skills, model.meetings, model.validationMessage, new ResponseResult(2, [])), Cmd_none()];
             }
             else {
                 return [new Model(model.loading, model.token, model.user, model.projectTitle, append(sc, singleton(tag)), model.selectedStreams, model.requirements, model.description, model.skills, model.meetings, model.validationMessage, model.responseResult), Cmd_none()];
@@ -167,7 +60,7 @@ export function update(msg, model) {
             const tag_1 = msg.fields[0];
             const ss = model.selectedStreams;
             if (exists((c_2) => (c_2 === tag_1), ss)) {
-                return [new Model(model.loading, model.token, model.user, model.projectTitle, model.selectedCategories, filter_1((c_3) => (c_3 !== tag_1), ss), model.requirements, model.description, model.skills, model.meetings, model.validationMessage, new ResponseResult(2, [])), Cmd_none()];
+                return [new Model(model.loading, model.token, model.user, model.projectTitle, model.selectedCategories, filter((c_3) => (c_3 !== tag_1), ss), model.requirements, model.description, model.skills, model.meetings, model.validationMessage, new ResponseResult(2, [])), Cmd_none()];
             }
             else {
                 return [new Model(model.loading, model.token, model.user, model.projectTitle, model.selectedCategories, append(ss, singleton(tag_1)), model.requirements, model.description, model.skills, model.meetings, model.validationMessage, model.responseResult), Cmd_none()];
@@ -194,7 +87,7 @@ export function update(msg, model) {
             ev.preventDefault();
             const data = new ProjectProposeRequest(isStudent(model.user), model.projectTitle, model.selectedCategories, isStudent(model.user) ? empty() : model.selectedStreams, isStudent(model.user) ? "" : model.requirements, isStudent(model.user) ? "" : model.description, isStudent(model.user) ? "" : model.skills, model.meetings);
             const handleSubmit = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
-                const url = "http://localhost:1234/project-propose";
+                const url = `${"http://localhost:1234"}/project-propose`;
                 return PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
                     let data_3, caseStrategy_2, extra_2;
                     return ((data_3 = data, (caseStrategy_2 = void 0, (extra_2 = void 0, (() => {
@@ -245,288 +138,12 @@ export function update(msg, model) {
     }
 }
 
-export const LoadingScreen = createElement("div", createObj(ofArray([["style", {
-    top: 0,
-    left: 0,
-    overflow: "hidden",
-    position: "absolute",
-    height: 100 + "vh",
-    width: 100 + "vw",
-    display: "flex",
-    zIndex: 100,
-    backgroundColor: rgba(0, 0, 0, 0.6),
-    justifyContent: "center",
-    alignItems: "center",
-}], (() => {
-    const elems = [createElement("div", {
-        className: join(" ", ["loader"]),
-    })];
-    return ["children", Interop_reactApi.Children.toArray(Array.from(elems))];
-})()])));
-
-export function TurquoiseBackground(opacity) {
-    return createElement("div", {
-        style: {
-            top: 0,
-            left: 0,
-            overflow: "hidden",
-            position: "absolute",
-            height: 100 + "%",
-            width: 100 + "%",
-            opacity: opacity,
-            zIndex: -1,
-            backgroundColor: "#AFEEEE",
-        },
-    });
-}
-
-export function TurquoiseBackgroundRGBA(opacity) {
-    return ["backgroundColor", rgba(175, 238, 238, opacity)];
-}
-
-export const ImageBackground = createElement("img", {
-    style: {
-        position: "absolute",
-        height: 100 + "%",
-        width: 100 + "%",
-        zIndex: -2,
-        overflow: "hidden",
-    },
-    src: "/images/imperial.jpg",
-});
-
-export function NavBar(dispatch) {
-    let elems_7, elems_1, elems, elms_4, elms, elms_3, elms_2, elms_1;
-    return createElement("nav", createObj(Helpers_combineClasses("navbar", ofArray([["style", {
-        backgroundColor: "#48D1CC",
-        fontWeight: 700,
-    }], (elems_7 = [createElement("div", createObj(Helpers_combineClasses("navbar-brand", ofArray([["onClick", (e) => {
-        RouterModule_nav(singleton("home-student"), 1, 2);
-    }], ["style", {
-        paddingTop: 3,
-        paddingRight: 20,
-        paddingLeft: 10,
-        cursor: "pointer",
-    }], (elems_1 = [createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-large"], (elems = [createElement("i", {
-        className: "fas fa-home fa-2x",
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_4 = ofArray([(elms = ofArray([createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Projects"], ["onClick", (e_1) => {
-        RouterModule_nav(ofArray(["home-student", "projects"]), 1, 2);
-    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Preferences"], ["onClick", (e_2) => {
-        RouterModule_nav(ofArray(["home-student", "preferences"]), 1, 2);
-    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Propose a Project"], ["onClick", (e_3) => {
-        RouterModule_nav(singleton("project-propose"), 1, 2);
-    }]]))))]), createElement("div", {
-        className: "navbar-start",
-        children: Interop_reactApi.Children.toArray(Array.from(elms)),
-    })), (elms_3 = singleton((elms_2 = singleton((elms_1 = singleton(createElement("a", createObj(Helpers_combineClasses("button", ofArray([["children", "Log Out"], ["onClick", (_arg) => {
-        dispatch(new Msg(2, []));
-    }]]))))), createElement("div", {
-        className: "buttons",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
-    }))), createElement("div", {
-        className: "navbar-item",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_2)),
-    }))), createElement("div", {
-        className: "navbar-end",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_3)),
-    }))]), createElement("div", {
-        className: "navbar-menu",
-        children: Interop_reactApi.Children.toArray(Array.from(elms_4)),
-    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_7))])]))));
-}
-
-export function BulmaTile(classes, styles, props) {
-    return createElement("div", createObj(Helpers_combineClasses("tile", ofArray([["className", join(" ", classes)], ["style", createObj(styles)], ["children", Interop_reactApi.Children.toArray(Array.from(props))]]))));
-}
-
-export function Div(classes, styles, props) {
-    return createElement("div", {
-        className: join(" ", classes),
-        style: createObj(styles),
-        children: Interop_reactApi.Children.toArray(Array.from(props)),
-    });
-}
-
-export const TileCss = ofArray([TurquoiseBackgroundRGBA(0.7), ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["overflow", "hidden"]]);
-
-export function TagFilter(dispatch, model, filterType, filter) {
-    return createElement("span", createObj(Helpers_combineClasses("tag", toList(delay(() => append_1(singleton_1(["className", join(" ", ["filter-tag"])]), delay(() => append_1(singleton_1(["children", getFormattedCategory(filter)]), delay(() => append_1(singleton_1(["style", {
-        marginBottom: 10,
-        marginRight: 10,
-        cursor: "pointer",
-    }]), delay(() => ((filterType.tag === 1) ? append_1(singleton_1(["onClick", (_arg_1) => {
-        dispatch(new Msg(5, [filter]));
-    }]), delay(() => (exists((c_1) => (c_1 === filter), model.selectedStreams) ? singleton_1(["className", "is-info"]) : empty_1()))) : append_1(singleton_1(["onClick", (_arg) => {
-        dispatch(new Msg(4, [filter]));
-    }]), delay(() => (exists((c) => (c === filter), model.selectedCategories) ? singleton_1(["className", "is-info"]) : empty_1())))))))))))))));
-}
-
-export function ResponseResultMessage(model) {
-    return createElement("p", createObj(toList(delay(() => {
-        const matchValue = model.responseResult;
-        switch (matchValue.tag) {
-            case 1:
-                return append_1(singleton_1(["style", {
-                    color: "#FF0000",
-                }]), delay(() => singleton_1(["children", "Failed to create project"])));
-            case 2: {
-                return empty_1();
-            }
-            default:
-                return append_1(singleton_1(["style", {
-                    color: "#008000",
-                }]), delay(() => singleton_1(["children", "Project created successfully"])));
-        }
-    }))));
-}
-
-export function ValidityCheck(model) {
-    let elems;
-    return createElement("p", createObj(ofArray([["style", {
-        color: "#FF0000",
-    }], (elems = toList(delay(() => append_1(!isFormValid(model) ? singleton_1(createElement("p", {
-        children: ["Complete all requirements below to propose a project:"],
-    })) : empty_1(), delay(() => {
-        let children;
-        return singleton_1((children = toList(delay(() => append_1(!titleValid(model) ? singleton_1(createElement("li", {
-            children: ["Please enter the title of your project"],
-        })) : empty_1(), delay(() => append_1(!categoryValid(model) ? singleton_1(createElement("li", {
-            children: ["Please select at least one category"],
-        })) : empty_1(), delay(() => append_1((!streamValid(model) && !isStudent(model.user)) ? singleton_1(createElement("li", {
-            children: ["Please select at least one stream"],
-        })) : empty_1(), delay(() => append_1((!requirementsValid(model) && !isStudent(model.user)) ? singleton_1(createElement("li", {
-            children: ["Please enter the requirements for your project"],
-        })) : empty_1(), delay(() => append_1((!skillsValid(model) && !isStudent(model.user)) ? singleton_1(createElement("li", {
-            children: ["Please enter the skills required for your project"],
-        })) : empty_1(), delay(() => append_1(!descriptionValid(model) ? singleton_1(createElement("li", {
-            children: ["Please enter the description of your project"],
-        })) : empty_1(), delay(() => (!meetingsValid(model) ? singleton_1(createElement("li", {
-            children: ["Please enter the meeting details for your project"],
-        })) : empty_1()))))))))))))))), createElement("ul", {
-            children: Interop_reactApi.Children.toArray(Array.from(children)),
-        })));
-    })))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function Tabs(model) {
-    let elems_3, elems_2;
-    return createElement("div", createObj(Helpers_combineClasses("tabs", singleton((elems_3 = [createElement("ul", createObj(ofArray([["style", {
-        marginLeft: 0,
-    }], (elems_2 = [createElement("li", createObj(Helpers_combineClasses("", toList(delay(() => append_1(isStudent(model.user) ? singleton_1(["className", join(" ", ["is-active"])]) : empty_1(), delay(() => append_1(singleton_1(["className", join(" ", ["is-active"])]), delay(() => {
-        let elems;
-        return singleton_1((elems = [createElement("a", {
-            children: "Student",
-            style: {
-                fontWeight: "bold",
-            },
-        })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))]));
-    }))))))))), createElement("li", createObj(Helpers_combineClasses("", toList(delay(() => append_1(!isStudent(model.user) ? singleton_1(["className", join(" ", ["is-active"])]) : empty_1(), delay(() => {
-        let elems_1;
-        return singleton_1((elems_1 = [createElement("a", {
-            children: "Supervisor",
-            style: {
-                fontWeight: "bold",
-            },
-        })], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))]));
-    })))))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_3))])))));
-}
-
-export function Name(model) {
-    let elems_2, elems_1, elems;
-    return createElement("div", createObj(Helpers_combineClasses("field", singleton((elems_2 = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Name"])))), createElement("div", createObj(ofArray([["className", join(" ", ["control", "has-icons-left"])], (elems_1 = [createElement("input", createObj(cons(["type", "text"], Helpers_combineClasses("input", ofArray([["required", true], ["disabled", true], ["value", model.user.forenames]]))))), createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-small"], ["className", "is-left"], (elems = [createElement("i", {
-        className: join(" ", ["fas fa-user"]),
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])))));
-}
-
-export function ProjectTitle(model, dispatch) {
-    let elems_2, elems_1, elems;
-    return createElement("div", createObj(Helpers_combineClasses("field", singleton((elems_2 = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Project Title"])))), createElement("div", createObj(ofArray([["className", join(" ", ["control", "has-icons-left"])], (elems_1 = [createElement("input", createObj(cons(["type", "text"], Helpers_combineClasses("input", ofArray([["required", true], ["placeholder", "Enter the title of your project"], ["onChange", (ev) => {
-        dispatch(new Msg(3, [ev.target.value]));
-    }], ["value", model.projectTitle]]))))), createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-small"], ["className", "is-left"], (elems = [createElement("i", {
-        className: join(" ", ["fas fa-heading"]),
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])))));
-}
-
-export function Categories(model, dispatch) {
-    let elems;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field"])], (elems = toList(delay(() => append_1(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Select the relevant Project Categories"]))))), delay(() => map_1((c) => TagFilter(dispatch, model, new FilterType(0, []), c), categories))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function Streams(model, dispatch) {
-    let elems;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field"])], (elems = toList(delay(() => append_1(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Select the relevant Student Streams"]))))), delay(() => map_1((s) => TagFilter(dispatch, model, new FilterType(1, []), s), streams))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function Requirements(model, dispatch) {
-    let elems;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field"])], (elems = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Student Requirements"])))), createElement("textarea", {
-        required: true,
-        rows: 5,
-        cols: 33,
-        placeholder: "Enter the student requirements for this project",
-        onChange: (ev) => {
-            dispatch(new Msg(6, [ev.target.value]));
-        },
-        value: model.requirements,
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function Skills(model, dispatch) {
-    let elems;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field"])], (elems = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Desired Skills"])))), createElement("textarea", {
-        required: true,
-        rows: 5,
-        cols: 33,
-        placeholder: "Enter the desired skills for this project",
-        onChange: (ev) => {
-            dispatch(new Msg(7, [ev.target.value]));
-        },
-        value: model.skills,
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function Description(model, dispatch) {
-    let elems;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field"])], (elems = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Description"])))), createElement("textarea", {
-        required: true,
-        rows: 5,
-        cols: 33,
-        placeholder: "Enter the project description",
-        onChange: (ev) => {
-            dispatch(new Msg(8, [ev.target.value]));
-        },
-        value: model.description,
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function Meetings(model, dispatch) {
-    let elems;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field"])], (elems = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Meeting dates"])))), createElement("textarea", {
-        required: true,
-        rows: 5,
-        cols: 33,
-        placeholder: "Enter your availability for meetings",
-        onChange: (ev) => {
-            dispatch(new Msg(9, [ev.target.value]));
-        },
-        value: model.meetings,
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
-}
-
-export function SubmitButton(model) {
-    let elems_1, elms;
-    return createElement("div", createObj(ofArray([["className", join(" ", ["field", "is-grouped", "is-grouped-centered"])], (elems_1 = [(elms = singleton(createElement("button", createObj(Helpers_combineClasses("button", toList(delay(() => append_1(singleton_1(["className", "is-info"]), delay(() => append_1(singleton_1(["children", "Submit"]), delay(() => (!isFormValid(model) ? singleton_1(["disabled", true]) : empty_1()))))))))))), createElement("div", {
-        className: "control",
-        children: Interop_reactApi.Children.toArray(Array.from(elms)),
-    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])));
-}
-
 export function view(model, dispatch) {
     let elems_4;
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         position: "relative",
-    }], (elems_4 = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(dispatch)), delay(() => {
+    }], (elems_4 = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(model, dispatch)), delay(() => {
         let elems_3, elems_2, elems_1, elems;
         return singleton_1(createElement("div", createObj(Helpers_combineClasses("columns", ofArray([["className", join(" ", ["is-centered"])], ["style", {
             height: 90 + "vh",

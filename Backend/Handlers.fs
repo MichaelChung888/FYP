@@ -74,14 +74,14 @@ let addProjectHttpHandler =
             let! data = ctx.BindJsonAsync<AddPreferenceRequest>()
             let p = data.preference
             let np = data.newPreference
-            let nprw = data.newPreferenceRankWhere
+            let npri = data.newPreferenceIndex
 
-            updatePreference eeid np nprw
+            updatePreferenceSQL eeid np npri
 
             for pid in [p; np] do 
                 match pid with
                 | 0 -> ()
-                | _ -> updateProjectPopularity pid
+                | _ -> updateProjectPopularitySQL pid
 
             let query = getPreferenceSQL eeid
             return! json query next ctx 
@@ -109,12 +109,12 @@ let savePreferencesHttpHandler =
             let np = data.newPreference
             let npr = data.newPreferenceRanks
 
-            updatePreferences c d eeid np npr
+            updatePreferencesSQL c d eeid np npr
 
             for pid in ((np @ p) |> List.distinct) do 
                 match pid with
                 | 0 -> ()
-                | _ -> updateProjectPopularity pid
+                | _ -> updateProjectPopularitySQL pid
 
             let query = getPreferenceSQL eeid
             return! json query next ctx 
@@ -128,7 +128,7 @@ let projectProposeHttpHandler =
 
             let! data = ctx.BindJsonAsync<ProjectProposeRequest>()
 
-            let response = projectPropose data eeid
+            let response = projectProposeSQL data eeid
 
             match response with
             | Ok res -> 
@@ -140,3 +140,43 @@ let projectProposeHttpHandler =
                 return! json "Failed" next ctx    
         }
 
+// Get all Proposals of user eeid
+let proposalsHttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            let token = getTokenFromRequest ctx.Request
+            let eeid = getIdFromToken token
+
+            let! isStudent = ctx.BindJsonAsync<bool>()
+            let proposals = proposalsSQL eeid isStudent
+                            |> List.map (fun p -> { project = p; applicants = applicantsSQL p.pid } )
+            return! json proposals next ctx 
+        }
+
+// Delete the proposal in DeleteProposalRequest from user eeid
+let deleteProposalsHttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            let token = getTokenFromRequest ctx.Request
+            let eeid = getIdFromToken token
+
+            let! data = ctx.BindJsonAsync<DeleteProposalRequest>()
+            deleteProposalSQL data.pid |> ignore
+            let proposals = proposalsSQL eeid data.isStudent
+                            |> List.map (fun p -> { project = p; applicants = applicantsSQL p.pid } )
+            return! json proposals next ctx 
+        }
+
+// Save/Update the proposal in EditProposalRequest from uer eeid
+let saveProposalHttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            let token = getTokenFromRequest ctx.Request
+            let eeid = getIdFromToken token
+
+            let! data = ctx.BindJsonAsync<EditProposalRequest>()
+            deleteProposalSQL data.pid |> ignore
+            let proposals = proposalsSQL eeid data.isStudent
+                            |> List.map (fun p -> { project = p; applicants = applicantsSQL p.pid } )
+            return! json proposals next ctx 
+        }

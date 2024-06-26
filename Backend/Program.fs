@@ -11,9 +11,14 @@ open Microsoft.AspNetCore.Authentication.JwtBearer
 open Microsoft.IdentityModel.Tokens
 open System.Text
 
+open Shared
+
 open Handlers
 open Giraffe
 open JWT
+
+open dotenv.net
+open dotenv.net.Utilities
 
 (* Web App Configuration *)
 
@@ -29,10 +34,13 @@ let webApp =
                 route "/new-projects" >=> GET >=> newProjectHttpHandler
                 route "/preferences" >=> GET >=> preferenceHttpHandler
                 route "/projects" >=> GET >=> projectHttpHandler
-                route "/search-projects" >=> POST >=>  searchProjectHttpHandler
+                route "/search-projects" >=> POST >=>  searchProjectHttpHandler // Should be GET
                 route "/save-preferences" >=> PUT >=>  savePreferencesHttpHandler
                 route "/add-project" >=> PUT >=>  addProjectHttpHandler
                 route "/project-propose" >=> POST >=> projectProposeHttpHandler
+                route "/proposals" >=> POST >=> proposalsHttpHandler // Should be GET
+                route "/proposals" >=> DELETE >=> deleteProposalsHttpHandler // Should be GET
+                route "/save-proposal" >=> PUT >=> saveProposalHttpHandler
             ]
     ]
     // Note: warbler is used when the route is returning a dynamic (not static) response, hence wrap the function in a "warbler()"
@@ -82,7 +90,7 @@ let configureServices (services : IServiceCollection) =
             ) |> ignore
     services.AddCors()    |> ignore
     services.AddGiraffe() |> ignore
-    
+
 [<EntryPoint>]
 let main _ =
     Host.CreateDefaultBuilder()
@@ -92,7 +100,7 @@ let main _ =
                     // Calling Configure to set up all middleware
                     .Configure(configureApp)
                     .ConfigureServices(configureServices)
-                    .UseUrls("http://localhost:1234")
+                    .UseUrls(Server)
                     |> ignore)
         .Build()
         .Run()

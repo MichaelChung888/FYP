@@ -1,6 +1,7 @@
 module Login
 
 open Shared
+open Common
 
 open Thoth.Json
 open Thoth.Fetch
@@ -51,7 +52,7 @@ let update (msg: Msg) (model: Model) =
         ev.preventDefault ()
         let handleSubmit () = 
             promise {
-                let url = "http://localhost:1234/login"
+                let url = $"{Server}/login"
                 return! Fetch.post(url=url, 
                                    data=model.login, 
                                    decoder=Account.Decoder, 
@@ -64,36 +65,6 @@ let update (msg: Msg) (model: Model) =
     | Error res ->
         printfn "%A" res
         { model with loading = false }, Cmd.none
-
-//--------------------------------------------------------------------------------------//
-//                                 Render Subcomponents                                 //
-//--------------------------------------------------------------------------------------//
-
-let LoadingScreen =
-    Html.div [
-        prop.style [style.top 0; style.left 0; style.overflow.hidden; style.position.absolute; 
-                    style.height (length.vh 100); style.width (length.vw 100); style.display.flex
-                    style.zIndex 100; style.backgroundColor (rgba (0, 0, 0, 0.6))
-                    style.justifyContent.center; style.alignItems.center]
-        prop.children [
-            Html.div [ prop.classes [ "loader" ] ]
-        ]
-    ]
-
-let TurquoiseBackground opacity =
-    Html.div [
-        prop.style [style.position.absolute; style.height (length.perc 100); style.width (length.perc 100); style.opacity opacity; style.zIndex -1; style.backgroundColor turqouise]
-    ]
-
-let TurquoiseBackgroundStyle opacity =
-    style.backgroundColor (rgba (175, 238, 238, opacity))
-
-let ImageBackground = 
-    Html.img [
-        prop.style [style.position.absolute; style.height (length.perc 100); style.width (length.perc 100); style.zIndex -2; style.overflow.hidden] // style.objectFit.cover;
-        prop.src "/images/imperial.jpg"
-    ]
-
 
 let Input dispatch =
     Bulma.field.div [
@@ -135,7 +106,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
             ImageBackground
 
             Html.div [
-                prop.style [TurquoiseBackgroundStyle 0.7; style.position.relative; style.borderStyle.solid; style.borderColor mediumTurqouise; style.width (length.px 400); style.height (length.px 550); style.padding (length.px 10); style.display.flex; style.flexDirection.column; style.alignItems.center; style.justifyContent.center; style.borderRadius (length.perc 3)]
+                prop.style [TurquoiseBackgroundRGBA 0.7; style.position.relative; style.borderStyle.solid; style.borderColor mediumTurqouise; style.width (length.px 400); style.height (length.px 550); style.padding (length.px 10); style.display.flex; style.flexDirection.column; style.alignItems.center; style.justifyContent.center; style.borderRadius (length.perc 3)]
                 prop.children [
                     Html.section [
                         prop.classes ["title"; "is-2"; Bulma.Field]

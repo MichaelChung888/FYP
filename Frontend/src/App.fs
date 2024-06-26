@@ -11,6 +11,8 @@ open HomeStudent
 open Projects
 open Preferences
 open ProjectPropose
+open HomeSupervisor
+open Proposals
 
 open Fable.Core.JsInterop
 importSideEffects "./styles.css"
@@ -29,6 +31,8 @@ type Url =
     | ProjectsUrl
     | PreferencesUrl
     | ProjectProposeUrl
+    | HomeSupervisorUrl
+    | ProposalsUrl
     | NotFoundUrl
     | EmptyUrl
 
@@ -38,6 +42,8 @@ type Page = // Pages
     | ProjectsPage of Projects.Model
     | PreferencesPage of Preferences.Model
     | ProjectProposePage of ProjectPropose.Model
+    | HomeSupervisorPage of HomeSupervisor.Model
+    | ProposalsPage of Proposals.Model
     | NotFoundPage
 
 type Msg =
@@ -46,6 +52,8 @@ type Msg =
     | ProjectsMsg of Projects.Msg
     | PreferencesMsg of Preferences.Msg
     | ProjectProposeMsg of ProjectPropose.Msg
+    | HomeSupervisorMsg of HomeSupervisor.Msg
+    | ProposalsMsg of Proposals.Msg
     | UrlChanged of Url
 
 type Model = {
@@ -66,6 +74,8 @@ let parseUrl = function
     | ["home-student"; "projects"] -> ProjectsUrl
     | ["home-student"; "preferences"] -> PreferencesUrl
     | ["project-propose"] -> ProjectProposeUrl
+    | ["home-supervisor"] -> HomeSupervisorUrl
+    | ["home-supervisor"; "proposals"] -> ProposalsUrl
     | _ -> NotFoundUrl
 
 let init () : Model * Cmd<Msg> = 
@@ -89,6 +99,10 @@ let init () : Model * Cmd<Msg> =
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
     | ProjectProposeUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+    | HomeSupervisorUrl ->
+        defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+    | ProposalsUrl ->
+        defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
     | NotFoundUrl ->
         { defaultModel with currentPage = NotFoundPage }, Cmd.none
     | EmptyUrl ->
@@ -110,14 +124,20 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     | LoginMsg msg, LoginPage page ->
         match msg with
         | SuccessLogin res ->
-            { model with user = (LoggedIn res.person); token = res.token }, Cmd.navigatePath("home-student")
+            let person = res.person
+            match person.categ with
+            | "U" | "M" -> // Student
+                { model with user = (LoggedIn res.person); token = res.token }, Cmd.navigatePath("home-student")
+            | _ -> // Supervisor
+                { model with user = (LoggedIn res.person); token = res.token }, Cmd.navigatePath("home-supervisor")
+
         | msg ->
             let newPage, newMsg = Login.update msg page
             updatePage (LoginPage newPage), Cmd.map LoginMsg newMsg
 
     | HomeStudentMsg msg, HomeStudentPage page ->
         match msg with
-        | HomeStudent.Logout ->
+        | HomeStudent.Msg.Logout ->
             { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
         | msg ->
             let newPage, newMsg = HomeStudent.update msg page
@@ -125,7 +145,7 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
 
     | ProjectsMsg msg, ProjectsPage page ->
         match msg with
-        | Projects.Logout ->
+        | Projects.Msg.Logout ->
             { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
         | msg ->
             let newPage, newMsg = Projects.update msg page
@@ -133,7 +153,7 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
 
     | PreferencesMsg msg, PreferencesPage page ->
         match msg with
-        | Preferences.Logout ->
+        | Preferences.Msg.Logout ->
             { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
         | msg ->
             let newPage, newMsg = Preferences.update msg page
@@ -141,11 +161,27 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
 
     | ProjectProposeMsg msg, ProjectProposePage page ->
         match msg with
-        | ProjectPropose.Logout ->
+        | ProjectPropose.Msg.Logout ->
             { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
         | msg ->
             let newPage, newMsg = ProjectPropose.update msg page
-            updatePage (ProjectProposePage newPage), Cmd.map ProjectProposeMsg newMsg            
+            updatePage (ProjectProposePage newPage), Cmd.map ProjectProposeMsg newMsg    
+
+    | HomeSupervisorMsg msg, HomeSupervisorPage page ->
+        match msg with
+        | HomeSupervisor.Msg.Logout ->
+            { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
+        | msg ->
+            let newPage, newMsg = HomeSupervisor.update msg page
+            updatePage (HomeSupervisorPage newPage), Cmd.map HomeSupervisorMsg newMsg 
+
+    | ProposalsMsg msg, ProposalsPage page ->
+        match msg with
+        | Proposals.Msg.Logout ->
+            { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
+        | msg ->
+            let newPage, newMsg = Proposals.update msg page
+            updatePage (ProposalsPage newPage), Cmd.map ProposalsMsg newMsg         
 
     | UrlChanged nextUrl, _ ->
         match nextUrl with
@@ -181,6 +217,20 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
                 let newPage, newMsg = ProjectPropose.init model.token user
                 showPage (ProjectProposePage newPage) ProjectsUrl, Cmd.map ProjectProposeMsg newMsg
 
+        | HomeSupervisorUrl ->
+            match model.user with
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+            | LoggedIn user ->
+                let newPage, newMsg = HomeSupervisor.init model.token
+                showPage (HomeSupervisorPage newPage) HomeSupervisorUrl, Cmd.map HomeSupervisorMsg newMsg
+
+        | ProposalsUrl ->
+            match model.user with
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+            | LoggedIn user ->
+                let newPage, newMsg = Proposals.init model.token
+                showPage (ProposalsPage newPage) ProposalsUrl, Cmd.map ProposalsMsg newMsg
+
         | NotFoundUrl ->
             showPage NotFoundPage NotFoundUrl, Cmd.none
 
@@ -210,6 +260,10 @@ let view (model: Model) (dispatch: Msg -> unit) =
                 Preferences.view page (Msg.PreferencesMsg >> dispatch)
             | ProjectProposePage page ->
                 ProjectPropose.view page (Msg.ProjectProposeMsg >> dispatch)
+            | HomeSupervisorPage page ->
+                HomeSupervisor.view page (Msg.HomeSupervisorMsg >> dispatch)
+            | ProposalsPage page ->
+                Proposals.view page (Msg.ProposalsMsg >> dispatch)
             | NotFoundPage ->
                 Html.p "Not Found"
         ]

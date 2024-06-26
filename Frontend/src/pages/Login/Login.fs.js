@@ -20,12 +20,12 @@ import { fromString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.
 import { createObj, uncurry2 } from "../../fable_modules/fable-library.4.1.4/Util.js";
 import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { createElement } from "react";
-import { rgba } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
-import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
 import { PropHelpers_createOnKey } from "../../fable_modules/Feliz.2.7.0/./Properties.fs.js";
 import { key_enter } from "../../fable_modules/Feliz.2.7.0/Key.fs.js";
+import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { empty as empty_1, singleton as singleton_1, append, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
+import { TurquoiseBackgroundRGBA, ImageBackground, TurquoiseBackground, LoadingScreen } from "../../Common.fs.js";
 
 export class Model extends Record {
     constructor(loading, login) {
@@ -65,7 +65,7 @@ export function update(msg, model) {
             ev.preventDefault();
             const handleSubmit = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
                 let decoder;
-                const url = "http://localhost:1234/login";
+                const url = `${"http://localhost:1234"}/login`;
                 return ((decoder = Account_get_Decoder(), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
                     let data_2, caseStrategy_2, extra_2;
                     return ((data_2 = model.login, (caseStrategy_2 = void 0, (extra_2 = void 0, (() => {
@@ -126,53 +126,6 @@ export function update(msg, model) {
     }
 }
 
-export const LoadingScreen = createElement("div", createObj(ofArray([["style", {
-    top: 0,
-    left: 0,
-    overflow: "hidden",
-    position: "absolute",
-    height: 100 + "vh",
-    width: 100 + "vw",
-    display: "flex",
-    zIndex: 100,
-    backgroundColor: rgba(0, 0, 0, 0.6),
-    justifyContent: "center",
-    alignItems: "center",
-}], (() => {
-    const elems = [createElement("div", {
-        className: join(" ", ["loader"]),
-    })];
-    return ["children", Interop_reactApi.Children.toArray(Array.from(elems))];
-})()])));
-
-export function TurquoiseBackground(opacity) {
-    return createElement("div", {
-        style: {
-            position: "absolute",
-            height: 100 + "%",
-            width: 100 + "%",
-            opacity: opacity,
-            zIndex: -1,
-            backgroundColor: "#AFEEEE",
-        },
-    });
-}
-
-export function TurquoiseBackgroundStyle(opacity) {
-    return ["backgroundColor", rgba(175, 238, 238, opacity)];
-}
-
-export const ImageBackground = createElement("img", {
-    style: {
-        position: "absolute",
-        height: 100 + "%",
-        width: 100 + "%",
-        zIndex: -2,
-        overflow: "hidden",
-    },
-    src: "/images/imperial.jpg",
-});
-
 export function Input(dispatch) {
     let elems_2, elems_1, elems;
     return createElement("div", createObj(Helpers_combineClasses("field", singleton((elems_2 = [createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "EE ID"])))), createElement("div", createObj(ofArray([["className", join(" ", ["control", "has-icons-left"])], (elems_1 = [createElement("input", createObj(cons(["type", "text"], Helpers_combineClasses("input", ofArray([["required", true], ["placeholder", "Enter your EEID"], ["onChange", (ev) => {
@@ -195,7 +148,7 @@ export function view(model, dispatch) {
         justifyContent: "center",
     }], (elems_4 = toList(delay(() => append(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append(singleton_1(TurquoiseBackground(0.5)), delay(() => append(singleton_1(ImageBackground), delay(() => {
         let elems_3, elems_2, elems_1, elms;
-        return singleton_1(createElement("div", createObj(ofArray([["style", createObj(ofArray([TurquoiseBackgroundStyle(0.7), ["position", "relative"], ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["width", 400 + "px"], ["height", 550 + "px"], ["padding", 10 + "px"], ["display", "flex"], ["flexDirection", "column"], ["alignItems", "center"], ["justifyContent", "center"], ["borderRadius", 3 + "%"]]))], (elems_3 = [createElement("section", {
+        return singleton_1(createElement("div", createObj(ofArray([["style", createObj(ofArray([TurquoiseBackgroundRGBA(0.7), ["position", "relative"], ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["width", 400 + "px"], ["height", 550 + "px"], ["padding", 10 + "px"], ["display", "flex"], ["flexDirection", "column"], ["alignItems", "center"], ["justifyContent", "center"], ["borderRadius", 3 + "%"]]))], (elems_3 = [createElement("section", {
             className: join(" ", ["title", "is-2", "field"]),
             children: "EEFYP",
         }), createElement("section", {
