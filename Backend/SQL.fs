@@ -57,20 +57,19 @@ let allApplicantsFields = "EEID, "
 //                                    SQL Statements                                    //
 //--------------------------------------------------------------------------------------//
 
-let loginAuthenticateSQL (eeid: string) : List<Person> =
+let loginAuthenticateSQL (eeid: string) : Result<string, SqlException> =
     let loginAuthenticateCmd = new SqlCommand (
         $"SELECT {allPersonFields} 
         FROM eedbo_eepx 
         WHERE eeid = @eeid;", conn)
     loginAuthenticateCmd.Parameters.AddWithValue("@eeid", eeid) |> ignore
-    let jsonQuery = ExecuteQuery(loginAuthenticateCmd)
-    match jsonQuery with
-    | Ok jsonQuery -> JsonConvert.DeserializeObject<List<Person>>(jsonQuery);
-    | Error ex -> printfn "%A" ex; []
+
+    ExecuteQuery(loginAuthenticateCmd)
 
 
 
-let newProjectSQL () : List<Project> =
+
+let newProjectSQL () : Result<string, SqlException> =
     let projectCmd = new SqlCommand (
         $"SELECT TOP 8 {allProjectFields} 
         FROM eedbo_eepx e
@@ -78,14 +77,12 @@ let newProjectSQL () : List<Project> =
         JOIN eedbo_projects_extra pe ON ps.PID = pe.PID
         WHERE ps.STUDENT = ''
         ORDER BY pe.updated DESC", conn)
-    let jsonQuery = ExecuteQuery(projectCmd)
-    match jsonQuery with
-    | Ok jsonQuery -> JsonConvert.DeserializeObject<List<Project>>(jsonQuery);
-    | Error ex -> printfn "%A" ex; []
+        
+    ExecuteQuery(projectCmd)
 
 
 
-let projectSQL () : List<Project> = 
+let projectSQL () : Result<string, SqlException>  = 
     let projectCmd = new SqlCommand (
         $"SELECT {allProjectFields} 
         FROM eedbo_eepx e
@@ -93,14 +90,13 @@ let projectSQL () : List<Project> =
         JOIN eedbo_projects_extra pe ON ps.PID = pe.PID
         WHERE ps.STUDENT = ''
         ORDER BY pe.updated DESC", conn)
-    let jsonQuery = ExecuteQuery(projectCmd)
-    match jsonQuery with
-    | Ok jsonQuery -> JsonConvert.DeserializeObject<List<Project>>(jsonQuery);
-    | Error ex -> printfn "%A" ex; []
+
+    ExecuteQuery(projectCmd)
 
 
 
-let searchProjectSQL (data: SearchRequest) : List<Project> =
+
+let searchProjectSQL (data: SearchRequest) : Result<string, SqlException> =
     let categories = data.categories 
                         |> List.map (fun c -> "pe.categories LIKE '%" + c + "%' AND") 
                         |> String.concat " "
@@ -125,10 +121,9 @@ let searchProjectSQL (data: SearchRequest) : List<Project> =
             JOIN eedbo_projects_extra pe ON ps.PID = pe.PID
             WHERE {categories} {streams} {searchTitle data.title} > 0 AND {searchProfessor data.professor} > 0 AND ps.STUDENT = ''
             ORDER BY pe.updated DESC, {searchTitle data.title} DESC, {searchProfessor data.professor} DESC", conn)
-    let jsonQuery = ExecuteQuery(projectCmd)
-    match jsonQuery with
-    | Ok jsonQuery -> JsonConvert.DeserializeObject<List<Project>>(jsonQuery);
-    | Error ex -> printfn "%A" ex; []
+    
+    ExecuteQuery(projectCmd)
+
 
 
 
@@ -149,30 +144,14 @@ let getAProjectSQL (pid: int) : Project =
         
 
 
-let getPreferenceSQL (eeid: string) : PreferenceResponse =
+let getPreferenceSQL (eeid: string) : Result<string, SqlException> =
     let preferenceCmd = new SqlCommand (
         $"SELECT {allPreferenceFields} 
         FROM eedbo_projprefs 
         WHERE EEID = {eeid}", conn)
-    let jsonQuery = ExecuteQuery(preferenceCmd)
-    match jsonQuery with
-    | Ok jsonQuery -> 
-        let query = (JsonConvert.DeserializeObject<List<Preference>>(jsonQuery))[0];
-        {
-            eeid = query.eeid
-            p1 = getAProjectSQL query.p1; p2 = getAProjectSQL query.p2; p3 = getAProjectSQL query.p3; p4 = getAProjectSQL query.p4
-            p5 = getAProjectSQL query.p5; p6 = getAProjectSQL query.p6; p7 = getAProjectSQL query.p7; p8 = getAProjectSQL query.p8 
-            p9 = getAProjectSQL query.p9; p10 = getAProjectSQL query.p10
-            n1 = query.n1; n2 = query.n2; n3 = query.n3; n4 = query.n4; n5 = query.n5
-            n6 = query.n6; n7 = query.n7; n8 = query.n8; n9 = query.n9; n10 = query.n10
-            s1 = query.s1; s2 = query.s2; s3 = query.s3; s4 = query.s4; s5 = query.s5
-            s6 = query.s6; s7 = query.s7; s8 = query.s8; s9 = query.s9; s10 = query.s10
-            upddate = query.upddate
-            comments = query.comments
-            feedback = query.feedback
-            doc = query.doc
-        }
-    | Error ex -> printfn "%A" ex; PreferenceResponse.Default
+    ExecuteQuery(preferenceCmd)
+
+
 
 //--------------------------------------------------------------------------------------//
 //                                 Updating Preferences                                 //
@@ -181,8 +160,7 @@ let getPreferenceSQL (eeid: string) : PreferenceResponse =
 let checkEmptyPreference (newPreference: int) (newPreferenceIndex: int) : string =
     if newPreference = 0 then ("s" + newPreferenceIndex.ToString() + " = 'Pending'") else ""
 
-
-let updatePreferenceSQL (eeid: string) (newPreference: int) (newPreferenceIndex: int) : unit =
+let updatePreferenceSQL (eeid: string) (newPreference: int) (newPreferenceIndex: int) : Result<string, SqlException> =
     let newPreferenceString = newPreference.ToString()
     let update = match newPreferenceIndex with
                  | 1 -> "SET P1 = '" + newPreferenceString + "'"
@@ -201,16 +179,13 @@ let updatePreferenceSQL (eeid: string) (newPreference: int) (newPreferenceIndex:
         {update}
         WHERE EEID = {eeid};", conn)
 
-    printfn "%A" $"UPDATE eedbo_projprefs
-        {update}
-        WHERE EEID = {eeid};"
-    match ExecuteQuery(updatePreferenceCmd) with
-    | Ok sucess -> ()
-    | Error ex ->  printfn "%A" ex; ()
+    ExecuteQuery(updatePreferenceCmd)
 
 
 
-let updatePreferencesSQL (comments: string) (doc: bool) (eeid: string) (newPreference: List<int>) (newPreferenceRanks: List<int>) : unit =
+
+let updatePreferencesSQL (comments: string) (doc: bool) (eeid: string) (newPreference: List<int>) 
+                         (newPreferenceRanks: List<int>) : Result<string, SqlException>  =
     let np = newPreference
     let npr = newPreferenceRanks
     let np1, np2, np3, np4, np5, np6, np7, np8, np9, np10 = np[0], np[1], np[2], np[3], np[4], np[5], np[6], np[7], np[8], np[9]
@@ -230,9 +205,9 @@ let updatePreferencesSQL (comments: string) (doc: bool) (eeid: string) (newPrefe
         N9 = {npr9}, N10 = {npr10}, 
         DOC = '{doc}', COMMENTS = '{comments}', {ns} 
         WHERE EEID = {eeid};", conn)
-    match ExecuteQuery(updatePreferencesCmd) with
-    | Ok sucess -> ()
-    | Error ex ->  printfn "%A" ex; ()
+
+    ExecuteQuery(updatePreferencesCmd)
+
 
 
 
@@ -288,32 +263,42 @@ let updateProjectPopularitySQL (pid: int) : unit =
         | Ok sucess -> ()
         | Error ex ->  printfn "%A" ex; ()
 
+
 //--------------------------------------------------------------------------------------//
 //                                   Propose Projects                                   //
 //--------------------------------------------------------------------------------------//
 
-let projectProposeSQL (data: ProjectProposeRequest) (eeid: string) =
+let projectProposeSQL (data: ProjectProposeRequest) (eeid: string) : Result<string, SqlException> =
     let categoriesString = data.categories |> String.concat ","
-    let streamsString = data.streams |> String.concat ","
+    let streamsString = data.streams |> String.concat ""
+
     let studentOrSupervisor = if data.isStudent then "STUDENT" else "SUP"
 
-    let projectProposeCmd = new SqlCommand ( 
-        $"INSERT INTO eedbo_projects_sqlserver 
-            (TITLE, TSTREAM, DESCR, {studentOrSupervisor})
-        VALUES
-            ('{data.title}', '{streamsString}', '{data.description}', {eeid});
+    let projectProposeCmd = new SqlCommand (
+        $"INSERT INTO eedbo_projects_sqlserver (TITLE, TSTREAM, DESCR, {studentOrSupervisor})
+        VALUES (@title, @streamsString, @description, @eeid);
 
-        INSERT INTO eedbo_projects_extra 
-                    (categories, requirements, skills, meetings)
-                VALUES
-        ('{categoriesString}', '{data.requirements}', '{data.skills}', '{data.meetings}');", conn)
+        INSERT INTO eedbo_projects_extra (categories, requirements, skills, meetings)
+        VALUES (@categoriesString, @requirements, @skills, @meetings);", conn)
+
+    // Add parameters for the first insert
+    projectProposeCmd.Parameters.AddWithValue("@title", data.title) |> ignore
+    projectProposeCmd.Parameters.AddWithValue("@streamsString", streamsString) |> ignore
+    projectProposeCmd.Parameters.AddWithValue("@description", data.description) |> ignore
+    projectProposeCmd.Parameters.AddWithValue("@eeid", eeid) |> ignore
+    // Add parameters for the second insert
+    projectProposeCmd.Parameters.AddWithValue("@categoriesString", categoriesString) |> ignore
+    projectProposeCmd.Parameters.AddWithValue("@requirements", data.requirements) |> ignore
+    projectProposeCmd.Parameters.AddWithValue("@skills", data.skills) |> ignore
+    projectProposeCmd.Parameters.AddWithValue("@meetings", data.meetings) |> ignore
+
     ExecuteQuery(projectProposeCmd)
 
 //--------------------------------------------------------------------------------------//
 //                                      Proposals                                       //
 //--------------------------------------------------------------------------------------//
 
-let proposalsSQL (eeid: string) (isStudent: bool) : List<Project> = 
+let proposalsSQL (eeid: string) (isStudent: bool) : Result<string, SqlException> = 
     let condition = if isStudent then $"ps.STUDENT = {eeid}" else $"ps.SUP = {eeid}"
     let projectCmd = new SqlCommand (
         $"SELECT {allProjectFields} 
@@ -322,11 +307,8 @@ let proposalsSQL (eeid: string) (isStudent: bool) : List<Project> =
         JOIN eedbo_projects_extra pe ON ps.PID = pe.PID
         WHERE {condition}
         ORDER BY pe.updated DESC;", conn)
+    ExecuteQuery(projectCmd)
 
-    let jsonQuery = ExecuteQuery(projectCmd)
-    match jsonQuery with
-    | Ok jsonQuery -> JsonConvert.DeserializeObject<List<Project>>(jsonQuery);
-    | Error ex -> printfn "%A" ex; []
 
 
 
@@ -352,7 +334,7 @@ let applicantsSQL (pid: int) : List<Applicant> =
 
 
 
-let deleteProposalSQL (pid: int) : unit =
+let deleteProposalSQL (pid: int) : Result<string, SqlException> =
     let deleteCmd = new SqlCommand (
         $"DELETE FROM eedbo_projects_sqlserver WHERE PID = {pid};
 
@@ -380,48 +362,61 @@ let deleteProposalSQL (pid: int) : unit =
         s9 = CASE WHEN P9 = {pid} THEN 'Pending' ELSE s9 END,
         s10 = CASE WHEN P10 = {pid} THEN 'Pending' ELSE s10 END;", conn)
 
-    let jsonQuery = ExecuteQuery(deleteCmd)
-    match jsonQuery with
-    | Ok sucess -> ()
-    | Error ex ->  printfn "%A" ex; ()
+    ExecuteQuery(deleteCmd)
 
 
-(*
-let saveProposalSQL (data: EditProposalRequest) : unit =
-    let categories = 
 
-    let updateProjectSqlServer = $"
-        UPDATE eedbo_projects_sqlserver
-        SET title = {data.title}, streams = {data.streams}
-        WHERE pid = {data.pid}"
+let editProposalSQL (data: EditProposalRequest) : Result<string, SqlException> =
+    let categoriesString = data.categories |> String.concat ","
+    let streamsString = data.streams |> String.concat ""
 
-    let updateProjectExtra = $"
+    use updateProposalCmd = new SqlCommand(
+        $"UPDATE eedbo_projects_sqlserver
+        SET TITLE = @title, TSTREAM = @streams,
+        DESCR = @description
+        WHERE pid = @pid;
+        
         UPDATE eedbo_projects_extra
-        SET categories = {data.categories},
-            streams = {data.streams},
-            requirements = data.requirements,
-            description = {data.description},
-            skills = {data.skills},
-            meetings = {data.meetings},
+        SET categories = @categories,
+            requirements = @requirements,
+            skills = @skills,
+            meetings = @meetings,
             updated = GETDATE()
-        WHERE pid = @pid"
+        WHERE pid = @pid", conn)
 
-    use cmd1 = new SqlCommand(updateProjectSqlServer, conn)
-    cmd1.Parameters.AddWithValue("@pid", data.pid) |> ignore
-    cmd1.Parameters.AddWithValue("@title", data.title) |> ignore
-    cmd1.Parameters.AddWithValue("@streams", String.Join(",", editRequest.streams)) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@pid", data.pid) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@title", data.title) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@streams", streamsString) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@categories", categoriesString) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@requirements", data.requirements) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@description", data.description) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@skills", data.skills) |> ignore
+    updateProposalCmd.Parameters.AddWithValue("@meetings", data.meetings) |> ignore
 
-    use cmd2 = new SqlCommand(updateProjectExtra, conn)
-    cmd2.Parameters.AddWithValue("@pid", data.pid) |> ignore
-    cmd2.Parameters.AddWithValue("@categories", String.Join(",", editRequest.categories)) |> ignore
-    cmd2.Parameters.AddWithValue("@streams", String.Join(",", editRequest.streams)) |> ignore
-    cmd2.Parameters.AddWithValue("@requirements", data.requirements) |> ignore
-    cmd2.Parameters.AddWithValue("@description", data.description) |> ignore
-    cmd2.Parameters.AddWithValue("@skills", data.skills) |> ignore
-    cmd2.Parameters.AddWithValue("@meetings", data.meetings) |> ignore
+    ExecuteQuery(updateProposalCmd)
 
-    let jsonQuery = ExecuteQuery(deleteCmd)
-    match jsonQuery with
-    | Ok sucess -> ()
-    | Error ex ->  printfn "%A" ex; ()
-*)
+
+
+let editSuitabilitySQL (data: EditSuitabilityRequest) : Result<string, SqlException> =
+    let suitabilityRank = match data.rank with
+                          | 1 -> "s1"
+                          | 2 -> "s2"
+                          | 3 -> "s3"
+                          | 4 -> "s4"
+                          | 5 -> "s5"
+                          | 6 -> "s6"
+                          | 7 -> "s7"
+                          | 8 -> "s8"
+                          | 9 -> "s9"
+                          | 10 -> "s10"
+                          | _ -> "s1"
+
+    use updateSuitabilityCmd = new SqlCommand(
+        $"UPDATE eedbo_projprefs
+        SET {suitabilityRank} = @suitability
+        WHERE EEID = @applicantId;", conn)
+
+    updateSuitabilityCmd.Parameters.AddWithValue("@suitability", data.newSuitability) |> ignore
+    updateSuitabilityCmd.Parameters.AddWithValue("@applicantId", data.applicantId) |> ignore
+
+    ExecuteQuery(updateSuitabilityCmd)

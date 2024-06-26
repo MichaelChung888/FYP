@@ -135,9 +135,9 @@ let TableStreams (streams: string) =
 //                                  Table UI Component                                  //
 //--------------------------------------------------------------------------------------//
 
-let Table (body: ReactElement list) = 
+let Table (height: int) (body: ReactElement list) = 
     Html.div [
-        prop.style [style.overflowY.auto; style.height (length.perc 95); style.overflowX.hidden]
+        prop.style [style.overflowY.auto; style.height (length.perc height); style.overflowX.hidden]
         prop.classes [ "scrollbar" ]
         prop.children [
             Bulma.table [
@@ -155,3 +155,90 @@ let isStudent (user: Person) =
     match user.categ with
     | "U" | "M" -> true // Student
     | _ -> false // Supervisor
+
+//--------------------------------------------------------------------------------------//
+//                    Project Popularity Table for Selected Projects                    //
+//--------------------------------------------------------------------------------------//
+
+let ProjectPopularityTable (sp: Project) =
+    let projectPopularityList = [(1, sp.r1); (2, sp.r2); (3, sp.r3); (4, sp.r4); (5, sp.r5); 
+                                 (6, sp.r6); (7, sp.r7); (8, sp.r8); (9, sp.r9); (10, sp.r10)]
+
+    let ProjectPopularityRow ((rank, popularity): int * int) =
+        Html.tr [
+            Html.td [ prop.text ( rank.ToString() ) ]
+            Html.td [ prop.text ( popularity.ToString() ) ]
+        ]
+
+    Bulma.table [
+        Bulma.table.isNarrow
+        prop.style [style.width (length.perc 100)]
+        prop.children [
+            Html.thead [
+                Html.tr [
+                    Html.th [ prop.title "Rank"; prop.text "Rank"]
+                    Html.th [ prop.title "Popularity"; prop.text "Popularity"]
+                ]
+            ]
+            Html.tbody (List.map ProjectPopularityRow projectPopularityList)
+        ]
+    ]
+
+//--------------------------------------------------------------------------------------//
+//                              Selected Project Info Body                              //
+//--------------------------------------------------------------------------------------//
+
+let projectInfoMedia (sp: Project) =
+    Bulma.media [
+        prop.style [style.marginBottom 40]
+        prop.children [
+            Bulma.mediaLeft [
+                Bulma.image [
+                    Bulma.image.is48x48
+                    prop.children [
+                        Html.img [ prop.src "https://bulma.io/assets/images/placeholders/96x96.png" ]
+                    ]
+                ]
+            ]
+        
+            Bulma.mediaContent [
+                Bulma.title [ prop.classes [ Bulma.Is4 ]; prop.text sp.supName] 
+                Bulma.subtitle [ prop.classes [ Bulma.Is6 ]; prop.text "example123@ic.ac.uk"]
+            ]
+        ]
+    ]
+
+let projectInfoBody (sp: Project) = 
+    Bulma.content [
+        Bulma.columns [
+            Bulma.column [
+                prop.classes [ Bulma.Is3 ]
+                prop.children [
+                    Html.h3 "Project Rankings"
+                    ProjectPopularityTable sp
+                ]
+            ]
+
+            Bulma.column [ prop.classes [Bulma.Is1] ] // Column Gap
+
+            Bulma.column [
+                Html.h3 "Project Categories"
+                for c in (TableCategories sp.categories) do c
+
+                Html.h3 "Streams"
+                for s in (TableStreams sp.tstream) do s
+
+                Html.h3 "Student Requirements"
+                Html.p sp.requirements
+            ]
+        ]
+
+        Html.h3 "Desired Skills"
+        Html.p sp.skills
+
+        Html.h3 "Project Description"
+        Html.p sp.descr
+
+        Html.h3 "Meeting Dates"
+        Html.p sp.meetings 
+    ]

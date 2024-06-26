@@ -1,13 +1,13 @@
 import { createElement } from "react";
-import { createObj } from "./fable_modules/fable-library.4.1.4/Util.js";
+import { int32ToString, createObj } from "./fable_modules/fable-library.4.1.4/Util.js";
 import { rgba } from "./fable_modules/Feliz.2.7.0/Colors.fs.js";
 import { join } from "./fable_modules/fable-library.4.1.4/String.js";
 import { Interop_reactApi } from "./fable_modules/Feliz.2.7.0/./Interop.fs.js";
-import { map as map_1, ofArray } from "./fable_modules/fable-library.4.1.4/List.js";
+import { singleton, map as map_1, ofArray } from "./fable_modules/fable-library.4.1.4/List.js";
 import { Helpers_combineClasses } from "./fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
 import { Union } from "./fable_modules/fable-library.4.1.4/Types.js";
 import { union_type } from "./fable_modules/fable-library.4.1.4/Reflection.js";
-import { chunkBySize, map, toList } from "./fable_modules/fable-library.4.1.4/Seq.js";
+import { singleton as singleton_1, append, delay, chunkBySize, map, toList } from "./fable_modules/fable-library.4.1.4/Seq.js";
 
 export const LoadingScreen = createElement("div", createObj(ofArray([["style", {
     top: 0,
@@ -174,11 +174,11 @@ export function TableStreams(streams_1) {
     return map_1(Tag, splitStreams(streams_1));
 }
 
-export function Table(body) {
+export function Table(height, body) {
     let elems_1;
     return createElement("div", createObj(ofArray([["style", {
         overflowY: "auto",
-        height: 95 + "%",
+        height: height + "%",
         overflowX: "hidden",
     }], ["className", join(" ", ["scrollbar"])], (elems_1 = [createElement("table", createObj(Helpers_combineClasses("table", ofArray([["style", {
         width: 100 + "%",
@@ -194,6 +194,90 @@ export function isStudent(user) {
         default:
             return false;
     }
+}
+
+export function ProjectPopularityTable(sp) {
+    let elems, children_4, children_2, children_6;
+    const projectPopularityList = ofArray([[1, sp.r1], [2, sp.r2], [3, sp.r3], [4, sp.r4], [5, sp.r5], [6, sp.r6], [7, sp.r7], [8, sp.r8], [9, sp.r9], [10, sp.r10]]);
+    const ProjectPopularityRow = (_arg) => {
+        const rank = _arg[0] | 0;
+        const popularity = _arg[1] | 0;
+        const children = ofArray([createElement("td", {
+            children: int32ToString(rank),
+        }), createElement("td", {
+            children: int32ToString(popularity),
+        })]);
+        return createElement("tr", {
+            children: Interop_reactApi.Children.toArray(Array.from(children)),
+        });
+    };
+    return createElement("table", createObj(Helpers_combineClasses("table", ofArray([["className", "is-narrow"], ["style", {
+        width: 100 + "%",
+    }], (elems = [(children_4 = singleton((children_2 = ofArray([createElement("th", {
+        title: "Rank",
+        children: "Rank",
+    }), createElement("th", {
+        title: "Popularity",
+        children: "Popularity",
+    })]), createElement("tr", {
+        children: Interop_reactApi.Children.toArray(Array.from(children_2)),
+    }))), createElement("thead", {
+        children: Interop_reactApi.Children.toArray(Array.from(children_4)),
+    })), (children_6 = map_1(ProjectPopularityRow, projectPopularityList), createElement("tbody", {
+        children: Interop_reactApi.Children.toArray(Array.from(children_6)),
+    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))));
+}
+
+export function projectInfoMedia(sp) {
+    let elems_3, elms, elems, elms_1;
+    return createElement("article", createObj(Helpers_combineClasses("media", ofArray([["style", {
+        marginBottom: 40,
+    }], (elems_3 = [(elms = singleton(createElement("figure", createObj(Helpers_combineClasses("image", ofArray([["className", "is-48x48"], (elems = [createElement("img", {
+        src: "https://bulma.io/assets/images/placeholders/96x96.png",
+    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))), createElement("div", {
+        className: "media-left",
+        children: Interop_reactApi.Children.toArray(Array.from(elms)),
+    })), (elms_1 = ofArray([createElement("h1", createObj(Helpers_combineClasses("title", ofArray([["className", join(" ", ["is-4"])], ["children", sp.supName]])))), createElement("h2", createObj(Helpers_combineClasses("subtitle", ofArray([["className", join(" ", ["is-6"])], ["children", "example123@ic.ac.uk"]]))))]), createElement("div", {
+        className: "media-content",
+        children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
+    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_3))])]))));
+}
+
+export function projectInfoBody(sp) {
+    let elms_1, elems, elms;
+    const elms_2 = ofArray([(elms_1 = ofArray([createElement("div", createObj(Helpers_combineClasses("column", ofArray([["className", join(" ", ["is-3"])], (elems = [createElement("h3", {
+        children: ["Project Rankings"],
+    }), ProjectPopularityTable(sp)], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])))), createElement("div", createObj(Helpers_combineClasses("column", singleton(["className", join(" ", ["is-1"])])))), (elms = toList(delay(() => append(singleton_1(createElement("h3", {
+        children: ["Project Categories"],
+    })), delay(() => append(map((c) => c, TableCategories(sp.categories)), delay(() => append(singleton_1(createElement("h3", {
+        children: ["Streams"],
+    })), delay(() => append(map((s) => s, TableStreams(sp.tstream)), delay(() => append(singleton_1(createElement("h3", {
+        children: ["Student Requirements"],
+    })), delay(() => singleton_1(createElement("p", {
+        children: [sp.requirements],
+    })))))))))))))), createElement("div", {
+        className: "column",
+        children: Interop_reactApi.Children.toArray(Array.from(elms)),
+    }))]), createElement("div", {
+        className: "columns",
+        children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
+    })), createElement("h3", {
+        children: ["Desired Skills"],
+    }), createElement("p", {
+        children: [sp.skills],
+    }), createElement("h3", {
+        children: ["Project Description"],
+    }), createElement("p", {
+        children: [sp.descr],
+    }), createElement("h3", {
+        children: ["Meeting Dates"],
+    }), createElement("p", {
+        children: [sp.meetings],
+    })]);
+    return createElement("div", {
+        className: "content",
+        children: Interop_reactApi.Children.toArray(Array.from(elms_2)),
+    });
 }
 
 //# sourceMappingURL=Common.fs.js.map

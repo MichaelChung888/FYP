@@ -38,31 +38,21 @@ let ModalProjectInfoBody (model: Model) (sp: Project) =
     Bulma.content [
         Bulma.columns [
             Bulma.column [
-                prop.classes [ Bulma.Is4]
+                prop.classes [ Bulma.Is3]
                 prop.children [
                     Html.h3 "Project Rankings"
-                    Html.ol [
-                        prop.style [style.fontWeight 700]
-                        prop.children [
-                            Html.li [ prop.key "1"; prop.text (sp.r1.ToString()) ]
-                            Html.li [ prop.key "2"; prop.text (sp.r2.ToString()) ]
-                            Html.li [ prop.key "3"; prop.text (sp.r3.ToString()) ]
-                            Html.li [ prop.key "4"; prop.text (sp.r4.ToString()) ]
-                            Html.li [ prop.key "5"; prop.text (sp.r5.ToString()) ]
-                            Html.li [ prop.key "6"; prop.text (sp.r6.ToString()) ]
-                            Html.li [ prop.key "7"; prop.text (sp.r7.ToString()) ]
-                            Html.li [ prop.key "8"; prop.text (sp.r8.ToString()) ]
-                            Html.li [ prop.key "9"; prop.text (sp.r9.ToString()) ]
-                            Html.li [ prop.key "10"; prop.text (sp.r10.ToString()) ]
-
-                        ]
-                    ]
+                    ProjectPopularityTable sp
                 ]
             ]
+
+            Bulma.column [ prop.classes [Bulma.Is1] ] // Column Gap
+
             Bulma.column [
                 Html.h3 "Project Categories"
-                for c in (TableCategories model sp.categories) do 
-                    c
+                for c in (TableCategories model sp.categories) do c
+
+                Html.h3 "Streams"
+                for c in (TableStreams model sp.tstream) do c
 
                 Html.h3 "Student Requirements"
                 Html.p sp.requirements
@@ -101,12 +91,16 @@ let ModalProjectInfo (model: Model) (dispatch: Msg -> unit) =
         Bulma.modalCardFoot [
             Bulma.buttons [
                 Bulma.button.button [
-                    match model.preference.doc with
-                    | true ->
+                    match model.preference.doc, (checkProjectInPreference sp model.preference) with
+                    | true, _ ->
                         prop.text "You've entered DOC allocation"
                         prop.disabled true
                         Bulma.color.isWarning
-                    | false ->
+                    | _, true ->
+                        prop.text "Already in preferences"
+                        prop.disabled true
+                        Bulma.color.isWarning
+                    | _ ->
                         Bulma.color.isSuccess
                         prop.text "Add Project"
                         prop.onClick (fun _ -> dispatch OpenAddProject)
@@ -119,16 +113,24 @@ let ModalProjectInfo (model: Model) (dispatch: Msg -> unit) =
         ]
     ]
 
+(*
+match applicant.suitability with
+| "Definite" -> prop.style [ style.color (hsl (141, 71, 38)) ]
+| "Maybe" -> prop.style [ style.color (hsl (45, 100, 45)) ]
+| "No" -> prop.style [ style.color (hsl (348, 100, 61)) ]
+| _ -> ()
+*)
+
 //--------------------------------------------------------------------------------------//
 //                              Modal Add Project Content                               //
 //--------------------------------------------------------------------------------------//
 
-let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank): Project * int) = 
+let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank, index): Project * int * int) = 
     Html.tr [
         prop.classes [ "table-row" ]
-        prop.onClick (fun _ -> dispatch (RankAddProject rank))
+        prop.onClick (fun _ -> dispatch (IndexAddProject index))
         prop.style [style.cursor.pointer]
-        match (model.selectedProjectRank = rank) , projectInfo.pid with
+        match (model.selectedProjectIndex = index) , projectInfo.pid with
         | true, _ ->
             prop.children [
                 Html.td [prop.style [style.color.red]; prop.text rank]
@@ -152,9 +154,9 @@ let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank): P
 
 let PreferenceTable (model: Model) (dispatch: Msg -> unit) =
     let pref = model.preference
-    let prefList = [(pref.p1, pref.n1); (pref.p2, pref.n2); (pref.p3, pref.n3); (pref.p4, pref.n4); (pref.p5, pref.n5);
-                    (pref.p6, pref.n6); (pref.p7, pref.n7); (pref.p8, pref.n8); (pref.p9, pref.n9); (pref.p10, pref.n10);]
-    Table [
+    let prefList = [(pref.p1, pref.n1, 1); (pref.p2, pref.n2, 2); (pref.p3, pref.n3, 3); (pref.p4, pref.n4, 4); (pref.p5, pref.n5, 5);
+                    (pref.p6, pref.n6, 6); (pref.p7, pref.n7, 7); (pref.p8, pref.n8, 8); (pref.p9, pref.n9, 9); (pref.p10, pref.n10, 10);]
+    Table 95 [
         Html.thead [
             Html.tr [
                 Html.th [ prop.title "Rank"; prop.text "Rank"]
@@ -195,7 +197,7 @@ let ModalAddProject (model: Model) (dispatch: Msg -> unit) =
             Bulma.buttons [
                 Bulma.button.button [
                     prop.text "Save Changes"
-                    match (model.selectedProjectRank = 0) with
+                    match (model.selectedProjectIndex = 0) with
                     | true -> // If true then selectedProject hasen't been preferenced yet, hence can't save changes
                         prop.disabled true
                     | false -> // If false then selectedProject has been preferenced, hence can now save changes

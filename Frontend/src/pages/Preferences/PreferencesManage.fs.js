@@ -6,6 +6,7 @@ import { join } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { Msg } from "./PreferencesTypes.fs.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { map, singleton as singleton_1, ofArray } from "../../fable_modules/fable-library.4.1.4/List.js";
+import { hsl } from "../../fable_modules/Feliz.2.7.0/Colors.fs.js";
 import { checkPreferenceChange } from "./PreferencesHelpers.fs.js";
 
 export function Tabs(model, dispatch) {
@@ -43,8 +44,9 @@ export function Table(model, body) {
     }], ["children", Interop_reactApi.Children.toArray(Array.from(body))]]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])));
 }
 
-export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2) {
-    const _arg = [_arg1_, _arg1__1, _arg1__2];
+export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2, _arg1__3) {
+    const _arg = [_arg1_, _arg1__1, _arg1__2, _arg1__3];
+    const suitability = _arg[3];
     const rank = _arg[1] | 0;
     const projectInfo = _arg[0];
     const index = _arg[2] | 0;
@@ -75,7 +77,26 @@ export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2) {
             type: "checkbox",
         })) : empty()))), createElement("td", {
             children: Interop_reactApi.Children.toArray(Array.from(children)),
-        })), createElement("td", createObj(toList(delay(() => (isProject ? singleton(["children", projectInfo.title]) : empty()))))), createElement("td", createObj(toList(delay(() => (isProject ? singleton(["children", projectInfo.supName]) : empty()))))), (children_2 = toList(delay(() => (isProject ? append(singleton(createElement("span", createObj(Helpers_combineClasses("icon", toList(delay(() => {
+        })), createElement("td", createObj(toList(delay(() => (isProject ? singleton(["children", projectInfo.title]) : empty()))))), createElement("td", createObj(toList(delay(() => (isProject ? singleton(["children", projectInfo.supName]) : empty()))))), createElement("td", createObj(toList(delay(() => append(singleton(["children", suitability]), delay(() => {
+            const matchValue_1 = suitability;
+            switch (matchValue_1) {
+                case "Definite":
+                    return singleton(["style", {
+                        color: hsl(141, 71, 38),
+                    }]);
+                case "Maybe":
+                    return singleton(["style", {
+                        color: hsl(45, 100, 45),
+                    }]);
+                case "No":
+                    return singleton(["style", {
+                        color: hsl(348, 100, 61),
+                    }]);
+                default: {
+                    return empty();
+                }
+            }
+        })))))), (children_2 = ofArray([createElement("span", createObj(Helpers_combineClasses("icon", toList(delay(() => {
             let elems;
             return (index !== 1) ? append(singleton((elems = [createElement("i", {
                 className: "fas fa-angle-double-up fa-lg",
@@ -83,7 +104,7 @@ export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2) {
                 ev_2.stopPropagation();
                 dispatch(new Msg(18, [index]));
             }]), delay(() => singleton(["className", "is-medium"]))))))) : empty();
-        })))))), delay(() => singleton(createElement("span", createObj(Helpers_combineClasses("icon", toList(delay(() => {
+        }))))), createElement("span", createObj(Helpers_combineClasses("icon", toList(delay(() => {
             let elems_1;
             return (index !== 10) ? append(singleton((elems_1 = [createElement("i", {
                 className: "fas fa-angle-double-down fa-lg",
@@ -91,7 +112,7 @@ export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2) {
                 ev_3.stopPropagation();
                 dispatch(new Msg(19, [index]));
             }]), delay(() => singleton(["className", "is-medium"]))))))) : empty();
-        })))))))) : empty()))), createElement("td", {
+        })))))]), createElement("td", {
             children: Interop_reactApi.Children.toArray(Array.from(children_2)),
         }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))]));
     }))))))))));
@@ -99,12 +120,15 @@ export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2) {
 
 export function PreferenceTable(model, dispatch) {
     const pref = model.unsavedPreference;
-    const prefList = ofArray([[pref.p1, pref.n1, 1], [pref.p2, pref.n2, 2], [pref.p3, pref.n3, 3], [pref.p4, pref.n4, 4], [pref.p5, pref.n5, 5], [pref.p6, pref.n6, 6], [pref.p7, pref.n7, 7], [pref.p8, pref.n8, 8], [pref.p9, pref.n9, 9], [pref.p10, pref.n10, 10]]);
+    const prefList = ofArray([[pref.p1, pref.n1, 1, pref.s1], [pref.p2, pref.n2, 2, pref.s2], [pref.p3, pref.n3, 3, pref.s3], [pref.p4, pref.n4, 4, pref.s4], [pref.p5, pref.n5, 5, pref.s5], [pref.p6, pref.n6, 6, pref.s6], [pref.p7, pref.n7, 7, pref.s7], [pref.p8, pref.n8, 8, pref.s8], [pref.p9, pref.n9, 9, pref.s9], [pref.p10, pref.n10, 10, pref.s10]]);
     return Table(model, toList(delay(() => {
         let children_2, children;
         return append(singleton((children_2 = singleton_1((children = ofArray([createElement("th", {
             title: "Rank",
             children: "Rank",
+        }), createElement("th", {
+            title: "Equal Preferences",
+            children: "Equal Preferences",
         }), createElement("th", {
             title: "Title",
             children: "Title",
@@ -112,8 +136,8 @@ export function PreferenceTable(model, dispatch) {
             title: "Professor",
             children: "Professor",
         }), createElement("th", {
-            title: "Equal Preferences",
-            children: "Equal Preferences",
+            title: "Status",
+            children: "Status",
         }), createElement("th", {
             title: "Swap Preferences",
             children: "Swap Preferences",
@@ -123,7 +147,7 @@ export function PreferenceTable(model, dispatch) {
             children: Interop_reactApi.Children.toArray(Array.from(children_2)),
         }))), delay(() => {
             let children_4;
-            return append(singleton((children_4 = map((tupledArg) => PreferenceRow(model, dispatch, tupledArg[0], tupledArg[1], tupledArg[2]), prefList), createElement("tbody", {
+            return append(singleton((children_4 = map((tupledArg) => PreferenceRow(model, dispatch, tupledArg[0], tupledArg[1], tupledArg[2], tupledArg[3]), prefList), createElement("tbody", {
                 children: Interop_reactApi.Children.toArray(Array.from(children_4)),
             }))), delay(() => (model.unsavedPreference.doc ? singleton(createElement("div", {
                 style: {

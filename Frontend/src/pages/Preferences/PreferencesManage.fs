@@ -46,11 +46,10 @@ let Table (model: Model) (body: ReactElement list) =
         ]
     ]
 
-let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank, index): Project * int * int) = 
+let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank, index, suitability): Project * int * int * string) = 
     let isSelected = (model.selectedProject = projectInfo && model.selectedProject.pid <> 0) // This project is selected to be viewed
     let isProject = (projectInfo.pid <> 0) // There is a project (so not empty preference)
     let isPrefEqual = (rank <> index) // If the rank does not equal its actual index/position, then this is a PreferenceEqual
-    //let test = if (index <> 1) then model.preferenceEqualList[index - 2] else false
 
     Html.tr [
         prop.classes [ "table-row" ]
@@ -76,37 +75,47 @@ let PreferenceRow (model: Model) (dispatch: Msg -> unit) ((projectInfo, rank, in
             Html.td [if isProject then prop.text projectInfo.title]
             Html.td [if isProject then prop.text projectInfo.supName]
             Html.td [
-                if isProject then
-                    Bulma.icon [
-                        if (index <> 1) then 
-                            prop.children [ Html.i [ prop.className "fas fa-angle-double-up fa-lg"] ]
-                            prop.id "swap-icon"
-                            prop.onClick (fun ev -> ev.stopPropagation(); dispatch (SwapUp index))
-                            Bulma.icon.isMedium
-                    ]
-                    Bulma.icon [
-                        if (index <> 10) then 
-                            prop.children [ Html.i [ prop.className "fas fa-angle-double-down fa-lg"] ]
-                            prop.id "swap-icon"
-                            prop.onClick (fun ev -> ev.stopPropagation(); dispatch (SwapDown index))
-                            Bulma.icon.isMedium
-                    ]
+                prop.text suitability
+                match suitability with
+                | "Definite" -> prop.style [ style.color (hsl (141, 71, 38)) ]
+                | "Maybe" -> prop.style [ style.color (hsl (45, 100, 45)) ]
+                | "No" -> prop.style [ style.color (hsl (348, 100, 61)) ]
+                | _ -> ()
+            ]
+            Html.td [
+                Bulma.icon [
+                    if (index <> 1) then 
+                        prop.children [ Html.i [ prop.className "fas fa-angle-double-up fa-lg"] ]
+                        prop.id "swap-icon"
+                        prop.onClick (fun ev -> ev.stopPropagation(); dispatch (SwapUp index))
+                        Bulma.icon.isMedium
+                ]
+                Bulma.icon [
+                    if (index <> 10) then 
+                        prop.children [ Html.i [ prop.className "fas fa-angle-double-down fa-lg"] ]
+                        prop.id "swap-icon"
+                        prop.onClick (fun ev -> ev.stopPropagation(); dispatch (SwapDown index))
+                        Bulma.icon.isMedium
+                ]
             ]
         ]
     ]
 
 let PreferenceTable (model: Model) (dispatch: Msg -> unit) =
     let pref = model.unsavedPreference
-    let prefList = [(pref.p1, pref.n1, 1); (pref.p2, pref.n2, 2); (pref.p3, pref.n3, 3); (pref.p4, pref.n4, 4); (pref.p5, pref.n5, 5);
-                    (pref.p6, pref.n6, 6); (pref.p7, pref.n7, 7); (pref.p8, pref.n8, 8); (pref.p9, pref.n9, 9); (pref.p10, pref.n10, 10)]
+    let prefList = [(pref.p1, pref.n1, 1, pref.s1); (pref.p2, pref.n2, 2, pref.s2); (pref.p3, pref.n3, 3, pref.s3); 
+                    (pref.p4, pref.n4, 4, pref.s4); (pref.p5, pref.n5, 5, pref.s5); (pref.p6, pref.n6, 6, pref.s6); 
+                    (pref.p7, pref.n7, 7, pref.s7); (pref.p8, pref.n8, 8, pref.s8); (pref.p9, pref.n9, 9, pref.s9); 
+                    (pref.p10, pref.n10, 10, pref.s10)]
     
     Table model [
         Html.thead [
             Html.tr [
                 Html.th [ prop.title "Rank"; prop.text "Rank"]
+                Html.th [ prop.title "Equal Preferences"; prop.text "Equal Preferences"]
                 Html.th [ prop.title "Title"; prop.text "Title"]
                 Html.th [ prop.title "Professor"; prop.text "Professor"]
-                Html.th [ prop.title "Equal Preferences"; prop.text "Equal Preferences"]
+                Html.th [ prop.title "Status"; prop.text "Status"]
                 Html.th [ prop.title "Swap Preferences"; prop.text "Swap Preferences"]
             ]
         ]

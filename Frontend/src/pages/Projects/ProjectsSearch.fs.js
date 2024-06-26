@@ -40,8 +40,23 @@ export function TagFilter(dispatch, model, filterType, filter) {
     }]), delay(() => (exists((c) => (c === filter), model.selectedCategories) ? singleton_1(["className", "is-info"]) : empty())))))))))))))));
 }
 
+export function topOrBottom5Select(model, dispatch) {
+    let elems_1, elems;
+    return createElement("div", createObj(ofArray([["className", join(" ", ["custom-select"])], ["style", {
+        marginBottom: 35 + "px",
+    }], (elems_1 = [createElement("select", createObj(ofArray([["value", model.topOrBottom5], ["onChange", (ev) => {
+        dispatch(new Msg(13, [ev]));
+    }], (elems = [createElement("option", {
+        value: "top",
+        children: "Top 5",
+    }), createElement("option", {
+        value: "bottom",
+        children: "Bottom 5",
+    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])));
+}
+
 export function SearchFilters(dispatch, model) {
-    return toList(delay(() => append(singleton_1(ProjectInput(dispatch)), delay(() => append(singleton_1(ProfessorInput(dispatch)), delay(() => append(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Relevant Project Categories"]))))), delay(() => append(map((c) => TagFilter(dispatch, model, new FilterType(0, []), c), categories), delay(() => append(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Stream"]))))), delay(() => map((s) => TagFilter(dispatch, model, new FilterType(1, []), s), streams)))))))))))));
+    return toList(delay(() => append(singleton_1(ProjectInput(dispatch)), delay(() => append(singleton_1(ProfessorInput(dispatch)), delay(() => append(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Top or Bottom 5 Popularities"]))))), delay(() => append(singleton_1(topOrBottom5Select(model, dispatch)), delay(() => append(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Relevant Project Categories"]))))), delay(() => append(map((c) => TagFilter(dispatch, model, new FilterType(0, []), c), categories), delay(() => append(singleton_1(createElement("label", createObj(Helpers_combineClasses("label", singleton(["children", "Stream"]))))), delay(() => map((s) => TagFilter(dispatch, model, new FilterType(1, []), s), streams)))))))))))))))));
 }
 
 //# sourceMappingURL=ProjectsSearch.fs.js.map

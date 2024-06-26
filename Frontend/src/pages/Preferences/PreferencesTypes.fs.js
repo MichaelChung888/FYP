@@ -3,7 +3,7 @@ import { union_type, class_type, record_type, int32_type, string_type, list_type
 import { Project_$reflection, PreferenceResponse_$reflection } from "../../../../Shared/Shared.fs.js";
 
 export class Model extends Record {
-    constructor(loading, preference, unsavedPreference, preferenceEqualList, token, selectedProject, selectedProjectRank, confirmAddProjectModal, confirmRemoveProjectModal, confirmSaveChangesModal, isPreferenceTab) {
+    constructor(loading, preference, unsavedPreference, preferenceEqualList, token, selectedProject, selectedProjectIndex, confirmAddProjectModal, confirmRemoveProjectModal, confirmSaveChangesModal, isPreferenceTab) {
         super();
         this.loading = loading;
         this.preference = preference;
@@ -11,7 +11,7 @@ export class Model extends Record {
         this.preferenceEqualList = preferenceEqualList;
         this.token = token;
         this.selectedProject = selectedProject;
-        this.selectedProjectRank = (selectedProjectRank | 0);
+        this.selectedProjectIndex = (selectedProjectIndex | 0);
         this.confirmAddProjectModal = confirmAddProjectModal;
         this.confirmRemoveProjectModal = confirmRemoveProjectModal;
         this.confirmSaveChangesModal = confirmSaveChangesModal;
@@ -20,7 +20,7 @@ export class Model extends Record {
 }
 
 export function Model_$reflection() {
-    return record_type("PreferencesTypes.Model", [], Model, () => [["loading", bool_type], ["preference", PreferenceResponse_$reflection()], ["unsavedPreference", PreferenceResponse_$reflection()], ["preferenceEqualList", list_type(bool_type)], ["token", string_type], ["selectedProject", Project_$reflection()], ["selectedProjectRank", int32_type], ["confirmAddProjectModal", bool_type], ["confirmRemoveProjectModal", bool_type], ["confirmSaveChangesModal", bool_type], ["isPreferenceTab", bool_type]]);
+    return record_type("PreferencesTypes.Model", [], Model, () => [["loading", bool_type], ["preference", PreferenceResponse_$reflection()], ["unsavedPreference", PreferenceResponse_$reflection()], ["preferenceEqualList", list_type(bool_type)], ["token", string_type], ["selectedProject", Project_$reflection()], ["selectedProjectIndex", int32_type], ["confirmAddProjectModal", bool_type], ["confirmRemoveProjectModal", bool_type], ["confirmSaveChangesModal", bool_type], ["isPreferenceTab", bool_type]]);
 }
 
 export class Msg extends Union {

@@ -15,7 +15,7 @@ export function DeleteProposalModal(model, dispatch) {
         className: "modal-card-title",
         children: "Remove Proposal",
     }), createElement("button", createObj(Helpers_combineClasses("modal-close", ofArray([["className", join(" ", ["is-large"])], ["onClick", (_arg) => {
-        dispatch(new Msg(12, []));
+        dispatch(new Msg(11, []));
     }]]))))]), createElement("header", {
         className: "modal-card-head",
         children: Interop_reactApi.Children.toArray(Array.from(elms)),
@@ -31,7 +31,7 @@ export function DeleteProposalModal(model, dispatch) {
     }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])])))), (elms_3 = singleton((elms_2 = ofArray([createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Remove Preference"], ["onClick", (_arg_1) => {
         dispatch(new Msg(8, []));
     }], ["className", "is-danger"]])))), createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Cancel"], ["onClick", (_arg_2) => {
-        dispatch(new Msg(12, []));
+        dispatch(new Msg(11, []));
     }]]))))]), createElement("div", {
         className: "buttons",
         children: Interop_reactApi.Children.toArray(Array.from(elms_2)),
@@ -51,7 +51,7 @@ export function EditProposalModal(model, dispatch) {
         className: "modal-card-title",
         children: "Edit Project Form",
     }), createElement("button", createObj(Helpers_combineClasses("modal-close", ofArray([["className", join(" ", ["is-large"])], ["onClick", (_arg) => {
-        dispatch(new Msg(12, []));
+        dispatch(new Msg(11, []));
     }]]))))]), createElement("header", {
         className: "modal-card-head",
         children: Interop_reactApi.Children.toArray(Array.from(elms)),
@@ -64,7 +64,7 @@ export function EditProposalModal(model, dispatch) {
     }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_3))])])))), (elms_3 = singleton((elms_2 = ofArray([createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Save Changes"], ["onClick", (_arg_1) => {
         dispatch(new Msg(10, []));
     }], ["className", "is-success"]])))), createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Cancel"], ["onClick", (_arg_2) => {
-        dispatch(new Msg(12, []));
+        dispatch(new Msg(11, []));
     }]]))))]), createElement("div", {
         className: "buttons",
         children: Interop_reactApi.Children.toArray(Array.from(elms_2)),

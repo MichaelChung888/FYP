@@ -39,7 +39,7 @@ let init (token: string) : Model * Cmd<Msg> =
                         preferenceEqualList = [];
                         token = token;
                         selectedProject = Project.Default;
-                        selectedProjectRank = 0;
+                        selectedProjectIndex = 0;
                         confirmAddProjectModal = false;
                         confirmRemoveProjectModal = false; 
                         confirmSaveChangesModal = false; 
@@ -67,10 +67,10 @@ let update (msg: Msg) (model: Model) =
         { model with loading = false }, Cmd.none
     | Logout -> 
         model, Cmd.none
-    | OpenProject (projectInfo, rank) ->
-        { model with selectedProject = projectInfo; selectedProjectRank = rank }, Cmd.none
+    | OpenProject (projectInfo, index) ->
+        { model with selectedProject = projectInfo; selectedProjectIndex = index }, Cmd.none
     | CloseProject ->
-        { model with selectedProject = Project.Default; selectedProjectRank = 0}, Cmd.none
+        { model with selectedProject = Project.Default; selectedProjectIndex = 0}, Cmd.none
     | ConfirmAddProject ->
         { model with confirmAddProjectModal = true }, Cmd.none
     | AddPreference ->
@@ -153,7 +153,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
                     Bulma.column [
                         prop.style TileCss
                         prop.children [
-                            match model.selectedProjectRank = 0 with
+                            match model.selectedProjectIndex = 0 with
                             | true -> ()
                             | false -> 
                                 selectedProject model

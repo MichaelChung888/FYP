@@ -3,7 +3,7 @@ import { union_type, class_type, record_type, int32_type, string_type, list_type
 import { PreferenceResponse_$reflection, Project_$reflection } from "../../../../Shared/Shared.fs.js";
 
 export class Model extends Record {
-    constructor(loading, projects, preference, token, modalState, addProjectState, searchTitle, searchProfessor, selectedCategories, selectedStreams, selectedProject, selectedProjectRank) {
+    constructor(loading, projects, preference, token, modalState, addProjectState, searchTitle, searchProfessor, selectedCategories, selectedStreams, selectedProject, selectedProjectIndex, topOrBottom5) {
         super();
         this.loading = loading;
         this.projects = projects;
@@ -16,12 +16,13 @@ export class Model extends Record {
         this.selectedCategories = selectedCategories;
         this.selectedStreams = selectedStreams;
         this.selectedProject = selectedProject;
-        this.selectedProjectRank = (selectedProjectRank | 0);
+        this.selectedProjectIndex = (selectedProjectIndex | 0);
+        this.topOrBottom5 = topOrBottom5;
     }
 }
 
 export function Model_$reflection() {
-    return record_type("ProjectsTypes.Model", [], Model, () => [["loading", bool_type], ["projects", list_type(Project_$reflection())], ["preference", PreferenceResponse_$reflection()], ["token", string_type], ["modalState", bool_type], ["addProjectState", bool_type], ["searchTitle", string_type], ["searchProfessor", string_type], ["selectedCategories", list_type(string_type)], ["selectedStreams", list_type(string_type)], ["selectedProject", Project_$reflection()], ["selectedProjectRank", int32_type]]);
+    return record_type("ProjectsTypes.Model", [], Model, () => [["loading", bool_type], ["projects", list_type(Project_$reflection())], ["preference", PreferenceResponse_$reflection()], ["token", string_type], ["modalState", bool_type], ["addProjectState", bool_type], ["searchTitle", string_type], ["searchProfessor", string_type], ["selectedCategories", list_type(string_type)], ["selectedStreams", list_type(string_type)], ["selectedProject", Project_$reflection()], ["selectedProjectIndex", int32_type], ["topOrBottom5", string_type]]);
 }
 
 export class InitalLoad extends Record {
@@ -43,12 +44,12 @@ export class Msg extends Union {
         this.fields = fields;
     }
     cases() {
-        return ["SuccessLoad", "ErrorLoad", "Logout", "OpenModal", "CloseModal", "AddProject", "OpenAddProject", "CloseAddProject", "RankAddProject", "SearchTitleChanged", "SearchProfessorChanged", "ClickedCategoryTag", "ClickedStreamTag", "SearchRequest", "FetchedProjectsLoad"];
+        return ["SuccessLoad", "ErrorLoad", "Logout", "OpenModal", "CloseModal", "AddProject", "OpenAddProject", "CloseAddProject", "IndexAddProject", "SearchTitleChanged", "SearchProfessorChanged", "ClickedCategoryTag", "ClickedStreamTag", "TopOrBottom5", "SearchRequest", "FetchedProjectsLoad"];
     }
 }
 
 export function Msg_$reflection() {
-    return union_type("ProjectsTypes.Msg", [], Msg, () => [[["Item", InitalLoad_$reflection()]], [["Item", class_type("System.Exception")]], [], [["Item", Project_$reflection()]], [], [], [], [], [["Item", int32_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [], [["Item", list_type(Project_$reflection())]]]);
+    return union_type("ProjectsTypes.Msg", [], Msg, () => [[["Item", InitalLoad_$reflection()]], [["Item", class_type("System.Exception")]], [], [["Item", Project_$reflection()]], [], [], [], [], [["Item", int32_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", string_type]], [["Item", class_type("Browser.Types.Event", void 0)]], [], [["Item", list_type(Project_$reflection())]]]);
 }
 
 //# sourceMappingURL=ProjectsTypes.fs.js.map

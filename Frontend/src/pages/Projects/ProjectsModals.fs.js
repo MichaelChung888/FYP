@@ -4,10 +4,10 @@ import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 import { map as map_1, singleton, ofArray } from "../../fable_modules/fable-library.4.1.4/List.js";
 import { join } from "../../fable_modules/fable-library.4.1.4/String.js";
+import { Table, ProjectPopularityTable } from "../../Common.fs.js";
 import { map, singleton as singleton_1, append, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
-import { TableCategories } from "./ProjectsHelpers.fs.js";
+import { checkProjectInPreference, TableStreams, TableCategories } from "./ProjectsHelpers.fs.js";
 import { Msg } from "./ProjectsTypes.fs.js";
-import { Table } from "../../Common.fs.js";
 
 export function ModalProjectInfoMedia(sp) {
     let elems_3, elms, elems, elms_1;
@@ -25,48 +25,18 @@ export function ModalProjectInfoMedia(sp) {
 }
 
 export function ModalProjectInfoBody(model, sp) {
-    let elms_1, elems_1, elems, elms;
-    const elms_2 = ofArray([(elms_1 = ofArray([createElement("div", createObj(Helpers_combineClasses("column", ofArray([["className", join(" ", ["is-4"])], (elems_1 = [createElement("h3", {
+    let elms_1, elems, elms;
+    const elms_2 = ofArray([(elms_1 = ofArray([createElement("div", createObj(Helpers_combineClasses("column", ofArray([["className", join(" ", ["is-3"])], (elems = [createElement("h3", {
         children: ["Project Rankings"],
-    }), createElement("ol", createObj(ofArray([["style", {
-        fontWeight: 700,
-    }], (elems = [createElement("li", {
-        key: "1",
-        children: int32ToString(sp.r1),
-    }), createElement("li", {
-        key: "2",
-        children: int32ToString(sp.r2),
-    }), createElement("li", {
-        key: "3",
-        children: int32ToString(sp.r3),
-    }), createElement("li", {
-        key: "4",
-        children: int32ToString(sp.r4),
-    }), createElement("li", {
-        key: "5",
-        children: int32ToString(sp.r5),
-    }), createElement("li", {
-        key: "6",
-        children: int32ToString(sp.r6),
-    }), createElement("li", {
-        key: "7",
-        children: int32ToString(sp.r7),
-    }), createElement("li", {
-        key: "8",
-        children: int32ToString(sp.r8),
-    }), createElement("li", {
-        key: "9",
-        children: int32ToString(sp.r9),
-    }), createElement("li", {
-        key: "10",
-        children: int32ToString(sp.r10),
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms = toList(delay(() => append(singleton_1(createElement("h3", {
+    }), ProjectPopularityTable(sp)], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])))), createElement("div", createObj(Helpers_combineClasses("column", singleton(["className", join(" ", ["is-1"])])))), (elms = toList(delay(() => append(singleton_1(createElement("h3", {
         children: ["Project Categories"],
     })), delay(() => append(map((c) => c, TableCategories(model, sp.categories)), delay(() => append(singleton_1(createElement("h3", {
+        children: ["Streams"],
+    })), delay(() => append(map((c_1) => c_1, TableStreams(model, sp.tstream)), delay(() => append(singleton_1(createElement("h3", {
         children: ["Student Requirements"],
     })), delay(() => singleton_1(createElement("p", {
         children: [sp.requirements],
-    })))))))))), createElement("div", {
+    })))))))))))))), createElement("div", {
         className: "column",
         children: Interop_reactApi.Children.toArray(Array.from(elms)),
     }))]), createElement("div", {
@@ -102,9 +72,12 @@ export function ModalProjectInfo(model, dispatch) {
     }]]))))]), createElement("header", {
         className: "modal-card-head",
         children: Interop_reactApi.Children.toArray(Array.from(elms)),
-    })), createElement("section", createObj(Helpers_combineClasses("modal-card-body", ofArray([["className", join(" ", ["scrollbar"])], (elems_1 = [ModalProjectInfoMedia(sp), ModalProjectInfoBody(model, sp)], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_2 = singleton((elms_1 = ofArray([createElement("button", createObj(Helpers_combineClasses("button", toList(delay(() => (model.preference.doc ? append(singleton_1(["children", "You\'ve entered DOC allocation"]), delay(() => append(singleton_1(["disabled", true]), delay(() => singleton_1(["className", "is-warning"]))))) : append(singleton_1(["className", "is-success"]), delay(() => append(singleton_1(["children", "Add Project"]), delay(() => singleton_1(["onClick", (_arg_1) => {
-        dispatch(new Msg(6, []));
-    }]))))))))))), createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Close Project"], ["onClick", (_arg_2) => {
+    })), createElement("section", createObj(Helpers_combineClasses("modal-card-body", ofArray([["className", join(" ", ["scrollbar"])], (elems_1 = [ModalProjectInfoMedia(sp), ModalProjectInfoBody(model, sp)], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_2 = singleton((elms_1 = ofArray([createElement("button", createObj(Helpers_combineClasses("button", toList(delay(() => {
+        const matchValue_1 = checkProjectInPreference(sp, model.preference);
+        return model.preference.doc ? append(singleton_1(["children", "You\'ve entered DOC allocation"]), delay(() => append(singleton_1(["disabled", true]), delay(() => singleton_1(["className", "is-warning"]))))) : (matchValue_1 ? append(singleton_1(["children", "Already in preferences"]), delay(() => append(singleton_1(["disabled", true]), delay(() => singleton_1(["className", "is-warning"]))))) : append(singleton_1(["className", "is-success"]), delay(() => append(singleton_1(["children", "Add Project"]), delay(() => singleton_1(["onClick", (_arg_1) => {
+            dispatch(new Msg(6, []));
+        }]))))));
+    }))))), createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Close Project"], ["onClick", (_arg_2) => {
         dispatch(new Msg(4, []));
     }]]))))]), createElement("div", {
         className: "buttons",
@@ -119,17 +92,18 @@ export function ModalProjectInfo(model, dispatch) {
     });
 }
 
-export function PreferenceRow(model, dispatch, _arg1_, _arg1__1) {
-    const _arg = [_arg1_, _arg1__1];
+export function PreferenceRow(model, dispatch, _arg1_, _arg1__1, _arg1__2) {
+    const _arg = [_arg1_, _arg1__1, _arg1__2];
     const rank = _arg[1] | 0;
     const projectInfo = _arg[0];
+    const index = _arg[2] | 0;
     return createElement("tr", createObj(toList(delay(() => append(singleton_1(["className", join(" ", ["table-row"])]), delay(() => append(singleton_1(["onClick", (_arg_1) => {
-        dispatch(new Msg(8, [rank]));
+        dispatch(new Msg(8, [index]));
     }]), delay(() => append(singleton_1(["style", {
         cursor: "pointer",
     }]), delay(() => {
         let elems, elems_1, elems_2;
-        const matchValue = model.selectedProjectRank === rank;
+        const matchValue = model.selectedProjectIndex === index;
         return matchValue ? singleton_1((elems = [createElement("td", {
             style: {
                 color: "#FF0000",
@@ -160,8 +134,8 @@ export function PreferenceRow(model, dispatch, _arg1_, _arg1__1) {
 export function PreferenceTable(model, dispatch) {
     let children_2, children, children_4;
     const pref = model.preference;
-    const prefList = ofArray([[pref.p1, pref.n1], [pref.p2, pref.n2], [pref.p3, pref.n3], [pref.p4, pref.n4], [pref.p5, pref.n5], [pref.p6, pref.n6], [pref.p7, pref.n7], [pref.p8, pref.n8], [pref.p9, pref.n9], [pref.p10, pref.n10]]);
-    return Table(ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
+    const prefList = ofArray([[pref.p1, pref.n1, 1], [pref.p2, pref.n2, 2], [pref.p3, pref.n3, 3], [pref.p4, pref.n4, 4], [pref.p5, pref.n5, 5], [pref.p6, pref.n6, 6], [pref.p7, pref.n7, 7], [pref.p8, pref.n8, 8], [pref.p9, pref.n9, 9], [pref.p10, pref.n10, 10]]);
+    return Table(95, ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
         title: "Rank",
         children: "Rank",
     }), createElement("th", {
@@ -174,7 +148,7 @@ export function PreferenceTable(model, dispatch) {
         children: Interop_reactApi.Children.toArray(Array.from(children)),
     }))), createElement("thead", {
         children: Interop_reactApi.Children.toArray(Array.from(children_2)),
-    })), (children_4 = map_1((tupledArg) => PreferenceRow(model, dispatch, tupledArg[0], tupledArg[1]), prefList), createElement("tbody", {
+    })), (children_4 = map_1((tupledArg) => PreferenceRow(model, dispatch, tupledArg[0], tupledArg[1], tupledArg[2]), prefList), createElement("tbody", {
         children: Interop_reactApi.Children.toArray(Array.from(children_4)),
     }))]));
 }
@@ -203,7 +177,7 @@ export function ModalAddProject(model, dispatch) {
     }), PreferenceTable(model, dispatch)]), createElement("div", {
         className: "content",
         children: Interop_reactApi.Children.toArray(Array.from(elms_1)),
-    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])])))), (elms_3 = singleton((elms_2 = ofArray([createElement("button", createObj(Helpers_combineClasses("button", toList(delay(() => append(singleton_1(["children", "Save Changes"]), delay(() => ((model.selectedProjectRank === 0) ? singleton_1(["disabled", true]) : append(singleton_1(["onClick", (_arg_1) => {
+    }))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])])))), (elms_3 = singleton((elms_2 = ofArray([createElement("button", createObj(Helpers_combineClasses("button", toList(delay(() => append(singleton_1(["children", "Save Changes"]), delay(() => ((model.selectedProjectIndex === 0) ? singleton_1(["disabled", true]) : append(singleton_1(["onClick", (_arg_1) => {
         dispatch(new Msg(5, []));
     }]), delay(() => singleton_1(["className", "is-success"]))))))))))), createElement("button", createObj(Helpers_combineClasses("button", ofArray([["children", "Go Back"], ["onClick", (_arg_2) => {
         dispatch(new Msg(7, []));

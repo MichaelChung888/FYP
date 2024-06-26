@@ -10,7 +10,7 @@ open Feliz.Bulma
 open color
 
 let currentSelectedPreference (model: Model) : int =
-    match model.selectedProjectRank with
+    match model.selectedProjectIndex with
     | 1 -> model.preference.p1.pid
     | 2 -> model.preference.p2.pid
     | 3 -> model.preference.p3.pid
@@ -43,3 +43,10 @@ let TableCategories (model: Model) (categories: string) =
 
 let TableStreams (model: Model) (streams: string) =
     (splitStreams streams) |> List.map (Tag model)
+
+// ---- Check if Selected Project in Preference ------------------------------------------
+
+let checkProjectInPreference (project: Project) (pref: PreferenceResponse) =
+    let preferenceList = [pref.p1.pid; pref.p2.pid; pref.p3.pid; pref.p4.pid; pref.p5.pid; 
+                          pref.p6.pid; pref.p7.pid; pref.p8.pid; pref.p9.pid; pref.p10.pid]
+    List.exists (fun prefPid -> prefPid = project.pid) preferenceList

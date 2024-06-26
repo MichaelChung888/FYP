@@ -151,6 +151,24 @@ export function DeleteProposalRequest_Encoder_Z612E0F3A(deleteProposalRequest) {
     return object([["isStudent", deleteProposalRequest.isStudent], ["proposal", deleteProposalRequest.pid]]);
 }
 
+export class EditSuitabilityRequest extends Record {
+    constructor(applicantId, rank, newSuitability, isStudent) {
+        super();
+        this.applicantId = applicantId;
+        this.rank = (rank | 0);
+        this.newSuitability = newSuitability;
+        this.isStudent = isStudent;
+    }
+}
+
+export function EditSuitabilityRequest_$reflection() {
+    return record_type("Shared.EditSuitabilityRequest", [], EditSuitabilityRequest, () => [["applicantId", string_type], ["rank", int32_type], ["newSuitability", string_type], ["isStudent", bool_type]]);
+}
+
+export function EditSuitabilityRequest_Encoder_Z4AE47C8A(editSuitabilityRequest) {
+    return object([["applicantId", editSuitabilityRequest.applicantId], ["rank", editSuitabilityRequest.rank], ["newSuitability", editSuitabilityRequest.newSuitability], ["isStudent", editSuitabilityRequest.isStudent]]);
+}
+
 export class Person extends Record {
     constructor(eeid, cid, categ, regWant, forenames) {
         super();

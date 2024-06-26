@@ -14,7 +14,8 @@ type Model = {
     selectedCategories: List<string>
     selectedStreams: List<string>
     selectedProject: Project
-    selectedProjectRank: int
+    selectedProjectIndex: int
+    topOrBottom5: string
 }
 
 type InitalLoad = {
@@ -31,11 +32,12 @@ type Msg =
     | AddProject // Send a request to server to add the project to your preference
     | OpenAddProject // Opens the menu to add the selected project to preferences
     | CloseAddProject // Closes the menu to add the selected project to preferences
-    | RankAddProject of int // Selecting a rank to preference the selected project
+    | IndexAddProject of int // Selecting an index to preference the selected project
     | SearchTitleChanged of string // Changing Search Title field
     | SearchProfessorChanged of string // Changing Search Professor field
     | ClickedCategoryTag of string // Clicked Search Category tag filter
     | ClickedStreamTag of string // Clicked Stream Category tag filter
+    | TopOrBottom5 of Browser.Types.Event // Toggled the top or bottom 5 project popularity display
     | SearchRequest // Sends a server request containing project filters
     | FetchedProjectsLoad of List<Project> // Recieving the filtered projects
 

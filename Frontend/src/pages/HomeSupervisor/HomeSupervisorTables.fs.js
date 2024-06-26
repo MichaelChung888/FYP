@@ -1,19 +1,7 @@
 import { createElement } from "react";
-import { createObj } from "../../fable_modules/fable-library.4.1.4/Util.js";
-import { join } from "../../fable_modules/fable-library.4.1.4/String.js";
-import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./ElementBuilders.fs.js";
+import { map, singleton, ofArray, length } from "../../fable_modules/fable-library.4.1.4/List.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
-import { map, singleton, length, ofArray } from "../../fable_modules/fable-library.4.1.4/List.js";
-
-export function Table(body) {
-    let elems_1;
-    return createElement("div", createObj(ofArray([["style", {
-        overflowY: "auto",
-        height: 90 + "%",
-    }], ["className", join(" ", ["scrollbar"])], (elems_1 = [createElement("table", createObj(Helpers_combineClasses("table", ofArray([["style", {
-        width: 100 + "%",
-    }], ["children", Interop_reactApi.Children.toArray(Array.from(body))]]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])));
-}
+import { Table } from "../../Common.fs.js";
 
 export function ProposalRow(proposal) {
     const project = proposal.project;
@@ -40,7 +28,7 @@ export function ProposalRow(proposal) {
 
 export function ProposalTable(model) {
     let children_2, children, children_4;
-    return Table(ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
+    return Table(90, ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
         title: "Title",
         children: "Title",
     }), createElement("th", {

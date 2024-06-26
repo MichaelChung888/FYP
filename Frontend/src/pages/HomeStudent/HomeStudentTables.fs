@@ -26,7 +26,7 @@ let ProjectRow (projectInfo: Project) =
     ]
     
 let NewTable (model: Model) =
-    Table [
+    Table 90 [
         Html.thead [
             Html.tr [
                 Html.th [ prop.title "Title"; prop.text "Title"]
@@ -64,7 +64,7 @@ let PreferenceTable (model: Model) =
     let pref = model.preference
     let prefList = [(pref.p1, pref.n1); (pref.p2, pref.n2); (pref.p3, pref.n3); (pref.p4, pref.n4); (pref.p5, pref.n5);
                     (pref.p6, pref.n6); (pref.p7, pref.n7); (pref.p8, pref.n8); (pref.p9, pref.n9); (pref.p10, pref.n10);]
-    Table [
+    Table 90 [
         Html.thead [
             Html.tr [
                 Html.th [ prop.title "Rank"; prop.text "Rank"]

@@ -62,5 +62,5 @@ let ProposalTable (model: Model) (dispatch: Msg -> unit) =
                 Html.th [ prop.title "P10"; prop.text "P10"]
             ]
         ]
-        Html.tbody (List.map (ProposalRow model dispatch) model.unsavedProposals)
+        Html.tbody (List.map (ProposalRow model dispatch) model.proposals)
     ]

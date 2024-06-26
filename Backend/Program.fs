@@ -40,7 +40,8 @@ let webApp =
                 route "/project-propose" >=> POST >=> projectProposeHttpHandler
                 route "/proposals" >=> POST >=> proposalsHttpHandler // Should be GET
                 route "/proposals" >=> DELETE >=> deleteProposalsHttpHandler // Should be GET
-                route "/save-proposal" >=> PUT >=> saveProposalHttpHandler
+                route "/edit-proposal" >=> PUT >=> editProposalHttpHandler
+                route "/edit-suitability" >=> PUT >=> editSuitabilityHttpHandler
             ]
     ]
     // Note: warbler is used when the route is returning a dynamic (not static) response, hence wrap the function in a "warbler()"

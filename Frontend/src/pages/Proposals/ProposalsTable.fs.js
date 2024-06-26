@@ -75,7 +75,7 @@ export function ProposalTable(model, dispatch) {
         children: Interop_reactApi.Children.toArray(Array.from(children)),
     }))), createElement("thead", {
         children: Interop_reactApi.Children.toArray(Array.from(children_2)),
-    })), (children_4 = map_1((proposal) => ProposalRow(model, dispatch, proposal), model.unsavedProposals), createElement("tbody", {
+    })), (children_4 = map_1((proposal) => ProposalRow(model, dispatch, proposal), model.proposals), createElement("tbody", {
         children: Interop_reactApi.Children.toArray(Array.from(children_4)),
     }))]));
 }

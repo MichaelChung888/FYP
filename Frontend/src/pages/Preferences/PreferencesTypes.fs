@@ -9,7 +9,7 @@ type Model = {
     preferenceEqualList: List<bool> 
     token: string
     selectedProject: Project
-    selectedProjectRank: int
+    selectedProjectIndex: int
     confirmAddProjectModal: bool
     confirmRemoveProjectModal: bool
     confirmSaveChangesModal: bool

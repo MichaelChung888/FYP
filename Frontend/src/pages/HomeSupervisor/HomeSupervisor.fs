@@ -76,7 +76,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
                     ]
                 ]
                 BulmaTile [Bulma.IsParent; Bulma.IsVertical] [] [
-                    BulmaTile [Bulma.IsChild; Bulma.Box] (List.append TileCss [style.height (length.px 8000)]) [
+                    BulmaTile [Bulma.IsChild; Bulma.Box] (TileCss @ [style.height (length.perc 100)]) [
                         Bulma.title [ prop.text "Proposals" ]
                         ProposalTable model
                     ]

@@ -157,6 +157,24 @@ type DeleteProposalRequest =
             "proposal", Encode.int deleteProposalRequest.pid
         ]
 
+
+
+type EditSuitabilityRequest =
+    {
+        applicantId: string
+        rank: int
+        newSuitability: string
+        isStudent: bool
+    }
+    // Transform savePreferenceRequest -> JSON
+    static member Encoder (editSuitabilityRequest: EditSuitabilityRequest) =
+        Encode.object [
+            "applicantId", Encode.string editSuitabilityRequest.applicantId
+            "rank", Encode.int editSuitabilityRequest.rank
+            "newSuitability", Encode.string editSuitabilityRequest.newSuitability
+            "isStudent", Encode.bool editSuitabilityRequest.isStudent
+        ]
+
 //--------------------------------------------------------------------------------------//
 //                                      Responses                                       //
 //--------------------------------------------------------------------------------------//

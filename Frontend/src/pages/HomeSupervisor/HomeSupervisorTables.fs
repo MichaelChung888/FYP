@@ -10,20 +10,6 @@ open Feliz.Router
 
 open color
 
-// ---- Proposal Table -----------------------------------------------------------------
-
-let Table (body: ReactElement list) = 
-    Html.div [
-        prop.style [style.overflowY.auto; style.height (length.perc 90)]
-        prop.classes [ "scrollbar" ]
-        prop.children [
-            Bulma.table [
-                prop.style [style.width (length.perc 100)]
-                prop.children body
-            ]
-        ]
-    ]
-
 let ProposalRow (proposal: Proposal) = 
     let project = proposal.project
     let applicants = proposal.applicants
@@ -39,7 +25,7 @@ let ProposalRow (proposal: Proposal) =
 
 let ProposalTable (model: Model) =
 
-    Table [
+    Table 90 [
         Html.thead [
             Html.tr [
                 Html.th [ prop.title "Title"; prop.text "Title"]

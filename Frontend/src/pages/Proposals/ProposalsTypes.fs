@@ -5,7 +5,6 @@ open Shared
 type Model = {
     loading: bool
     proposals: List<Proposal>
-    unsavedProposals: List<Proposal>
     token: string
     selectedProposal: Proposal
     confirmDeleteProposalModal: bool
@@ -26,9 +25,8 @@ type Msg =
     | DeleteProposal
     | ConfirmEditProposal
     | EditProposal
-    | DiscardChanges
     | CloseModal
-    | ChangedSuitability of Browser.Types.Event * string
+    | ChangedSuitability of Browser.Types.Event * string * int
     | ProjectTitleChanged of string
     | ClickedCategoryTag of string 
     | ClickedStreamTag of string 

@@ -38,7 +38,6 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 let init (token: string) : Model * Cmd<Msg> = 
     let defaultModel = { loading = true;
                          proposals =[];
-                         unsavedProposals = [];
                          token = token; 
                          selectedProposal = Proposal.Default; 
                          confirmDeleteProposalModal = false;
@@ -68,7 +67,7 @@ let init (token: string) : Model * Cmd<Msg> =
 let update (msg: Msg) (model: Model) =
     match msg with
     | SuccessLoad proposals ->
-        { model with proposals = proposals; unsavedProposals = proposals; loading = false }, Cmd.none
+        { model with proposals = proposals; loading = false }, Cmd.none
     | Error res ->
         printfn "%A" res
         { model with loading = false }, Cmd.none
@@ -110,32 +109,49 @@ let update (msg: Msg) (model: Model) =
             meetings = sp.project.meetings }
         { model with confirmEditProposalModal = true; editProject = editInfo }, Cmd.none
     | EditProposal ->
-        let initialLoad () = 
+        let EditProposal () = 
             promise {
-                let proposalsUrl = $"{Server}/save-proposal"
+                let editProposalsUrl = $"{Server}/edit-proposal"
 
-                return! Fetch.put(url=proposalsUrl, 
+                return! Fetch.put(url=editProposalsUrl, 
                                     data=(model.editProject),
                                     decoder=(Decode.list Proposal.Decoder),
                                     headers=[Authorization $"Bearer {model.token}"]) 
             }
         { model with loading = true; confirmDeleteProposalModal = false; selectedProposal= Proposal.Default}, 
-        Cmd.OfPromise.either initialLoad () SuccessLoad Error 
-    | DiscardChanges ->
-        { model with unsavedProposals = model.proposals }, Cmd.none
+        Cmd.OfPromise.either EditProposal () SuccessLoad Error 
     | CloseModal ->
         { model with confirmDeleteProposalModal = false; confirmEditProposalModal = false }, Cmd.none
-    | ChangedSuitability (ev, applicantId) ->
+    | ChangedSuitability (ev, applicantId, rank) ->
+
         let applicantIndex = List.findIndex (fun applicant -> applicant.eeid = applicantId) model.selectedProposal.applicants
-        let proposalIndex = List.findIndex (fun proposal -> proposal.project.pid = model.selectedProposal.project.pid ) model.unsavedProposals
+        //let proposalIndex = List.findIndex (fun proposal -> proposal.project.pid = model.selectedProposal.project.pid ) model.proposals
 
         let applicant = List.find (fun applicant -> applicant.eeid = applicantId) model.selectedProposal.applicants
         let updatedApplicant = { applicant with suitability = (ev.target?value |> string) }
         let updatedApplicantList = List.updateAt applicantIndex updatedApplicant model.selectedProposal.applicants
         let updatedProposal = { model.selectedProposal with applicants = updatedApplicantList }
-        let updatedProposalList =  List.updateAt proposalIndex updatedProposal model.unsavedProposals
+        //let updatedProposalList =  List.updateAt proposalIndex updatedProposal model.proposals
 
-        { model with unsavedProposals = updatedProposalList; selectedProposal = updatedProposal }, Cmd.none
+        //{ model with proposals = updatedProposalList }, Cmd.none
+        
+        let EditSuitability () = 
+            promise {
+                let editSuitabilityUrl = $"{Server}/edit-suitability"
+
+                let data = {
+                    applicantId = applicantId;
+                    rank = rank;
+                    newSuitability = (ev.target?value |> string);
+                    isStudent = false }
+
+                return! Fetch.put(url=editSuitabilityUrl, 
+                                    data=data,
+                                    decoder=(Decode.list Proposal.Decoder),
+                                    headers=[Authorization $"Bearer {model.token}"]) 
+            }
+        { model with loading = true; selectedProposal = updatedProposal}, 
+        Cmd.OfPromise.either EditSuitability () SuccessLoad Error         
     | ProjectTitleChanged title ->
         { model with editProject = { model.editProject with title = title } }, Cmd.none
     | ClickedCategoryTag tag ->

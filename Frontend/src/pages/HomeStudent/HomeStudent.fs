@@ -80,11 +80,12 @@ let view (model: Model) (dispatch: Msg -> unit) =
                         NewTable model
                     ]
                 ]
-                BulmaTile [Bulma.IsParent; Bulma.IsVertical] [] [
-                    BulmaTile [Bulma.IsChild; Bulma.Box] (List.append TileCss [style.height (length.px 8000)]) [
+                BulmaTile [Bulma.IsParent; Bulma.IsVertical ] [] [
+                    BulmaTile [Bulma.IsChild; Bulma.Box] (TileCss @ [style.height (length.perc 100)]) [
                         Bulma.title [ prop.text "Preferences" ]
                         PreferenceTable model
                     ]
+
                 ]                    
             ]
         ]

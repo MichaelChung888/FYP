@@ -89,29 +89,29 @@ export function update(msg, model) {
         case 1: {
             const res = msg.fields[0];
             toConsole(printf("%A"))(res);
-            return [new Model(false, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(false, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         }
         case 2:
             return [model, Cmd_none()];
         case 3: {
-            const rank = msg.fields[1] | 0;
             const projectInfo = msg.fields[0];
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, projectInfo, rank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            const index = msg.fields[1] | 0;
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, projectInfo, index, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         }
         case 4:
             return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, Project_get_Default(), 0, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         case 5:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, true, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, true, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         case 6:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, false, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), (xs = ["home-student", "projects"], Cmd_ofEffect((_arg) => {
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, false, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), (xs = ["home-student", "projects"], Cmd_ofEffect((_arg) => {
                 RouterModule_nav(ofArray(xs), 1, 2);
             }))];
         case 7:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, true, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, true, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         case 8:
             return [removePreference(model), Cmd_none()];
         case 9:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, true, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, true, model.isPreferenceTab), Cmd_none()];
         case 10: {
             const p = model.preference;
             const up = model.unsavedPreference;
@@ -160,43 +160,43 @@ export function update(msg, model) {
                     });
                 }))));
             }));
-            return [new Model(true, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, false, model.isPreferenceTab), Cmd_OfPromise_either(savePreference, void 0, (arg_5) => (new Msg(0, [arg_5])), (arg_6) => (new Msg(1, [arg_6])))];
+            return [new Model(true, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, false, model.isPreferenceTab), Cmd_OfPromise_either(savePreference, void 0, (arg_5) => (new Msg(0, [arg_5])), (arg_6) => (new Msg(1, [arg_6])))];
         }
         case 11:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, false, false, false, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, false, false, false, model.isPreferenceTab), Cmd_none()];
         case 12: {
             const prefEqualLst_1 = getPreferenceEqualList(model.preference);
-            return [new Model(model.loading, model.preference, model.preference, prefEqualLst_1, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.preference, prefEqualLst_1, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         }
         case 14: {
             const c = msg.fields[0];
-            return [new Model(model.loading, model.preference, (inputRecord = model.unsavedPreference, new PreferenceResponse(inputRecord.eeid, inputRecord.p1, inputRecord.p2, inputRecord.p3, inputRecord.p4, inputRecord.p5, inputRecord.p6, inputRecord.p7, inputRecord.p8, inputRecord.p9, inputRecord.p10, inputRecord.n1, inputRecord.n2, inputRecord.n3, inputRecord.n4, inputRecord.n5, inputRecord.n6, inputRecord.n7, inputRecord.n8, inputRecord.n9, inputRecord.n10, inputRecord.s1, inputRecord.s2, inputRecord.s3, inputRecord.s4, inputRecord.s5, inputRecord.s6, inputRecord.s7, inputRecord.s8, inputRecord.s9, inputRecord.s10, inputRecord.upddate, c, inputRecord.feedback, inputRecord.doc)), model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, (inputRecord = model.unsavedPreference, new PreferenceResponse(inputRecord.eeid, inputRecord.p1, inputRecord.p2, inputRecord.p3, inputRecord.p4, inputRecord.p5, inputRecord.p6, inputRecord.p7, inputRecord.p8, inputRecord.p9, inputRecord.p10, inputRecord.n1, inputRecord.n2, inputRecord.n3, inputRecord.n4, inputRecord.n5, inputRecord.n6, inputRecord.n7, inputRecord.n8, inputRecord.n9, inputRecord.n10, inputRecord.s1, inputRecord.s2, inputRecord.s3, inputRecord.s4, inputRecord.s5, inputRecord.s6, inputRecord.s7, inputRecord.s8, inputRecord.s9, inputRecord.s10, inputRecord.upddate, c, inputRecord.feedback, inputRecord.doc)), model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         }
         case 15: {
             const prefEqualChange = msg.fields[1];
-            const index = msg.fields[0] | 0;
-            const newPrefEqualList = updateAt(index, prefEqualChange, model.preferenceEqualList);
+            const index_1 = msg.fields[0] | 0;
+            const newPrefEqualList = updateAt(index_1, prefEqualChange, model.preferenceEqualList);
             const newModel = fold((tupledArg, isPrefEqual) => updatePreferenceRanks(tupledArg[0], tupledArg[1], tupledArg[2], isPrefEqual), [model, 2, 1], newPrefEqualList)[0];
-            return [new Model(newModel.loading, newModel.preference, newModel.unsavedPreference, newPrefEqualList, newModel.token, newModel.selectedProject, newModel.selectedProjectRank, newModel.confirmAddProjectModal, newModel.confirmRemoveProjectModal, newModel.confirmSaveChangesModal, newModel.isPreferenceTab), Cmd_none()];
+            return [new Model(newModel.loading, newModel.preference, newModel.unsavedPreference, newPrefEqualList, newModel.token, newModel.selectedProject, newModel.selectedProjectIndex, newModel.confirmAddProjectModal, newModel.confirmRemoveProjectModal, newModel.confirmSaveChangesModal, newModel.isPreferenceTab), Cmd_none()];
         }
         case 13:
-            return [new Model(model.loading, model.preference, (inputRecord_1 = model.unsavedPreference, new PreferenceResponse(inputRecord_1.eeid, inputRecord_1.p1, inputRecord_1.p2, inputRecord_1.p3, inputRecord_1.p4, inputRecord_1.p5, inputRecord_1.p6, inputRecord_1.p7, inputRecord_1.p8, inputRecord_1.p9, inputRecord_1.p10, inputRecord_1.n1, inputRecord_1.n2, inputRecord_1.n3, inputRecord_1.n4, inputRecord_1.n5, inputRecord_1.n6, inputRecord_1.n7, inputRecord_1.n8, inputRecord_1.n9, inputRecord_1.n10, inputRecord_1.s1, inputRecord_1.s2, inputRecord_1.s3, inputRecord_1.s4, inputRecord_1.s5, inputRecord_1.s6, inputRecord_1.s7, inputRecord_1.s8, inputRecord_1.s9, inputRecord_1.s10, inputRecord_1.upddate, inputRecord_1.comments, inputRecord_1.feedback, !model.unsavedPreference.doc)), model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(model.loading, model.preference, (inputRecord_1 = model.unsavedPreference, new PreferenceResponse(inputRecord_1.eeid, inputRecord_1.p1, inputRecord_1.p2, inputRecord_1.p3, inputRecord_1.p4, inputRecord_1.p5, inputRecord_1.p6, inputRecord_1.p7, inputRecord_1.p8, inputRecord_1.p9, inputRecord_1.p10, inputRecord_1.n1, inputRecord_1.n2, inputRecord_1.n3, inputRecord_1.n4, inputRecord_1.n5, inputRecord_1.n6, inputRecord_1.n7, inputRecord_1.n8, inputRecord_1.n9, inputRecord_1.n10, inputRecord_1.s1, inputRecord_1.s2, inputRecord_1.s3, inputRecord_1.s4, inputRecord_1.s5, inputRecord_1.s6, inputRecord_1.s7, inputRecord_1.s8, inputRecord_1.s9, inputRecord_1.s10, inputRecord_1.upddate, inputRecord_1.comments, inputRecord_1.feedback, !model.unsavedPreference.doc)), model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         case 16:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, true), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, true), Cmd_none()];
         case 17:
-            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, false), Cmd_none()];
+            return [new Model(model.loading, model.preference, model.unsavedPreference, model.preferenceEqualList, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, false), Cmd_none()];
         case 18: {
-            const index_1 = msg.fields[0] | 0;
-            return [swapUp(model, index_1), Cmd_none()];
+            const index_2 = msg.fields[0] | 0;
+            return [swapUp(model, index_2), Cmd_none()];
         }
         case 19: {
-            const index_2 = msg.fields[0] | 0;
-            return [swapDown(model, index_2), Cmd_none()];
+            const index_3 = msg.fields[0] | 0;
+            return [swapDown(model, index_3), Cmd_none()];
         }
         default: {
             const preference = msg.fields[0];
             const prefEqualLst = getPreferenceEqualList(preference);
-            return [new Model(false, preference, preference, prefEqualLst, model.token, model.selectedProject, model.selectedProjectRank, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
+            return [new Model(false, preference, preference, prefEqualLst, model.token, model.selectedProject, model.selectedProjectIndex, model.confirmAddProjectModal, model.confirmRemoveProjectModal, model.confirmSaveChangesModal, model.isPreferenceTab), Cmd_none()];
         }
     }
 }
@@ -212,7 +212,7 @@ export function view(model, dispatch) {
             height: 90 + "vh",
             margin: 1 + "%",
         }], (elems_3 = [createElement("div", createObj(Helpers_combineClasses("column", ofArray([["style", createObj(TileCss)], (elems = toList(delay(() => append(singleton_1(Tabs(model, dispatch)), delay(() => append(model.isPreferenceTab ? singleton_1(PreferenceTable(model, dispatch)) : singleton_1(Comments(model, dispatch)), delay(() => singleton_1(saveChangesButtons(model, dispatch)))))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])))), createElement("div", createObj(Helpers_combineClasses("column", singleton(["className", join(" ", ["is-0"])])))), createElement("div", createObj(Helpers_combineClasses("column", ofArray([["style", createObj(TileCss)], (elems_1 = toList(delay(() => {
-            if (model.selectedProjectRank === 0) {
+            if (model.selectedProjectIndex === 0) {
                 return empty_1();
             }
             else {

@@ -21,6 +21,7 @@ import { fromString } from "../../fable_modules/Thoth.Fetch.3.0.1/../Thoth.Json.
 import { Cmd_none, Cmd_OfPromise_either } from "../../fable_modules/Fable.Elmish.4.1.0/cmd.fs.js";
 import { join, printf, toConsole } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { currentSelectedPreference } from "./ProjectsHelpers.fs.js";
+import { toString as toString_1 } from "../../fable_modules/fable-library.4.1.4/Types.js";
 import { createElement } from "react";
 import { empty as empty_1, singleton as singleton_1, append as append_1, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
 import { ImageBackground, TurquoiseBackground, LoadingScreen } from "../../Common.fs.js";
@@ -34,7 +35,7 @@ import { key_escape } from "../../fable_modules/Feliz.2.7.0/Key.fs.js";
 import { ModalProjectInfo, ModalAddProject } from "./ProjectsModals.fs.js";
 
 export function init(token) {
-    const defaultModel = new Model(true, empty(), PreferenceResponse_get_Default(), token, false, false, "", "", empty(), empty(), Project_get_Default(), 0);
+    const defaultModel = new Model(true, empty(), PreferenceResponse_get_Default(), token, false, false, "", "", empty(), empty(), Project_get_Default(), 0, "top");
     const initialLoad = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
         let decoder_1, decoder;
         const projectsUrl = `${"http://localhost:1234"}/projects`;
@@ -134,18 +135,18 @@ export function update(msg, model) {
         case 1: {
             const res = msg.fields[0];
             toConsole(printf("%A"))(res);
-            return [new Model(false, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectRank), Cmd_none()];
+            return [new Model(false, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), Cmd_none()];
         }
         case 2:
             return [model, Cmd_none()];
         case 3: {
             const project = msg.fields[0];
-            return [new Model(model.loading, model.projects, model.preference, model.token, true, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, project, model.selectedProjectRank), Cmd_none()];
+            return [new Model(model.loading, model.projects, model.preference, model.token, true, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, project, model.selectedProjectIndex, model.topOrBottom5), Cmd_none()];
         }
         case 4:
-            return [new Model(model.loading, model.projects, model.preference, model.token, false, false, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, 0), Cmd_none()];
+            return [new Model(model.loading, model.projects, model.preference, model.token, false, false, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, 0, model.topOrBottom5), Cmd_none()];
         case 5: {
-            const data = new AddPreferenceRequest(currentSelectedPreference(model), model.selectedProject.pid, model.selectedProjectRank);
+            const data = new AddPreferenceRequest(currentSelectedPreference(model), model.selectedProject.pid, model.selectedProjectIndex);
             const addPreference = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
                 let decoder;
                 const addProjectUrl = `${"http://localhost:1234"}/add-project`;
@@ -237,39 +238,39 @@ export function update(msg, model) {
                     });
                 });
             }));
-            return [new Model(true, model.projects, model.preference, model.token, false, false, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, 0), Cmd_OfPromise_either(addPreference, void 0, (arg_9) => (new Msg(0, [arg_9])), (arg_10) => (new Msg(1, [arg_10])))];
+            return [new Model(true, model.projects, model.preference, model.token, false, false, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, 0, model.topOrBottom5), Cmd_OfPromise_either(addPreference, void 0, (arg_9) => (new Msg(0, [arg_9])), (arg_10) => (new Msg(1, [arg_10])))];
         }
         case 6:
-            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, true, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectRank), Cmd_none()];
+            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, true, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), Cmd_none()];
         case 7:
-            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, false, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, 0), Cmd_none()];
+            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, false, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, 0, model.topOrBottom5), Cmd_none()];
         case 8: {
-            const rank = msg.fields[0] | 0;
-            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, rank), Cmd_none()];
+            const index = msg.fields[0] | 0;
+            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, index, model.topOrBottom5), Cmd_none()];
         }
         case 9: {
             const title = msg.fields[0];
-            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, title, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectRank), singleton((dispatch) => {
-                dispatch(new Msg(13, []));
+            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, title, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), singleton((dispatch) => {
+                dispatch(new Msg(14, []));
             })];
         }
         case 10: {
             const title_1 = msg.fields[0];
-            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, title_1, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectRank), singleton((dispatch_1) => {
-                dispatch_1(new Msg(13, []));
+            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, title_1, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), singleton((dispatch_1) => {
+                dispatch_1(new Msg(14, []));
             })];
         }
         case 11: {
             const tag = msg.fields[0];
             const sc = model.selectedCategories;
             if (exists((c) => (c === tag), sc)) {
-                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, filter((c_1) => (c_1 !== tag), sc), model.selectedStreams, model.selectedProject, model.selectedProjectRank), singleton((dispatch_2) => {
-                    dispatch_2(new Msg(13, []));
+                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, filter((c_1) => (c_1 !== tag), sc), model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), singleton((dispatch_2) => {
+                    dispatch_2(new Msg(14, []));
                 })];
             }
             else {
-                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, append(sc, singleton(tag)), model.selectedStreams, model.selectedProject, model.selectedProjectRank), singleton((dispatch_3) => {
-                    dispatch_3(new Msg(13, []));
+                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, append(sc, singleton(tag)), model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), singleton((dispatch_3) => {
+                    dispatch_3(new Msg(14, []));
                 })];
             }
         }
@@ -277,22 +278,26 @@ export function update(msg, model) {
             const tag_1 = msg.fields[0];
             const ss = model.selectedStreams;
             if (exists((c_2) => (c_2 === tag_1), ss)) {
-                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, filter((c_3) => (c_3 !== tag_1), ss), model.selectedProject, model.selectedProjectRank), singleton((dispatch_4) => {
-                    dispatch_4(new Msg(13, []));
+                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, filter((c_3) => (c_3 !== tag_1), ss), model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), singleton((dispatch_4) => {
+                    dispatch_4(new Msg(14, []));
                 })];
             }
             else {
-                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, append(ss, singleton(tag_1)), model.selectedProject, model.selectedProjectRank), singleton((dispatch_5) => {
-                    dispatch_5(new Msg(13, []));
+                return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, append(ss, singleton(tag_1)), model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), singleton((dispatch_5) => {
+                    dispatch_5(new Msg(14, []));
                 })];
             }
         }
         case 13: {
+            const ev = msg.fields[0];
+            return [new Model(model.loading, model.projects, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, toString_1(ev.target.value)), Cmd_none()];
+        }
+        case 14: {
             const data_11 = new SearchRequest(model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams);
             const searchRequest = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
                 let decoder_10, decoder_9;
                 const url_6 = `${"http://localhost:1234"}/search-projects`;
-                return ((decoder_10 = ((decoder_9 = Project_get_Decoder(), (path_1) => ((value_5) => list(uncurry2(decoder_9), path_1, value_5)))), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
+                return ((decoder_10 = ((decoder_9 = Project_get_Decoder(), (path_1) => ((value_6) => list(uncurry2(decoder_9), path_1, value_6)))), PromiseBuilder__Run_212F1D4B_1(promise_1, PromiseBuilder__Delay_62FBFDE1_1(promise_1, () => {
                     let data_14, caseStrategy_18, extra_18;
                     return ((data_14 = data_11, (caseStrategy_18 = void 0, (extra_18 = void 0, (() => {
                         let properties_12;
@@ -333,15 +338,15 @@ export function update(msg, model) {
                     });
                 }))));
             }));
-            return [model, Cmd_OfPromise_either(searchRequest, void 0, (arg_15) => (new Msg(14, [arg_15])), (arg_16) => (new Msg(1, [arg_16])))];
+            return [model, Cmd_OfPromise_either(searchRequest, void 0, (arg_15) => (new Msg(15, [arg_15])), (arg_16) => (new Msg(1, [arg_16])))];
         }
-        case 14: {
+        case 15: {
             const projects_2 = msg.fields[0];
-            return [new Model(model.loading, projects_2, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectRank), Cmd_none()];
+            return [new Model(model.loading, projects_2, model.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), Cmd_none()];
         }
         default: {
             const initialLoad = msg.fields[0];
-            return [new Model(false, initialLoad.projects, initialLoad.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectRank), Cmd_none()];
+            return [new Model(false, initialLoad.projects, initialLoad.preference, model.token, model.modalState, model.addProjectState, model.searchTitle, model.searchProfessor, model.selectedCategories, model.selectedStreams, model.selectedProject, model.selectedProjectIndex, model.topOrBottom5), Cmd_none()];
         }
     }
 }

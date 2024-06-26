@@ -20,8 +20,8 @@ let checkPreferenceChange (model: Model) : bool =
     (pList <> upList) || (nList <> unList) || (p.comments <> up.comments) || (p.doc <> up.doc)
 
 let removePreference (model: Model) : Model =
-    let rank = model.selectedProjectRank
-    let newModel = { model with selectedProject = Project.Default; selectedProjectRank = 0; confirmRemoveProjectModal = false }
+    let rank = model.selectedProjectIndex
+    let newModel = { model with selectedProject = Project.Default; selectedProjectIndex = 0; confirmRemoveProjectModal = false }
 
     match rank with
     | 1 -> { newModel with unsavedPreference = { newModel.unsavedPreference with p1 = Project.Default } }

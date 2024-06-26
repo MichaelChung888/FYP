@@ -6,7 +6,7 @@ import { getFormattedCategory } from "../../Common.fs.js";
 import { ofArray, map as map_1, append as append_1, exists } from "../../fable_modules/fable-library.4.1.4/List.js";
 
 export function currentSelectedPreference(model) {
-    const matchValue = model.selectedProjectRank | 0;
+    const matchValue = model.selectedProjectIndex | 0;
     switch (matchValue) {
         case 1:
             return model.preference.p1.pid | 0;
@@ -50,6 +50,11 @@ export function TableCategories(model, categories) {
 
 export function TableStreams(model, streams) {
     return map_1((filter) => Tag(model, filter), splitStreams(streams));
+}
+
+export function checkProjectInPreference(project, pref) {
+    const preferenceList = ofArray([pref.p1.pid, pref.p2.pid, pref.p3.pid, pref.p4.pid, pref.p5.pid, pref.p6.pid, pref.p7.pid, pref.p8.pid, pref.p9.pid, pref.p10.pid]);
+    return exists((prefPid) => (prefPid === project.pid), preferenceList);
 }
 
 //# sourceMappingURL=ProjectsHelpers.fs.js.map

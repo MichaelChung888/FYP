@@ -32,7 +32,7 @@ export function ProjectRow(projectInfo) {
 
 export function NewTable(model) {
     let children_2, children, children_4;
-    return Table(ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
+    return Table(90, ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
         title: "Title",
         children: "Title",
     }), createElement("th", {
@@ -98,7 +98,7 @@ export function PreferenceTable(model) {
     let children_2, children, children_4;
     const pref = model.preference;
     const prefList = ofArray([[pref.p1, pref.n1], [pref.p2, pref.n2], [pref.p3, pref.n3], [pref.p4, pref.n4], [pref.p5, pref.n5], [pref.p6, pref.n6], [pref.p7, pref.n7], [pref.p8, pref.n8], [pref.p9, pref.n9], [pref.p10, pref.n10]]);
-    return Table(ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
+    return Table(90, ofArray([(children_2 = singleton((children = ofArray([createElement("th", {
         title: "Rank",
         children: "Rank",
     }), createElement("th", {

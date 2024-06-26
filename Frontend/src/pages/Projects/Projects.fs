@@ -22,6 +22,9 @@ open Feliz.Bulma
 
 open color
 
+open Fable.Core.JsInterop
+
+
 open Zanaptak.TypedCssClasses
 type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css", Naming.PascalCase>
 
@@ -41,7 +44,8 @@ let init (token: string) : Model * Cmd<Msg> =
                         selectedCategories = [];
                         selectedStreams = [];
                         selectedProject = Project.Default;
-                        selectedProjectRank = 0 }
+                        selectedProjectIndex = 0;
+                        topOrBottom5 = "top" }
     let initialLoad () = 
         promise {
             let projectsUrl = $"{Server}/projects"
@@ -73,12 +77,12 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     | OpenModal project ->
         { model with modalState = true; selectedProject = project }, Cmd.none
     | CloseModal ->
-        { model with modalState = false; addProjectState = false; selectedProjectRank = 0 }, Cmd.none
+        { model with modalState = false; addProjectState = false; selectedProjectIndex = 0 }, Cmd.none
     | AddProject ->
         let data = {
             preference = currentSelectedPreference model
             newPreference = model.selectedProject.pid
-            newPreferenceIndex= model.selectedProjectRank
+            newPreferenceIndex= model.selectedProjectIndex
         }
         let addPreference () = 
             promise {
@@ -94,14 +98,14 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
                                         headers=[Authorization $"Bearer {model.token}"])
                 return { projects = projects; preference = newPreference }      
             }
-        { model with modalState = false; addProjectState = false; loading = true; selectedProjectRank = 0 }
+        { model with modalState = false; addProjectState = false; loading = true; selectedProjectIndex = 0 }
         , Cmd.OfPromise.either addPreference () SuccessLoad ErrorLoad
     | OpenAddProject ->
         { model with addProjectState = true }, Cmd.none
     | CloseAddProject ->
-        { model with addProjectState = false; selectedProjectRank = 0 }, Cmd.none
-    | RankAddProject rank ->
-        { model with selectedProjectRank = rank }, Cmd.none
+        { model with addProjectState = false; selectedProjectIndex = 0 }, Cmd.none
+    | IndexAddProject index ->
+        { model with selectedProjectIndex = index }, Cmd.none
     | SearchTitleChanged title ->
         { model with searchTitle = title }, Cmd.ofMsg SearchRequest
     | SearchProfessorChanged title ->
@@ -120,6 +124,8 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
             { model with selectedStreams = List.filter (fun c -> c <> tag) ss}, Cmd.ofMsg SearchRequest
         | false -> // Not in list, hence adding tag to search
             { model with selectedStreams = ss @ [tag]}, Cmd.ofMsg SearchRequest
+    | TopOrBottom5 ev ->
+        { model with topOrBottom5 = (ev.target?value |> string) }, Cmd.none
     | SearchRequest ->
         let data = {
             title = model.searchTitle;
