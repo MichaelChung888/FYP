@@ -35,8 +35,9 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 //                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
-let init (token: string) : Model * Cmd<Msg> = 
-    let defaultModel = { loading = true;
+let init (token: string) (user: Person) : Model * Cmd<Msg> = 
+    let defaultModel = { user = user;
+                         loading = true;
                          proposals =[];
                          token = token; 
                          selectedProposal = Proposal.Default; 
@@ -134,7 +135,7 @@ let update (msg: Msg) (model: Model) =
         //let updatedProposalList =  List.updateAt proposalIndex updatedProposal model.proposals
 
         //{ model with proposals = updatedProposalList }, Cmd.none
-        
+
         let EditSuitability () = 
             promise {
                 let editSuitabilityUrl = $"{Server}/edit-suitability"
@@ -188,7 +189,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
             if model.loading then LoadingScreen
             TurquoiseBackground 0.5
             ImageBackground
-            NavBar dispatch
+            NavBar dispatch model.user
 
             Bulma.columns [
                 prop.style [ style.height (length.vh 90); style.margin (length.perc 1)]

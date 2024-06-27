@@ -1,10 +1,11 @@
 import { Union, Record } from "../../fable_modules/fable-library.4.1.4/Types.js";
+import { EditProposalRequest_$reflection, Proposal_$reflection, Person_$reflection } from "../../../../Shared/Shared.fs.js";
 import { union_type, int32_type, class_type, record_type, string_type, list_type, bool_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
-import { EditProposalRequest_$reflection, Proposal_$reflection } from "../../../../Shared/Shared.fs.js";
 
 export class Model extends Record {
-    constructor(loading, proposals, token, selectedProposal, confirmDeleteProposalModal, confirmEditProposalModal, isProjectInfoTab, editProject) {
+    constructor(user, loading, proposals, token, selectedProposal, confirmDeleteProposalModal, confirmEditProposalModal, isProjectInfoTab, editProject) {
         super();
+        this.user = user;
         this.loading = loading;
         this.proposals = proposals;
         this.token = token;
@@ -17,7 +18,7 @@ export class Model extends Record {
 }
 
 export function Model_$reflection() {
-    return record_type("ProposalsTypes.Model", [], Model, () => [["loading", bool_type], ["proposals", list_type(Proposal_$reflection())], ["token", string_type], ["selectedProposal", Proposal_$reflection()], ["confirmDeleteProposalModal", bool_type], ["confirmEditProposalModal", bool_type], ["isProjectInfoTab", bool_type], ["editProject", EditProposalRequest_$reflection()]]);
+    return record_type("ProposalsTypes.Model", [], Model, () => [["user", Person_$reflection()], ["loading", bool_type], ["proposals", list_type(Proposal_$reflection())], ["token", string_type], ["selectedProposal", Proposal_$reflection()], ["confirmDeleteProposalModal", bool_type], ["confirmEditProposalModal", bool_type], ["isProjectInfoTab", bool_type], ["editProject", EditProposalRequest_$reflection()]]);
 }
 
 export class Msg extends Union {

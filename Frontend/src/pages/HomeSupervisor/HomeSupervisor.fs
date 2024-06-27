@@ -28,8 +28,8 @@ type Bulma = CssClasses<"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/
 //                  Model Initalise [init : unit -> Model * Cmd<Msg>]                   //
 //--------------------------------------------------------------------------------------//
 
-let init (token: string) : Model * Cmd<Msg> = 
-    let defaultModel = { loading = true; proposals = []; token = token }
+let init (token: string) (user: Person) : Model * Cmd<Msg> = 
+    let defaultModel = { user = user; loading = true; proposals = []; token = token; }
     let initialLoad () = 
         promise {
             let proposalsUrl = $"{Server}/proposals"
@@ -67,7 +67,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
             if model.loading then LoadingScreen
             TurquoiseBackground 0.5
             ImageBackground
-            NavBar dispatch
+            NavBar dispatch model.user
 
             BulmaTile [Bulma.IsAncestor] [style.padding (length.px 50); style.height (length.vh 95)] [
                 BulmaTile [Bulma.IsHalf; Bulma.IsParent] [] [

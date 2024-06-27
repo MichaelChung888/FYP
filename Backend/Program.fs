@@ -25,23 +25,33 @@ open dotenv.net.Utilities
 let authorize =
     requiresAuthentication (challenge JwtBearerDefaults.AuthenticationScheme >=> text "Please Authenticate")
 
+let requireStudentRole : HttpHandler = 
+    requiresRoleOf ["Coordinator" ; "Student"] (RequestErrors.FORBIDDEN  "Permission denied. You don't have the necessary permissions")
+
+let requireSupervisorRole : HttpHandler = 
+    requiresRoleOf ["Coordinator" ; "Supervisor"] (RequestErrors.FORBIDDEN  "Permission denied. You don't have the necessary permissions")
+
+let requireCoordinatorRole : HttpHandler = 
+    requiresRole "Coordinator" (RequestErrors.FORBIDDEN  "Permission denied. You don't have the necessary permissions")
+
 let webApp = 
     choose [
         route "/" >=> GET >=> text "Server Online"
         route "/login" >=> POST >=> loginHttpHandler
         authorize >=> 
             choose [
-                route "/new-projects" >=> GET >=> newProjectHttpHandler
-                route "/preferences" >=> GET >=> preferenceHttpHandler
-                route "/projects" >=> GET >=> projectHttpHandler
-                route "/search-projects" >=> POST >=>  searchProjectHttpHandler // Should be GET
-                route "/save-preferences" >=> PUT >=>  savePreferencesHttpHandler
-                route "/add-project" >=> PUT >=>  addProjectHttpHandler
+                route "/new-projects" >=> requireStudentRole >=> GET >=> newProjectsHttpHandler
+                route "/preferences" >=> requireStudentRole >=> GET >=> preferenceHttpHandler
+                route "/projects" >=> requireStudentRole >=> GET >=> projectsHttpHandler
+                route "/search-projects" >=> requireStudentRole >=> POST >=>  searchProjectHttpHandler // Should be GET
+                route "/save-preferences" >=> requireStudentRole >=> PUT >=>  savePreferencesHttpHandler
+                route "/add-project" >=> requireStudentRole >=> PUT >=>  addProjectHttpHandler
                 route "/project-propose" >=> POST >=> projectProposeHttpHandler
-                route "/proposals" >=> POST >=> proposalsHttpHandler // Should be GET
-                route "/proposals" >=> DELETE >=> deleteProposalsHttpHandler // Should be GET
-                route "/edit-proposal" >=> PUT >=> editProposalHttpHandler
-                route "/edit-suitability" >=> PUT >=> editSuitabilityHttpHandler
+                route "/proposals" >=> requireSupervisorRole >=> POST >=> proposalsHttpHandler // Should be GET
+                route "/proposals" >=> requireSupervisorRole >=> DELETE >=> deleteProposalsHttpHandler // Should be GET
+                route "/edit-proposal" >=> requireSupervisorRole >=> PUT >=> editProposalHttpHandler
+                route "/edit-suitability" >=> requireSupervisorRole >=> PUT >=> editSuitabilityHttpHandler
+                route "/all-projects" >=> requireCoordinatorRole >=> GET >=> allProjectsHttpHandler
             ]
     ]
     // Note: warbler is used when the route is returning a dynamic (not static) response, hence wrap the function in a "warbler()"
@@ -64,8 +74,8 @@ let configureApp (app : IApplicationBuilder) =
         app.UseDeveloperExceptionPage()
     | false ->
         app.UseGiraffeErrorHandler(errorHandler)
-           .UseHttpsRedirection())
-           .UseCors(fun builder -> builder.WithOrigins("http://localhost:5173").AllowAnyMethod()
+            .UseHttpsRedirection())
+            .UseCors(fun builder -> builder.WithOrigins("http://localhost:5173").AllowAnyMethod()
                                                                                .AllowAnyHeader()
                                                                                .AllowCredentials() 
                                                                                |> ignore)

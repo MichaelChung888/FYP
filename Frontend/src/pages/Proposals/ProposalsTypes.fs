@@ -3,6 +3,7 @@ module ProposalsTypes
 open Shared
 
 type Model = {
+    user: Person
     loading: bool
     proposals: List<Proposal>
     token: string

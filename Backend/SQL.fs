@@ -69,7 +69,7 @@ let loginAuthenticateSQL (eeid: string) : Result<string, SqlException> =
 
 
 
-let newProjectSQL () : Result<string, SqlException> =
+let newProjectsSQL () : Result<string, SqlException> =
     let projectCmd = new SqlCommand (
         $"SELECT TOP 8 {allProjectFields} 
         FROM eedbo_eepx e
@@ -82,7 +82,7 @@ let newProjectSQL () : Result<string, SqlException> =
 
 
 
-let projectSQL () : Result<string, SqlException>  = 
+let projectsSQL () : Result<string, SqlException>  = 
     let projectCmd = new SqlCommand (
         $"SELECT {allProjectFields} 
         FROM eedbo_eepx e
@@ -420,3 +420,16 @@ let editSuitabilitySQL (data: EditSuitabilityRequest) : Result<string, SqlExcept
     updateSuitabilityCmd.Parameters.AddWithValue("@applicantId", data.applicantId) |> ignore
 
     ExecuteQuery(updateSuitabilityCmd)
+
+
+
+let allProjectsSQL () : Result<string, SqlException>  = 
+    let projectCmd = new SqlCommand (
+        $"SELECT {allProjectFields} 
+        FROM eedbo_eepx e
+        JOIN eedbo_projects_sqlserver ps ON e.eeid = ps.SUP
+        JOIN eedbo_projects_extra pe ON ps.PID = pe.PID
+        ORDER BY pe.updated DESC", conn)
+
+    ExecuteQuery(projectCmd)
+

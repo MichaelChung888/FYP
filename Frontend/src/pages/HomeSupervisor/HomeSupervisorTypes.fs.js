@@ -1,10 +1,11 @@
 import { Union, Record } from "../../fable_modules/fable-library.4.1.4/Types.js";
+import { Proposal_$reflection, Person_$reflection } from "../../../../Shared/Shared.fs.js";
 import { union_type, class_type, record_type, string_type, list_type, bool_type } from "../../fable_modules/fable-library.4.1.4/Reflection.js";
-import { Proposal_$reflection } from "../../../../Shared/Shared.fs.js";
 
 export class Model extends Record {
-    constructor(loading, proposals, token) {
+    constructor(user, loading, proposals, token) {
         super();
+        this.user = user;
         this.loading = loading;
         this.proposals = proposals;
         this.token = token;
@@ -12,7 +13,7 @@ export class Model extends Record {
 }
 
 export function Model_$reflection() {
-    return record_type("HomeSupervisorTypes.Model", [], Model, () => [["loading", bool_type], ["proposals", list_type(Proposal_$reflection())], ["token", string_type]]);
+    return record_type("HomeSupervisorTypes.Model", [], Model, () => [["user", Person_$reflection()], ["loading", bool_type], ["proposals", list_type(Proposal_$reflection())], ["token", string_type]]);
 }
 
 export class Msg extends Union {

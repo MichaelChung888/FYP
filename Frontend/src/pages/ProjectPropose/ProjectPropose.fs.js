@@ -143,7 +143,7 @@ export function view(model, dispatch) {
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         position: "relative",
-    }], (elems_4 = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(model, dispatch)), delay(() => {
+    }], (elems_4 = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(dispatch, model.user)), delay(() => {
         let elems_3, elems_2, elems_1, elems;
         return singleton_1(createElement("div", createObj(Helpers_combineClasses("columns", ofArray([["className", join(" ", ["is-centered"])], ["style", {
             height: 90 + "vh",

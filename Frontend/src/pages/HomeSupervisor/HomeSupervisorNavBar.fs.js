@@ -4,9 +4,10 @@ import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./
 import { RouterModule_nav } from "../../fable_modules/Feliz.Router.4.0.0/./Router.fs.js";
 import { ofArray, singleton } from "../../fable_modules/fable-library.4.1.4/List.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
+import { empty, singleton as singleton_1, append, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
 import { Msg } from "./HomeSupervisorTypes.fs.js";
 
-export function NavBar(dispatch) {
+export function NavBar(dispatch, user) {
     let elems_7, elems_1, elems, elms_4, elms, elms_3, elms_2, elms_1;
     return createElement("nav", createObj(Helpers_combineClasses("navbar", ofArray([["style", {
         backgroundColor: "#48D1CC",
@@ -20,13 +21,17 @@ export function NavBar(dispatch) {
         cursor: "pointer",
     }], (elems_1 = [createElement("span", createObj(Helpers_combineClasses("icon", ofArray([["className", "is-large"], (elems = [createElement("i", {
         className: "fas fa-home fa-2x",
-    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_4 = ofArray([(elms = ofArray([createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Student Proposals"], ["onClick", (e_1) => {
+    })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))), (elms_4 = ofArray([(elms = toList(delay(() => append(singleton_1(createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Student Proposals"], ["onClick", (e_1) => {
         RouterModule_nav(ofArray(["home-supervisor", "projects"]), 1, 2);
-    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Your Proposals"], ["onClick", (e_2) => {
+    }]]))))), delay(() => append(singleton_1(createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Your Proposals"], ["onClick", (e_2) => {
         RouterModule_nav(ofArray(["home-supervisor", "proposals"]), 1, 2);
-    }]])))), createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Propose a Project"], ["onClick", (e_3) => {
+    }]]))))), delay(() => append(singleton_1(createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "Propose a Project"], ["onClick", (e_3) => {
         RouterModule_nav(singleton("project-propose"), 1, 2);
-    }]]))))]), createElement("div", {
+    }]]))))), delay(() => ((user.categ === "C") ? append(singleton_1(createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "All Projects"], ["onClick", (e_4) => {
+        RouterModule_nav(ofArray(["home-supervisor", "all-projects"]), 1, 2);
+    }]]))))), delay(() => singleton_1(createElement("a", createObj(Helpers_combineClasses("navbar-item", ofArray([["children", "All Preferences"], ["onClick", (e_5) => {
+        RouterModule_nav(ofArray(["home-supervisor", "all-preferences"]), 1, 2);
+    }]]))))))) : empty()))))))))), createElement("div", {
         className: "navbar-start",
         children: Interop_reactApi.Children.toArray(Array.from(elms)),
     })), (elms_3 = singleton((elms_2 = singleton((elms_1 = singleton(createElement("a", createObj(Helpers_combineClasses("button", ofArray([["children", "Log Out"], ["onClick", (_arg) => {

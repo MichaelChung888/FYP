@@ -43,6 +43,14 @@
     <Compile Include="pages/Projects/ProjectsModals.fs" />
     <Compile Include="pages/Projects/Projects.fs" />
 
+    <Compile Include="pages/AllProjects/AllProjectsTypes.fs" />
+    <Compile Include="pages/AllProjects/AllProjectsHelpers.fs" />
+    <Compile Include="pages/AllProjects/AllProjectsNavBar.fs" />
+    <Compile Include="pages/AllProjects/AllProjectsTables.fs" />
+    <Compile Include="pages/AllProjects/AllProjectsSearch.fs" />
+    <Compile Include="pages/AllProjects/AllProjectsModals.fs" />
+    <Compile Include="pages/AllProjects/AllProjects.fs" />
+
     <Compile Include="pages/ProjectPropose/ProjectProposeTypes.fs" />
     <Compile Include="pages/ProjectPropose/ProjectProposeHelpers.fs" />
     <Compile Include="pages/ProjectPropose/ProjectProposeNavBar.fs" />

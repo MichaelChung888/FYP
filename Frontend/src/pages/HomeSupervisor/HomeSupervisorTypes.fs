@@ -3,6 +3,7 @@ module HomeSupervisorTypes
 open Shared
 
 type Model = {
+    user: Person
     loading: bool
     proposals: List<Proposal>
     token: string

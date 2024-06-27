@@ -28,8 +28,8 @@ import { Helpers_combineClasses } from "../../fable_modules/Feliz.Bulma.3.0.0/./
 import { ProposalTable } from "./HomeSupervisorTables.fs.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
 
-export function init(token) {
-    const defaultModel = new Model(true, empty(), token);
+export function init(token, user) {
+    const defaultModel = new Model(user, true, empty(), token);
     const initialLoad = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
         let decoder_1, decoder;
         const proposalsUrl = `${"http://localhost:1234"}/proposals`;
@@ -82,13 +82,13 @@ export function update(msg, model) {
         case 1: {
             const res = msg.fields[0];
             toConsole(printf("%A"))(res);
-            return [new Model(false, model.proposals, model.token), Cmd_none()];
+            return [new Model(model.user, false, model.proposals, model.token), Cmd_none()];
         }
         case 2:
             return [model, Cmd_none()];
         default: {
             const proposals = msg.fields[0];
-            return [new Model(false, proposals, model.token), Cmd_none()];
+            return [new Model(model.user, false, proposals, model.token), Cmd_none()];
         }
     }
 }
@@ -98,7 +98,7 @@ export function view(model, dispatch) {
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         position: "relative",
-    }], (elems = toList(delay(() => append(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append(singleton_1(TurquoiseBackground(0.5)), delay(() => append(singleton_1(ImageBackground), delay(() => append(singleton_1(NavBar(dispatch)), delay(() => singleton_1(BulmaTile(singleton("is-ancestor"), ofArray([["padding", 50 + "px"], ["height", 95 + "vh"]]), ofArray([BulmaTile(ofArray(["is-half", "is-parent"]), empty(), singleton(BulmaTile(ofArray(["tile", "is-child", "box"]), TileCss, singleton(createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "New Self Proposals"])))))))), BulmaTile(ofArray(["is-parent", "is-vertical"]), empty(), singleton(BulmaTile(ofArray(["is-child", "box"]), append_1(TileCss, singleton(["height", 100 + "%"])), ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "Proposals"])))), ProposalTable(model)]))))]))))))))))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
+    }], (elems = toList(delay(() => append(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append(singleton_1(TurquoiseBackground(0.5)), delay(() => append(singleton_1(ImageBackground), delay(() => append(singleton_1(NavBar(dispatch, model.user)), delay(() => singleton_1(BulmaTile(singleton("is-ancestor"), ofArray([["padding", 50 + "px"], ["height", 95 + "vh"]]), ofArray([BulmaTile(ofArray(["is-half", "is-parent"]), empty(), singleton(BulmaTile(ofArray(["tile", "is-child", "box"]), TileCss, singleton(createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "New Self Proposals"])))))))), BulmaTile(ofArray(["is-parent", "is-vertical"]), empty(), singleton(BulmaTile(ofArray(["is-child", "box"]), append_1(TileCss, singleton(["height", 100 + "%"])), ofArray([createElement("h1", createObj(Helpers_combineClasses("title", singleton(["children", "Proposals"])))), ProposalTable(model)]))))]))))))))))))), ["children", Interop_reactApi.Children.toArray(Array.from(elems))])])));
 }
 
 //# sourceMappingURL=HomeSupervisor.fs.js.map

@@ -1,3 +1,5 @@
+# FYP Frontend
+
 # Fable.Elmish.React Template
 
 This template can be used to generate a simple web app with [Fable](http://fable.io/) and [Elmish](https://fable-elmish.github.io/).
@@ -9,25 +11,11 @@ You can find more templates by searching `Fable.Template` packages in [Nuget](ht
 * [node.js](https://nodejs.org) 4.8.2 or higher
 * npm: JS package manager
 
-Although is not a Fable requirement, on macOS and Linux you'll need [Mono](http://www.mono-project.com/) for other F# tooling like Paket or editor support.
-
-## Installing the template
-
-In a terminal, run `dotnet new -i Fable.Template.Elmish.React::*` to install or update the template to latest version.
-
-> In some shells you many need quotations: `dotnet new -i "Fable.Template.Elmish.React::*"`. If you use the dotnet core SDK version 2 or higher, you should only need to type `dotnet new -i Fable.Template.Elmish.React`.
-
-## Creating a new project with the template
-
-In a terminal, run `dotnet new fable-elmish-react` to create a project in the current directory. Type `dotnet new fable-elmish-react -n awesome` instead to create a subfolder named `awesome` and put the new project there.
-
-> The project will have the name of the directory. You may get some issues if the directory name contains some special characters like hyphens
-
 ## Building and running the app
 
 Run `dotnet fsi build.fsx --watch` to start the development server. Whenever you modify a file, the server will be updated automatically.
 
-You can then access the app at http://localhost:3000. If the port is already used another port will be chosen automatically (look at your console to know which one).
+You can then access the app at http://localhost:5173. If the port is already used another port will be chosen automatically (look at your console to know which one).
 
 If you are using VS Code + [Ionide](http://ionide.io/), you can also use VSCode task runner. This also has the advantage that Fable-specific errors will be highlighted in the editor along with other F# errors.
 

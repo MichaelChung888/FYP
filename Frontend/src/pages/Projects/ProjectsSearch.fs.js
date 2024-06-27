@@ -5,8 +5,8 @@ import { exists, cons, ofArray, singleton } from "../../fable_modules/fable-libr
 import { join } from "../../fable_modules/fable-library.4.1.4/String.js";
 import { Msg } from "./ProjectsTypes.fs.js";
 import { Interop_reactApi } from "../../fable_modules/Feliz.2.7.0/./Interop.fs.js";
-import { streams, categories, FilterType, getFormattedCategory, TurquoiseBackgroundRGBA } from "../../Common.fs.js";
 import { map, empty, singleton as singleton_1, append, delay, toList } from "../../fable_modules/fable-library.4.1.4/Seq.js";
+import { streams, categories, FilterType, getFormattedCategory } from "../../Common.fs.js";
 
 export function ProjectInput(dispatch) {
     let elems_2, elems_1, elems;
@@ -25,8 +25,6 @@ export function ProfessorInput(dispatch) {
         className: "fas fa-search",
     })], ["children", Interop_reactApi.Children.toArray(Array.from(elems))])]))))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_1))])])))], ["children", Interop_reactApi.Children.toArray(Array.from(elems_2))])))));
 }
-
-export const TileCss = ofArray([TurquoiseBackgroundRGBA(0.7), ["borderStyle", "solid"], ["borderColor", "#48D1CC"], ["padding", 1.5 + "%"]]);
 
 export function TagFilter(dispatch, model, filterType, filter) {
     return createElement("span", createObj(Helpers_combineClasses("tag", toList(delay(() => append(singleton_1(["className", join(" ", ["filter-tag"])]), delay(() => append(singleton_1(["children", getFormattedCategory(filter)]), delay(() => append(singleton_1(["style", {

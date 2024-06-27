@@ -10,7 +10,7 @@ open Feliz.Router
 
 open color
 
-let NavBar (dispatch: Msg -> unit) =
+let NavBar (dispatch: Msg -> unit) (user: Person) =
     Bulma.navbar [
         prop.style [style.backgroundColor mediumTurqouise; style.fontWeight 700]
         prop.children [
@@ -29,6 +29,9 @@ let NavBar (dispatch: Msg -> unit) =
                     Bulma.navbarItem.a [ prop.text "Student Proposals"; prop.onClick (fun e -> Router.navigatePath("home-supervisor", "projects")) ]
                     Bulma.navbarItem.a [ prop.text "Your Proposals"; prop.onClick (fun e -> Router.navigatePath("home-supervisor", "proposals")) ]
                     Bulma.navbarItem.a [ prop.text "Propose a Project"; prop.onClick (fun e -> Router.navigatePath("project-propose")) ]
+                    if user.categ = "C" then
+                        Bulma.navbarItem.a [ prop.text "All Projects"; prop.onClick (fun e -> Router.navigatePath("home-supervisor", "all-projects")) ]
+                        Bulma.navbarItem.a [ prop.text "All Preferences"; prop.onClick (fun e -> Router.navigatePath("home-supervisor", "all-preferences")) ]
                 ]
                 Bulma.navbarEnd.div [
                     Bulma.navbarItem.div [

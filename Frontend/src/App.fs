@@ -6,6 +6,7 @@ open Feliz
 open Feliz.Router
 
 open Shared
+open Common
 open Login
 open HomeStudent
 open Projects
@@ -33,6 +34,8 @@ type Url =
     | ProjectProposeUrl
     | HomeSupervisorUrl
     | ProposalsUrl
+    | AllProjectsUrl
+    //| AllPreferencesUrl
     | NotFoundUrl
     | EmptyUrl
 
@@ -44,6 +47,8 @@ type Page = // Pages
     | ProjectProposePage of ProjectPropose.Model
     | HomeSupervisorPage of HomeSupervisor.Model
     | ProposalsPage of Proposals.Model
+    | AllProjectsPage of AllProjects.Model
+    //| AllPreferencesPage of AllPreferences.Model
     | NotFoundPage
 
 type Msg =
@@ -54,6 +59,8 @@ type Msg =
     | ProjectProposeMsg of ProjectPropose.Msg
     | HomeSupervisorMsg of HomeSupervisor.Msg
     | ProposalsMsg of Proposals.Msg
+    | AllProjectsMsg of AllProjects.Msg
+    //| AllPreferencesMsg of AllPreferences.Msg
     | UrlChanged of Url
 
 type Model = {
@@ -76,6 +83,8 @@ let parseUrl = function
     | ["project-propose"] -> ProjectProposeUrl
     | ["home-supervisor"] -> HomeSupervisorUrl
     | ["home-supervisor"; "proposals"] -> ProposalsUrl
+    | ["home-supervisor"; "all-projects"] -> AllProjectsUrl
+    //| ["home-supervisor"; "all-preferences"] -> AllPreferencesUrl
     | _ -> NotFoundUrl
 
 let init () : Model * Cmd<Msg> = 
@@ -103,6 +112,10 @@ let init () : Model * Cmd<Msg> =
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
     | ProposalsUrl ->
         defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+    | AllProjectsUrl ->
+        defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+    //| AllPreferencesUrl ->
+    //    defaultModel, Cmd.navigatePath("login", HistoryMode.ReplaceState)
     | NotFoundUrl ->
         { defaultModel with currentPage = NotFoundPage }, Cmd.none
     | EmptyUrl ->
@@ -183,6 +196,24 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
             let newPage, newMsg = Proposals.update msg page
             updatePage (ProposalsPage newPage), Cmd.map ProposalsMsg newMsg         
 
+    | AllProjectsMsg msg, AllProjectsPage page ->
+        match msg with
+        | AllProjects.Msg.Logout ->
+            { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
+        | msg ->
+            let newPage, newMsg = AllProjects.update msg page
+            updatePage (AllProjectsPage newPage), Cmd.map AllProjectsMsg newMsg  
+
+    (*
+    | AllPreferencesMsg msg, AllPreferencesPage page ->
+        match msg with
+        | AllPreferences.Msg.Logout ->
+            { model with user = Anonymous; token = ""}, Cmd.navigatePath("login")
+        | msg ->
+            let newPage, newMsg = AllPreferences.update msg page
+            updatePage (AllPreferencesPage newPage), Cmd.map AllPreferencesMsg newMsg  
+    *)
+
     | UrlChanged nextUrl, _ ->
         match nextUrl with
         | LoginUrl -> 
@@ -191,45 +222,68 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
 
         | HomeStudentUrl ->
             match model.user with
-            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
-            | LoggedIn _ ->
+            | LoggedIn user when (isStudent user) ->
                 let newPage, newMsg = HomeStudent.init model.token
                 showPage (HomeStudentPage newPage) HomeStudentUrl, Cmd.map HomeStudentMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
 
         | ProjectsUrl ->
             match model.user with
-            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
-            | LoggedIn _ ->
+            | LoggedIn user when (isStudent user) ->
                 let newPage, newMsg = Projects.init model.token
                 showPage (ProjectsPage newPage) ProjectsUrl, Cmd.map ProjectsMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
 
         | PreferencesUrl ->
             match model.user with
-            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
-            | LoggedIn _ ->
+            | LoggedIn user when (isStudent user) ->
                 let newPage, newMsg = Preferences.init model.token
                 showPage (PreferencesPage newPage) ProjectsUrl, Cmd.map PreferencesMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
 
         | ProjectProposeUrl ->
             match model.user with
-            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
             | LoggedIn user ->
                 let newPage, newMsg = ProjectPropose.init model.token user
                 showPage (ProjectProposePage newPage) ProjectsUrl, Cmd.map ProjectProposeMsg newMsg
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
 
         | HomeSupervisorUrl ->
             match model.user with
-            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
-            | LoggedIn user ->
-                let newPage, newMsg = HomeSupervisor.init model.token
+            | LoggedIn user when not (isStudent user) ->
+                let newPage, newMsg = HomeSupervisor.init model.token user
                 showPage (HomeSupervisorPage newPage) HomeSupervisorUrl, Cmd.map HomeSupervisorMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
 
         | ProposalsUrl ->
             match model.user with
-            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
-            | LoggedIn user ->
-                let newPage, newMsg = Proposals.init model.token
+            | LoggedIn user when not (isStudent user) ->
+                let newPage, newMsg = Proposals.init model.token user
                 showPage (ProposalsPage newPage) ProposalsUrl, Cmd.map ProposalsMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+
+        | AllProjectsUrl ->
+            match model.user with
+            | LoggedIn user when user.categ = "C" ->
+                let newPage, newMsg = AllProjects.init model.token
+                showPage (AllProjectsPage newPage) AllProjectsUrl, Cmd.map AllProjectsMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+
+        (*
+        | AllPreferencesUrl ->
+            match model.user with
+            | LoggedIn user when user.categ = "C" ->
+                let newPage, newMsg = AllPreferences.init model.token
+                showPage (AllPreferencesPage newPage) AllPreferencesUrl, Cmd.map AllPreferencesMsg newMsg
+            | LoggedIn user -> model, Cmd.navigateBack()
+            | Anonymous -> model, Cmd.navigatePath("login", HistoryMode.ReplaceState)
+        *)
 
         | NotFoundUrl ->
             showPage NotFoundPage NotFoundUrl, Cmd.none
@@ -264,6 +318,10 @@ let view (model: Model) (dispatch: Msg -> unit) =
                 HomeSupervisor.view page (Msg.HomeSupervisorMsg >> dispatch)
             | ProposalsPage page ->
                 Proposals.view page (Msg.ProposalsMsg >> dispatch)
+            | AllProjectsPage page ->
+                AllProjects.view page (Msg.AllProjectsMsg >> dispatch)
+            //| AllPreferencesPage page ->
+            //  AllPreferences.view page (Msg.AllPreferencesMsg >> dispatch)
             | NotFoundPage ->
                 Html.p "Not Found"
         ]

@@ -36,8 +36,15 @@ let loginHttpHandler =
 
                 match res with 
                 | Some person ->  
+
+                    let role = match person.categ with
+                               | "U" | "M" -> "Student"
+                               | "C" -> "Coordinator"
+                               | _ -> "Supervisor"
+
                     let loginResponse = { person = person
-                                          token = generateToken person.eeid }
+                                          token = generateToken person.eeid role }
+
                     ctx.SetStatusCode 200 
                     //ctx.Response.Cookies.Append("eeid", tokenResult, options) // res.eeid.ToString()
                     return! json loginResponse next ctx
@@ -50,10 +57,10 @@ let loginHttpHandler =
                 return! json ex next ctx    
         }
 
-let newProjectHttpHandler =
+let newProjectsHttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
-            match newProjectSQL () with
+            match newProjectsSQL () with
             | Error ex -> 
                 printfn "%A" ex
                 ctx.SetStatusCode 400; 
@@ -63,10 +70,10 @@ let newProjectHttpHandler =
                 return! json res next ctx 
         }
 
-let projectHttpHandler = 
+let projectsHttpHandler = 
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
-            match projectSQL () with
+            match projectsSQL () with
             | Error ex -> 
                 printfn "%A" ex
                 ctx.SetStatusCode 400; 
@@ -312,8 +319,6 @@ let editProposalHttpHandler =
                     return! json proposals next ctx 
         }
 
-
-
 // Save/Update the proposal in EditProposalRequest from uer eeid
 let editSuitabilityHttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
@@ -338,4 +343,19 @@ let editSuitabilityHttpHandler =
                                     |> List.map (fun p -> { project = p; applicants = applicantsSQL p.pid } )
                     ctx.SetStatusCode 200 
                     return! json proposals next ctx 
+        }
+
+
+
+let allProjectsHttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            match allProjectsSQL () with
+            | Error ex -> 
+                printfn "%A" ex
+                ctx.SetStatusCode 400; 
+                return! json ex next ctx 
+            | Ok jsonQuery -> 
+                let res = JsonConvert.DeserializeObject<List<Project>>(jsonQuery);
+                return! json res next ctx 
         }

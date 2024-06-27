@@ -103,7 +103,7 @@ let view (model: Model) (dispatch: Msg -> unit) =
             if model.loading then LoadingScreen
             TurquoiseBackground 0.5
             ImageBackground
-            NavBar model dispatch
+            NavBar dispatch model.user
 
             Bulma.columns [
                 prop.classes [ "is-centered" ]

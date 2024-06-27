@@ -7,7 +7,19 @@ open System.IdentityModel.Tokens.Jwt
 open Microsoft.IdentityModel.Tokens
 open Microsoft.AspNetCore.Http
 
-let jwtKey = "spadR2dre#u-ruBrE@TepA&*Uf@Uern2ef9"
+open dotenv.net
+open dotenv.net.Utilities
+
+//--------------------------------------------------------------------------------------//
+//                                       JWT Key                                        //
+//--------------------------------------------------------------------------------------//
+
+DotEnv.Load()
+let jwtKey = (EnvReader.GetStringValue "JWT")
+
+//--------------------------------------------------------------------------------------//
+//                                         JWT                                          //
+//--------------------------------------------------------------------------------------//
 
 let getTokenFromRequest (req : HttpRequest) : JwtSecurityToken =
     let jwt = ((Seq.head req.Headers.Authorization).Split " ")[1]
@@ -17,12 +29,17 @@ let getTokenFromRequest (req : HttpRequest) : JwtSecurityToken =
 let getIdFromToken (token : JwtSecurityToken) =
     (Seq.find (fun (c : Claim) -> c.Type = "id") token.Claims).Value
 
-let generateToken eeid =
+//let getRoleFromToken (token : JwtSecurityToken) =
+//    (Seq.find (fun (c : Claim) -> c.Type = "role") token.Claims).Value
+
+let generateToken eeid role =
     let claims = [|
         Claim("id", eeid);
-        Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) |] // (JWT ID) claim provides a unique identifier for the JWT.
+        Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // (JWT ID) claim provides a unique identifier for the JWT.
+        Claim(ClaimTypes.Role, role)
+    |] 
 
-    let expires = Nullable(DateTime.UtcNow.AddHours(1.0))
+    let expires = Nullable(DateTime.UtcNow.AddHours(3.0))
     let notBefore = Nullable(DateTime.UtcNow)
     let securityKey = SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     let signingCredentials = SigningCredentials(key = securityKey, algorithm = SecurityAlgorithms.HmacSha256)

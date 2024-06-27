@@ -68,9 +68,6 @@ let ProfessorInput (dispatch: Msg -> unit) =
 
 // ---- Search ---------------------------------------------------------------------------
 
-let TileCss = 
-    [TurquoiseBackgroundRGBA 0.7; style.borderStyle.solid; style.borderColor mediumTurqouise; style.padding (length.perc 1.5)]
-
 let TagFilter (dispatch: Msg -> unit) (model: Model) (filterType: FilterType) (filter: string)  = 
     Bulma.tag [ 
         prop.classes [ "filter-tag" ]

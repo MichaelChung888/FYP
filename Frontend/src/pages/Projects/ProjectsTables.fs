@@ -2,9 +2,7 @@ module ProjectsTables
 
 open Shared
 open Common
-open global.ProjectsTypes
-type Model = ProjectsTypes.Model
-type Msg = ProjectsTypes.Msg
+open ProjectsTypes
 open ProjectsHelpers
 
 open Feliz

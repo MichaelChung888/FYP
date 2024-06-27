@@ -33,8 +33,8 @@ import { PropHelpers_createOnKey } from "../../fable_modules/Feliz.2.7.0/./Prope
 import { key_escape } from "../../fable_modules/Feliz.2.7.0/Key.fs.js";
 import { EditProposalModal, DeleteProposalModal } from "./ProposalsModals.fs.js";
 
-export function init(token) {
-    const defaultModel = new Model(true, empty(), token, Proposal_get_Default(), false, false, true, new EditProposalRequest(0, false, "", empty(), empty(), "", "", "", ""));
+export function init(token, user) {
+    const defaultModel = new Model(user, true, empty(), token, Proposal_get_Default(), false, false, true, new EditProposalRequest(0, false, "", empty(), empty(), "", "", "", ""));
     const initialLoad = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
         let decoder_1, decoder;
         const proposalsUrl = `${"http://localhost:1234"}/proposals`;
@@ -88,22 +88,22 @@ export function update(msg, model) {
         case 1: {
             const res = msg.fields[0];
             toConsole(printf("%A"))(res);
-            return [new Model(false, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
+            return [new Model(model.user, false, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
         }
         case 2:
             return [model, Cmd_none()];
         case 3:
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, true, model.editProject), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, true, model.editProject), Cmd_none()];
         case 4:
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, false, model.editProject), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, false, model.editProject), Cmd_none()];
         case 5: {
             const proposal = msg.fields[0];
-            return [new Model(model.loading, model.proposals, model.token, proposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, proposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
         }
         case 6:
-            return [new Model(model.loading, model.proposals, model.token, Proposal_get_Default(), model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, Proposal_get_Default(), model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
         case 7:
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, true, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, true, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
         case 8: {
             const initialLoad = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
                 let data, decoder_1, decoder;
@@ -149,12 +149,12 @@ export function update(msg, model) {
                     });
                 })))));
             }));
-            return [new Model(true, model.proposals, model.token, Proposal_get_Default(), false, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_OfPromise_either(initialLoad, void 0, (arg_5) => (new Msg(0, [arg_5])), (arg_6) => (new Msg(1, [arg_6])))];
+            return [new Model(model.user, true, model.proposals, model.token, Proposal_get_Default(), false, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_OfPromise_either(initialLoad, void 0, (arg_5) => (new Msg(0, [arg_5])), (arg_6) => (new Msg(1, [arg_6])))];
         }
         case 9: {
             const sp = model.selectedProposal;
             const editInfo = new EditProposalRequest(sp.project.pid, false, sp.project.title, ofArray(sp.project.categories.split(",")), ofArray(sp.project.tstream.split(",")), sp.project.requirements, sp.project.descr, sp.project.skills, sp.project.meetings);
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, true, model.isProjectInfoTab, editInfo), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, true, model.isProjectInfoTab, editInfo), Cmd_none()];
         }
         case 10: {
             const EditProposal = () => PromiseBuilder__Run_212F1D4B(promise, PromiseBuilder__Delay_62FBFDE1(promise, () => {
@@ -201,10 +201,10 @@ export function update(msg, model) {
                     });
                 }))));
             }));
-            return [new Model(true, model.proposals, model.token, Proposal_get_Default(), false, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_OfPromise_either(EditProposal, void 0, (arg_11) => (new Msg(0, [arg_11])), (arg_12) => (new Msg(1, [arg_12])))];
+            return [new Model(model.user, true, model.proposals, model.token, Proposal_get_Default(), false, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_OfPromise_either(EditProposal, void 0, (arg_11) => (new Msg(0, [arg_11])), (arg_12) => (new Msg(1, [arg_12])))];
         }
         case 11:
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, false, false, model.isProjectInfoTab, model.editProject), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, false, false, model.isProjectInfoTab, model.editProject), Cmd_none()];
         case 12: {
             const rank = msg.fields[2] | 0;
             const ev = msg.fields[0];
@@ -259,51 +259,51 @@ export function update(msg, model) {
                     });
                 }))));
             }));
-            return [new Model(true, model.proposals, model.token, updatedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_OfPromise_either(EditSuitability, void 0, (arg_17) => (new Msg(0, [arg_17])), (arg_18) => (new Msg(1, [arg_18])))];
+            return [new Model(model.user, true, model.proposals, model.token, updatedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_OfPromise_either(EditSuitability, void 0, (arg_17) => (new Msg(0, [arg_17])), (arg_18) => (new Msg(1, [arg_18])))];
         }
         case 13: {
             const title = msg.fields[0];
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_1 = model.editProject, new EditProposalRequest(inputRecord_1.pid, inputRecord_1.isStudent, title, inputRecord_1.categories, inputRecord_1.streams, inputRecord_1.requirements, inputRecord_1.description, inputRecord_1.skills, inputRecord_1.meetings))), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_1 = model.editProject, new EditProposalRequest(inputRecord_1.pid, inputRecord_1.isStudent, title, inputRecord_1.categories, inputRecord_1.streams, inputRecord_1.requirements, inputRecord_1.description, inputRecord_1.skills, inputRecord_1.meetings))), Cmd_none()];
         }
         case 14: {
             const tag = msg.fields[0];
             const sc = model.editProject.categories;
             if (exists((c) => (c === tag), sc)) {
-                return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_2 = model.editProject, new EditProposalRequest(inputRecord_2.pid, inputRecord_2.isStudent, inputRecord_2.title, filter((c_1) => (c_1 !== tag), sc), inputRecord_2.streams, inputRecord_2.requirements, inputRecord_2.description, inputRecord_2.skills, inputRecord_2.meetings))), Cmd_none()];
+                return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_2 = model.editProject, new EditProposalRequest(inputRecord_2.pid, inputRecord_2.isStudent, inputRecord_2.title, filter((c_1) => (c_1 !== tag), sc), inputRecord_2.streams, inputRecord_2.requirements, inputRecord_2.description, inputRecord_2.skills, inputRecord_2.meetings))), Cmd_none()];
             }
             else {
-                return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_3 = model.editProject, new EditProposalRequest(inputRecord_3.pid, inputRecord_3.isStudent, inputRecord_3.title, append(sc, singleton(tag)), inputRecord_3.streams, inputRecord_3.requirements, inputRecord_3.description, inputRecord_3.skills, inputRecord_3.meetings))), Cmd_none()];
+                return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_3 = model.editProject, new EditProposalRequest(inputRecord_3.pid, inputRecord_3.isStudent, inputRecord_3.title, append(sc, singleton(tag)), inputRecord_3.streams, inputRecord_3.requirements, inputRecord_3.description, inputRecord_3.skills, inputRecord_3.meetings))), Cmd_none()];
             }
         }
         case 15: {
             const tag_1 = msg.fields[0];
             const ss = model.editProject.streams;
             if (exists((c_2) => (c_2 === tag_1), ss)) {
-                return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_4 = model.editProject, new EditProposalRequest(inputRecord_4.pid, inputRecord_4.isStudent, inputRecord_4.title, inputRecord_4.categories, filter((c_3) => (c_3 !== tag_1), ss), inputRecord_4.requirements, inputRecord_4.description, inputRecord_4.skills, inputRecord_4.meetings))), Cmd_none()];
+                return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_4 = model.editProject, new EditProposalRequest(inputRecord_4.pid, inputRecord_4.isStudent, inputRecord_4.title, inputRecord_4.categories, filter((c_3) => (c_3 !== tag_1), ss), inputRecord_4.requirements, inputRecord_4.description, inputRecord_4.skills, inputRecord_4.meetings))), Cmd_none()];
             }
             else {
-                return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_5 = model.editProject, new EditProposalRequest(inputRecord_5.pid, inputRecord_5.isStudent, inputRecord_5.title, inputRecord_5.categories, append(ss, singleton(tag_1)), inputRecord_5.requirements, inputRecord_5.description, inputRecord_5.skills, inputRecord_5.meetings))), Cmd_none()];
+                return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_5 = model.editProject, new EditProposalRequest(inputRecord_5.pid, inputRecord_5.isStudent, inputRecord_5.title, inputRecord_5.categories, append(ss, singleton(tag_1)), inputRecord_5.requirements, inputRecord_5.description, inputRecord_5.skills, inputRecord_5.meetings))), Cmd_none()];
             }
         }
         case 16: {
             const requirements = msg.fields[0];
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_6 = model.editProject, new EditProposalRequest(inputRecord_6.pid, inputRecord_6.isStudent, inputRecord_6.title, inputRecord_6.categories, inputRecord_6.streams, requirements, inputRecord_6.description, inputRecord_6.skills, inputRecord_6.meetings))), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_6 = model.editProject, new EditProposalRequest(inputRecord_6.pid, inputRecord_6.isStudent, inputRecord_6.title, inputRecord_6.categories, inputRecord_6.streams, requirements, inputRecord_6.description, inputRecord_6.skills, inputRecord_6.meetings))), Cmd_none()];
         }
         case 18: {
             const description = msg.fields[0];
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_7 = model.editProject, new EditProposalRequest(inputRecord_7.pid, inputRecord_7.isStudent, inputRecord_7.title, inputRecord_7.categories, inputRecord_7.streams, inputRecord_7.requirements, description, inputRecord_7.skills, inputRecord_7.meetings))), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_7 = model.editProject, new EditProposalRequest(inputRecord_7.pid, inputRecord_7.isStudent, inputRecord_7.title, inputRecord_7.categories, inputRecord_7.streams, inputRecord_7.requirements, description, inputRecord_7.skills, inputRecord_7.meetings))), Cmd_none()];
         }
         case 17: {
             const skills = msg.fields[0];
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_8 = model.editProject, new EditProposalRequest(inputRecord_8.pid, inputRecord_8.isStudent, inputRecord_8.title, inputRecord_8.categories, inputRecord_8.streams, inputRecord_8.requirements, inputRecord_8.description, skills, inputRecord_8.meetings))), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_8 = model.editProject, new EditProposalRequest(inputRecord_8.pid, inputRecord_8.isStudent, inputRecord_8.title, inputRecord_8.categories, inputRecord_8.streams, inputRecord_8.requirements, inputRecord_8.description, skills, inputRecord_8.meetings))), Cmd_none()];
         }
         case 19: {
             const meetings = msg.fields[0];
-            return [new Model(model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_9 = model.editProject, new EditProposalRequest(inputRecord_9.pid, inputRecord_9.isStudent, inputRecord_9.title, inputRecord_9.categories, inputRecord_9.streams, inputRecord_9.requirements, inputRecord_9.description, inputRecord_9.skills, meetings))), Cmd_none()];
+            return [new Model(model.user, model.loading, model.proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, (inputRecord_9 = model.editProject, new EditProposalRequest(inputRecord_9.pid, inputRecord_9.isStudent, inputRecord_9.title, inputRecord_9.categories, inputRecord_9.streams, inputRecord_9.requirements, inputRecord_9.description, inputRecord_9.skills, meetings))), Cmd_none()];
         }
         default: {
             const proposals = msg.fields[0];
-            return [new Model(false, proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
+            return [new Model(model.user, false, proposals, model.token, model.selectedProposal, model.confirmDeleteProposalModal, model.confirmEditProposalModal, model.isProjectInfoTab, model.editProject), Cmd_none()];
         }
     }
 }
@@ -313,7 +313,7 @@ export function view(model, dispatch) {
     return createElement("body", createObj(ofArray([["style", {
         height: 100 + "vh",
         position: "relative",
-    }], (elems_4 = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(dispatch)), delay(() => {
+    }], (elems_4 = toList(delay(() => append_1(model.loading ? singleton_1(LoadingScreen) : empty_1(), delay(() => append_1(singleton_1(TurquoiseBackground(0.5)), delay(() => append_1(singleton_1(ImageBackground), delay(() => append_1(singleton_1(NavBar(dispatch, model.user)), delay(() => {
         let elems_3, elems, elems_1;
         return singleton_1(createElement("div", createObj(Helpers_combineClasses("columns", ofArray([["style", {
             height: 90 + "vh",
